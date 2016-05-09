@@ -12,8 +12,9 @@ import numpy as np
 
 # Load and process data
 inDir = "./Data/organophosphate/dc-0445_cdcl3_kilimanjaro_22c_1d_1H_1_031816.fid"
-w, u, v = nmrft.varian_process(os.path.join(inDir, 'fid'), os.path.join(inDir, 'procpar'))
+w, u, v, p0, p1 = nmrft.varian_process(os.path.join(inDir, 'fid'), os.path.join(inDir, 'procpar'))
 
+theta0 = p0
 
 # initiate bounds selection
 bs = nmrft.BoundsSelector(w, u, v)
@@ -21,7 +22,6 @@ w, u, v = bs.applyBounds()
 w, u, v = nmrft.increaseResolution(w, u, v)
 
 # get an approximation of phase shift
-theta0 = nmrft.approximate_theta(w, u, v)
 V, I = nmrft.shift_phase(u, v, theta0)
 
 # get approximate initial conditions
