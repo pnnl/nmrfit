@@ -75,6 +75,38 @@ def autops(data, fn, p0=0.0, p1=0.0):
     return phasedspc
 
 
+def approximate_phase(data, fn, p0=0.0, p1=0.0):
+    """
+    Automatic linear phase correction
+    Parameters
+    ----------
+    data : ndarray
+        Array of NMR data.
+    fn : str or function
+        Algorithm to use for phase scoring. Built in functions can be
+        specified by one of the following strings: "acme", "peak_minima"
+    p0 : float
+        Initial zero order phase in degrees.
+    p1 : float
+        Initial first order phase in degrees.
+    Returns
+    -------
+    ndata : ndarray
+        Phased NMR data.
+    """
+    if not callable(fn):
+        fn = {
+            'peak_minima': _ps_peak_minima_score,
+            'acme': _ps_acme_score,
+        }[fn]
+
+    opt = [p0, p1]
+    opt = scipy.optimize.fmin(fn, x0=opt, args=(data, ), disp=False)
+
+    # phasedspc = ps(data, p0=opt[0], p1=opt[1])
+    return opt[0] * np.pi / 180, opt[1] * np.pi / 180
+
+
 def _ps_acme_score(ph, data):
     """
     Phase correction using ACME algorithm by Chen Li et al.

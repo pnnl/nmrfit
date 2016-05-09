@@ -62,8 +62,7 @@ def voigt_1D(x, r, yOff, sigma, mu, a):
             yOff0  - y offset
     '''
     L = (2 / (np.pi * sigma)) * 1 / (1 + ((x - mu) / (0.5 * sigma))**2)
-    G = (2 / sigma) * np.sqrt(np.log(2) / np.pi) * \
-        np.exp(-((x - mu) / (sigma / (2 * np.sqrt(np.log(2)))))**2)
+    G = (2 / sigma) * np.sqrt(np.log(2) / np.pi) * np.exp(-((x - mu) / (sigma / (2 * np.sqrt(np.log(2)))))**2)
     V = yOff + a * (r * L + (1 - r) * G)
     return V
 
@@ -73,13 +72,11 @@ def kk_equation(x, r, yOff, sigma, mu, a, w):
        Used to evaluate the V->I transform.
     '''
     L1 = (2 / (np.pi * sigma)) * 1 / (1 + ((x + w - mu) / (0.5 * sigma))**2)
-    G1 = (2 / sigma) * np.sqrt(np.log(2) / np.pi) * \
-        np.exp(-((x + w - mu) / (sigma / (2 * np.sqrt(np.log(2)))))**2)
+    G1 = (2 / sigma) * np.sqrt(np.log(2) / np.pi) * np.exp(-((x + w - mu) / (sigma / (2 * np.sqrt(np.log(2)))))**2)
     V1 = yOff + a * (r * L1 + (1 - r) * G1)
 
     L2 = (2 / (np.pi * sigma)) * 1 / (1 + ((-x + w - mu) / (0.5 * sigma))**2)
-    G2 = (2 / sigma) * np.sqrt(np.log(2) / np.pi) * \
-        np.exp(-((-x + w - mu) / (sigma / (2 * np.sqrt(np.log(2)))))**2)
+    G2 = (2 / sigma) * np.sqrt(np.log(2) / np.pi) * np.exp(-((-x + w - mu) / (sigma / (2 * np.sqrt(np.log(2)))))**2)
     V2 = yOff + a * (r * L2 + (1 - r) * G2)
 
     V = 1 / x * (V2 - V1)
@@ -219,9 +216,9 @@ def varian_process(fidfile, procfile):
     data = data / np.max(data)
 
     # phase correct then manually offset for testing
-    # data = proc_autophase.autops(data, 'acme')  # auto phase correct
-    data = ng.proc_base.ps(data, p0=48)
-    return ppm, data[0, :].real, data[0, :].imag
+    p0, p1 = proc_autophase.approximate_phase(data, 'acme')  # auto phase correct
+    # data = ng.proc_base.ps(data, p0=48)
+    return ppm, data[0, :].real, data[0, :].imag, p0, p1
 
 
 def sample_noise(X, Y, xstart, xstop):
@@ -272,7 +269,7 @@ class PeakSelector:
         self.fig = plt.figure()  # figsize=(9, 5), dpi=300
         plt.plot(w, u)
         plt.axis([w[-1], w[0], min(u) - max(u) * 0.05, max(u) * 1.1])
-        plt.gca().invert_xaxis()
+        # plt.gca().invert_xaxis()
         self.cid = self.fig.canvas.mpl_connect('button_press_event', self)
         self.points = []
         plt.show()
@@ -305,6 +302,21 @@ def increaseResolution(w, u, v, n=1000, kind='linear'):
     new_v = sp.interpolate.interp1d(w, v, kind=kind)(new_w)
 
     return new_w, new_u, new_v
+
+
+def approximate_theta(w, u, v):
+    def objective(theta, w, u, v):
+        V = u * np.cos(theta) - v * np.sin(theta)
+        area = scipy.integrate.simps(V, x=w)
+        return -area
+    res = sp.optimize.minimize_scalar(objective, args=(w, u, v), method='Bounded', bounds=(-np.pi, np.pi))
+    return res.x
+
+
+def shift_phase(u, v, theta):
+    V = u * np.cos(theta) - v * np.sin(theta)
+    I = u * np.sin(theta) + v * np.cos(theta)
+    return V, I
 
 # the vectorized form can compute the integral for all w
 kk_relation_vectorized = np.vectorize(kk_relation, otypes=[np.float])
