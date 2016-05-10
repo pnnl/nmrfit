@@ -17,8 +17,9 @@ w, u, v, p0, p1 = nmrft.varian_process(os.path.join(inDir, 'fid'), os.path.join(
 theta0 = p0
 
 # initiate bounds selection
-bs = nmrft.BoundsSelector(w, u, v)
-w, u, v = bs.applyBounds()
+bs = nmrft.BoundsSelector(w, u, v, supress=True)
+w, u, v = bs.applyBounds(low=3.2, high=3.65)
+# print('bounds:', bs.bounds)
 w, u, v = nmrft.increaseResolution(w, u, v)
 
 # get an approximation of phase shift
@@ -39,6 +40,10 @@ weights = [['all', 1.0],
            [s2.idx, p1.height / s2.height],
            [s3.idx, p1.height / s3.height],
            [s4.idx, p1.height / s4.height]]
+
+print('weights:')
+for w in weights:
+    print(w)
 
 # initial conditions of the form [theta, r, yOff, sigma_n, mu_n, a_n,...]
 x0 = [0, 0.1, 0,                            # shared params

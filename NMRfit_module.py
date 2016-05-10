@@ -232,26 +232,30 @@ def sample_noise(X, Y, xstart, xstop):
 
 
 class BoundsSelector:
-    def __init__(self, w, u, v):
+    def __init__(self, w, u, v, supress=False):
         self.u = u
         self.v = v
         self.w = w
-        self.fig = plt.figure()  # figsize=(9, 5), dpi=300
-        plt.plot(w, u)
-        plt.axis([w[-1], w[0], min(u) - max(u) * 0.05, max(u) * 1.1])
-        plt.gca().invert_xaxis()
-        self.cid = self.fig.canvas.mpl_connect('button_press_event', self)
-        self.bounds = []
-        plt.show()
+        self.supress = supress
+
+        if not self.supress:
+            self.fig = plt.figure()  # figsize=(9, 5), dpi=300
+            plt.plot(w, u)
+            plt.axis([w[-1], w[0], min(u) - max(u) * 0.05, max(u) * 1.1])
+            plt.gca().invert_xaxis()
+            self.cid = self.fig.canvas.mpl_connect('button_press_event', self)
+            self.bounds = []
+            plt.show()
 
     def __call__(self, event):
         self.bounds.append(event.xdata)
         if len(self.bounds) == 2:
             plt.close()
 
-    def applyBounds(self):
-        low = min(self.bounds)
-        high = max(self.bounds)
+    def applyBounds(self, low=None, high=None):
+        if not self.supress:
+            low = min(self.bounds)
+            high = max(self.bounds)
 
         idx = np.where((self.w > low) & (self.w < high))
 
