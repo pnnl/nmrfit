@@ -11,7 +11,7 @@ import numpy as np
 
 
 # Load and process data
-inDir = "./Data/organophosphate/dc-919V_cdcl3_kilimanjaro_25c_1d_1H_1_032616.fid"
+inDir = "./Data/organophosphate/dc-070_cdcl3_kilimanjaro_25c_1d_1H_3_032016.fid"
 w, u, v, p0, p1 = nmrft.varian_process(os.path.join(inDir, 'fid'), os.path.join(inDir, 'procpar'))
 
 theta0 = p0
@@ -51,8 +51,13 @@ x0 = [0, 0.1, 0,                            # shared params
       p1.width / 10, s3.loc, s3.area,
       p1.width / 10, s4.loc, s4.area]
 
+print()
+print(weights)
+print()
+print(x0)
+print()
 # Fit peak and satellites
-u_fit, v_fit, fitParams = nmrft.fit_peak(w, u, v, x0, method='Nelder-Mead', options=None, weights=weights, fitIm=False)
+u_fit, v_fit, fitParams = nmrft.fit_peak(w, u, v, x0, method='Powell', options=None, weights=weights, fitIm=False)
 
 print('theta, r, yOff')
 print(fitParams[:3])
