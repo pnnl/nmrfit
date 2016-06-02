@@ -19,51 +19,37 @@ theta0 = p0
 # initiate bounds selection
 bs = nmrft.BoundsSelector(w, u, v, supress=True)
 w, u, v = bs.applyBounds(low=3.2, high=3.65)
-# print('bounds:', bs.bounds)
+
 w, u, v = nmrft.increaseResolution(w, u, v)
 
 # get an approximation of phase shift
 V, I = nmrft.shift_phase(u, v, theta0)
 
 # get approximate initial conditions
-# p1 = nmrft.PeakSelector(w, V, I)
-# p2 = nmrft.PeakSelector(w, V, I)
+p1 = nmrft.PeakSelector(w, V, I)
+p2 = nmrft.PeakSelector(w, V, I)
 
-# s1 = nmrft.PeakSelector(w, V, I)
-# s2 = nmrft.PeakSelector(w, V, I)
-# s3 = nmrft.PeakSelector(w, V, I)
-# s4 = nmrft.PeakSelector(w, V, I)
-
-# weights = [['all', 1.0],
-#            ['all', 1.0],
-#            [s1.idx, p1.height / s1.height],
-#            [s2.idx, p1.height / s2.height],
-#            [s3.idx, p1.height / s3.height],
-#            [s4.idx, p1.height / s4.height]]
+s1 = nmrft.PeakSelector(w, V, I)
+s2 = nmrft.PeakSelector(w, V, I)
+s3 = nmrft.PeakSelector(w, V, I)
+s4 = nmrft.PeakSelector(w, V, I)
 
 weights = [['all', 1.0],
            ['all', 1.0],
-           [[832, 833, 834, 835, 836, 837, 838, 839], 127.60972906738266],
-           [[759, 760, 761, 762, 763, 764, 765, 766, 767], 129.60454931408256],
-           [[237, 238, 239, 240, 241, 242, 243, 244, 245], 126.06391549344025],
-           [[164, 165, 166, 167, 168, 169, 170, 171, 172, 173], 136.58676347670723]]
+           [s1.idx, p1.height / s1.height],
+           [s2.idx, p1.height / s2.height],
+           [s3.idx, p1.height / s3.height],
+           [s4.idx, p1.height / s4.height]]
+
 
 # initial conditions of the form [theta, r, yOff, sigma_n, mu_n, a_n,...]
-# x0 = [0, 0.1, 0,                            # shared params
-#       p1.width / 10, p1.loc, p1.area,       # main peak init
-#       p2.width / 10, p2.loc, p2.area,
-#       p1.width / 10, s1.loc, s1.area,       # s1 init
-#       p1.width / 10, s2.loc, s2.area,       # s2 init
-#       p1.width / 10, s3.loc, s3.area,
-#       p1.width / 10, s4.loc, s4.area]
-
-x0 = [0, 0.2, 0,
-      0.002418037142857143, 3.4175240657142862, 0.002947622020000001,
-      0.0024598158557142856, 3.431544792857143, 0.0029532094971428573,
-      0.0020131753114285716, 3.2727146642857146, 1.6479002557142858e-05,
-      0.0018598413128571426, 3.3053552371428574, 1.659152872857143e-05,
-      0.001184384566, 3.5403618157142853, 1.2311321042857144e-05,
-      0.0013514716314285715, 3.573018551428571, 1.2527656285714286e-05]
+x0 = [0, 0.1, 0,                            # shared params
+      p1.width / 10, p1.loc, p1.area,       # main peak init
+      p2.width / 10, p2.loc, p2.area,
+      p1.width / 10, s1.loc, s1.area,       # s1 init
+      p1.width / 10, s2.loc, s2.area,       # s2 init
+      p1.width / 10, s3.loc, s3.area,
+      p1.width / 10, s4.loc, s4.area]
 
 # Fit peak and satellites
 u_fit, v_fit, fitParams = nmrft.fit_peak(w, u, v, x0, method='Nelder-Mead', options=None, weights=weights, fitIm=False)
