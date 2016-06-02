@@ -31,7 +31,7 @@ for subdir, dirs, files in os.walk(inDir):
 
 for dataset in folders.keys():
     for fn in folders[dataset]:
-        exp = InitialConditions.DataSet(os.path.split(fn)[-1])
+        exp = InitialConditions.Experiment(os.path.split(fn)[-1])
         w, u, v, p0, p1 = nmrft.varian_process(os.path.join(fn, 'fid'), os.path.join(fn, 'procpar'))
         bs = nmrft.BoundsSelector(w, u, v, supress=True)
         w, u, v = bs.applyBounds(low=3.20, high=3.65)
@@ -43,8 +43,8 @@ for dataset in folders.keys():
 
         nmrft.plot(w, u, u_fit)
 
-# for dataset in results.keys():
-#     print(dataset)
-#     print('mean:', np.mean(results[dataset]))
-#     print('stdev:', np.std(results[dataset]))
-#     print()
+for dataset in results.keys():
+    print(dataset)
+    print('mean:', np.mean(results[dataset]))
+    print('stdev:', np.std(results[dataset]))
+    print()

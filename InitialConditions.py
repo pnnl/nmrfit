@@ -1,6 +1,6 @@
 
 
-class DataSet:
+class Experiment:
     def __init__(self, name):
         if name == "dc-0445_cdcl3_kilimanjaro_22c_1d_1H_1_031816.fid":
             self.weights = [['all', 1.0],
