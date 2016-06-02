@@ -44,6 +44,8 @@ for dataset in folders.keys():
             results[dataset].append(percent)
 
             nmrft.plot(w, u, u_fit)
+            print(percent)
+            print()
 
 for dataset in results.keys():
     print(dataset)
