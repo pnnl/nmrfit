@@ -20,6 +20,11 @@ results['919V'] = []
 results['0445'] = []
 results['070'] = []
 
+ssd = {}
+ssd['919V'] = []
+ssd['0445'] = []
+ssd['070'] = []
+
 # store data based on container list
 for subdir, dirs, files in os.walk(inDir):
     if 'dc-919V' in subdir:
@@ -38,9 +43,11 @@ for dataset in folders.keys():
         w, u, v = bs.applyBounds(low=3.20, high=3.65)
         w, u, v = nmrft.increaseResolution(w, u, v)
 
-        u_fit, v_fit, fitParams = nmrft.fit_peak(w, u, v, exp.initialConditions[1:], p0, method='Powell', options=None, weights=exp.weights, fitIm=False)
+        u_fit, v_fit, fitParams, error = nmrft.fit_peak(w, u, v, exp.initialConditions[1:], p0, method='Powell', options=None, weights=exp.weights, fitIm=False)
         percent = (fitParams[10] + fitParams[13] + fitParams[16] + fitParams[19]) / (fitParams[4] + fitParams[7] + fitParams[10] + fitParams[13] + fitParams[16] + fitParams[19])
+
         results[dataset].append(percent)
+        ssd[dataset].append(error)
 
         # nmrft.plot(w, u, u_fit)
 
@@ -48,4 +55,6 @@ for dataset in results.keys():
     print(dataset)
     print('mean:', np.mean(results[dataset]))
     print('stdev:', np.std(results[dataset]))
+    print('mean ssd', np.mean(ssd[dataset]))
+    print('stdev ssd', np.std(ssd[dataset]))
     print()

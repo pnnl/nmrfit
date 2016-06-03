@@ -173,7 +173,7 @@ def fit_peak(w, u, v, x0, theta, method='Powell', options=None, weights=None, fi
     u_fit = V_fit * np.cos(theta) + I_fit * np.sin(theta)
     v_fit = -V_fit * np.sin(theta) + I_fit * np.cos(theta)
 
-    return u_fit, v_fit, result.x
+    return u_fit, v_fit, result.x, result.fun
 
 
 def find_peak(X, re, est, searchwidth=0.5, returnwidth=0.25):
