@@ -57,7 +57,7 @@ print()
 print(x0)
 print()
 # Fit peak and satellites
-u_fit, v_fit, fitParams = nmrft.fit_peak(w, u, v, x0, method='Powell', options=None, weights=weights, fitIm=False)
+u_fit, v_fit, fitParams, error = nmrft.fit_peak(w, u, v, x0, method='Powell', options=None, weights=weights, fitIm=False)
 
 print('theta, r, yOff')
 print(fitParams[:3])
