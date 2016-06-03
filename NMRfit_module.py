@@ -91,11 +91,11 @@ def kk_relation(w, r, yOff, sigma, mu, a):
     return res / np.pi
 
 
-def objective(x0, w, u, v, kk, weights, fitIm):
+def objective(x0, w, u, v, theta, kk, weights, fitIm):
     '''Fits the data using a least-squares approach.
     '''
-    theta, r, yOff = x0[:3]
-    x0 = x0[3:]
+    r, yOff = x0[:2]
+    x0 = x0[2:]
 
     V_data = u * np.cos(theta) - v * np.sin(theta)
     V_fit = np.zeros_like(V_data)
@@ -138,7 +138,7 @@ def objective(x0, w, u, v, kk, weights, fitIm):
         return V_residual
 
 
-def fit_peak(w, u, v, x0, method='Powell', options=None, weights=None, fitIm=False):
+def fit_peak(w, u, v, x0, theta, method='Powell', options=None, weights=None, fitIm=False):
     '''Fit a Voigt body using both real and complex data.
             Positional arguments:
                 w - the frequency vector
@@ -155,10 +155,9 @@ def fit_peak(w, u, v, x0, method='Powell', options=None, weights=None, fitIm=Fal
     # initialize x vector [theta, amplitude, mu, sigma, GL ratio]
     # the sigma value must be initialized to be pretty small
 
-    result = sp.optimize.minimize(objective, x0, args=(
-        w, u, v, kk_relation_vectorized, weights, fitIm), method=method, options=options)
-    theta, r, yOff = result.x[:3]
-    res = result.x[3:]
+    result = sp.optimize.minimize(objective, x0, args=(w, u, v, theta, kk_relation_vectorized, weights, fitIm), method=method, options=options)
+    r, yOff = result.x[:2]
+    res = result.x[2:]
 
     V_fit = np.zeros_like(u)
     I_fit = np.zeros_like(v)
