@@ -43,8 +43,8 @@ for dataset in folders.keys():
         w, u, v = bs.applyBounds(low=3.20, high=3.65)
         w, u, v = nmrft.increaseResolution(w, u, v)
 
-        u_fit, v_fit, fitParams, error = nmrft.fit_peak(w, u, v, exp.initialConditions[1:], p0, method='Powell', options=None, weights=exp.weights, fitIm=False)
-        percent = (fitParams[10] + fitParams[13] + fitParams[16] + fitParams[19]) / (fitParams[4] + fitParams[7] + fitParams[10] + fitParams[13] + fitParams[16] + fitParams[19])
+        u_fit, v_fit, fitParams, error = nmrft.fit_peak(w, u, v, exp.initialConditions, method='Powell', options=None, weights=exp.weights, fitIm=False)
+        percent = (fitParams[11] + fitParams[14] + fitParams[17] + fitParams[20]) / (fitParams[5] + fitParams[8] + fitParams[11] + fitParams[14] + fitParams[17] + fitParams[20])
 
         results[dataset].append(percent)
         ssd[dataset].append(error)
