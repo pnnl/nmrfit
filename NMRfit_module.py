@@ -295,6 +295,7 @@ class PeakSelector:
             self.w, self.u, peakest, searchwidth=self.width / 2.)
 
         self.idx = np.where((self.w > wMin) & (self.w < wMax))
+        self.bounds = [wMin, wMax]
 
         self.area = sp.integrate.simps(self.u[self.idx], self.w[self.idx])
 

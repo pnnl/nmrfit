@@ -11,7 +11,7 @@ import numpy as np
 
 
 # Load and process data
-inDir = "./Data/organophosphate/dc-070_cdcl3_kilimanjaro_25c_1d_1H_3_032016.fid"
+inDir = "./Data/organophosphate/dc-0445_cdcl3_kilimanjaro_22c_1d_1H_1_031816.fid"
 w, u, v, p0, p1 = nmrft.varian_process(os.path.join(inDir, 'fid'), os.path.join(inDir, 'procpar'))
 
 theta0 = p0
@@ -36,10 +36,10 @@ s4 = nmrft.PeakSelector(w, V, I)
 
 weights = [['all', 1.0],
            ['all', 1.0],
-           [s1.idx, p1.height / s1.height],
-           [s2.idx, p1.height / s2.height],
-           [s3.idx, p1.height / s3.height],
-           [s4.idx, p1.height / s4.height]]
+           [s1.bounds, p1.height / s1.height],
+           [s2.bounds, p1.height / s2.height],
+           [s3.bounds, p1.height / s3.height],
+           [s4.bounds, p1.height / s4.height]]
 
 
 # initial conditions of the form [theta, r, yOff, sigma_n, mu_n, a_n,...]
