@@ -123,12 +123,13 @@ def objective(x0, w, u, v, kk, weights, fitIm):
             I_residual = np.square(I_data - I_fit).sum(axis=None)
     else:
         for q in weights:
-            idx, weight = q
-            if idx == 'all':
+            bounds, weight = q
+            if bounds == 'all':
                 V_residual = V_residual + np.square(V_data - V_fit).sum(axis=0) * weight
                 if fitIm is True:
                     I_residual = I_residual + np.square(I_data - I_fit).sum(axis=0) * weight
             else:
+                idx = np.where((w > bounds[0]) & (w < bounds[1]))
                 V_residual = V_residual + np.square(V_data[idx] - V_fit[idx]).sum(axis=0) * weight
                 if fitIm is True:
                     I_residual = I_residual + np.square(I_data[idx] - I_fit[idx]).sum(axis=0) * weight
