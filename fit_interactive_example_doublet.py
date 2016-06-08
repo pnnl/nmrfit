@@ -20,8 +20,6 @@ theta0 = p0
 bs = nmrft.BoundsSelector(w, u, v, supress=True)
 w, u, v = bs.applyBounds(low=3.2, high=3.65)
 
-# w, u, v = nmrft.increaseResolution(w, u, v)
-
 # get an approximation of phase shift
 V, I = nmrft.shift_phase(u, v, theta0)
 
@@ -50,17 +48,10 @@ x0 = [0, 0.1, 0,                            # shared params
       p1.width / 10, s3.loc, s3.area,
       p1.width / 10, s4.loc, s4.area]
 
-print()
-print(weights)
-print()
-print(x0)
-print()
-
 # Fit peak and satellites
 u_fit, v_fit, fitParams, error = nmrft.fit_peak(w, u, v, x0, method='Powell', options=None, weights=weights, fitIm=False)
 
 nmrft.plot(w, u, u_fit)
-quit()
 
 print('theta, r, yOff')
 print(fitParams[:3])
@@ -72,10 +63,10 @@ print(fitParams[12:15])     # s2 -- 14
 print(fitParams[15:18])     # s3 -- 17
 print(fitParams[18:21])     # s4 -- 20
 
-# nmrft.plot(w, v, v_fit)
-
 percent = (fitParams[11] + fitParams[14] + fitParams[17] + fitParams[20]) / (fitParams[5] + fitParams[8] + fitParams[11] + fitParams[14] + fitParams[17] + fitParams[20])
 print('\narea ratio:', percent)
+
+nmrft.plot(w, v, v_fit)
 
 # noiseS = 3.8
 # noiseE = 4.0
