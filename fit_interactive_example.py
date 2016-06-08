@@ -52,7 +52,7 @@ percent = (fitParams[11] + fitParams[8]) / (fitParams[5] + fitParams[8] + fitPar
 print('\narea ratio:', percent)
 
 # plot fit results in u-v space
-w, u, v, u_fit, v_fit = nmrft.generate_fit(w, u, v, fitParams)
+w, u, v, u_fit, v_fit = nmrft.generate_fit(w, u, v, fitParams, scale=4)
 nmrft.plot(w, u, u_fit)
 nmrft.plot(w, v, v_fit)
 

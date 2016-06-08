@@ -63,7 +63,7 @@ percent = (fitParams[11] + fitParams[14] + fitParams[17] + fitParams[20]) / (fit
 print('\narea ratio:', percent)
 
 # plot fit results
-w, u, v, u_fit, v_fit = nmrft.generate_fit(w, u, v, fitParams)
+w, u, v, u_fit, v_fit = nmrft.generate_fit(w, u, v, fitParams, scale=4)
 nmrft.plot(w, u, u_fit)
 
 # noiseS = 3.8

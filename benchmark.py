@@ -48,7 +48,7 @@ for dataset in folders.keys():
         results[dataset].append(percent)
         ssd[dataset].append(error)
 
-        w, u, v, u_fit, v_fit = nmrft.generate_fit(w, u, v, fitParams)
+        w, u, v, u_fit, v_fit = nmrft.generate_fit(w, u, v, fitParams, scale=4)
         nmrft.plot(w, u, u_fit)
 
 for dataset in results.keys():
