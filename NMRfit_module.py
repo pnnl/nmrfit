@@ -39,27 +39,13 @@ def plot(X, Y_re, Y_im=None):
     return
 
 
-def plotfit(P, function, X, Y):
-    """Plot fitted function
-    """
-    Xfit = np.linspace(X[0], X[-1], 256)
-    Yfit = function(Xfit, P[0], P[1], P[2], P[3], P[4])
-    # plt.figure(figsize=(9, 5), dpi=300)
-    plt.plot(X, Y)
-    plt.plot(Xfit, Yfit)
-    plt.axis([X[-1], X[0], np.min(Y) - np.max(Y) * 0.05, np.max(Y) * 1.1])
-    plt.gca().invert_xaxis()
-    plt.show()
-    return
-
-
 def voigt_1D(x, r, yOff, sigma, mu, a):
     '''Fit a Voigt body.
-            sigma0 - modulates the "width" of the peak
-            mu0    - center of the peak
-            a0     - area of peak
-            r0     - Gaussian/Lorentzian ratio
-            yOff0  - y offset
+            sigma - modulates the "width" of the peak
+            mu    - center of the peak
+            a     - area of peak
+            r     - Gaussian/Lorentzian ratio
+            yOff  - y offset
     '''
     L = (2 / (np.pi * sigma)) * 1 / (1 + ((x - mu) / (0.5 * sigma))**2)
     G = (2 / sigma) * np.sqrt(np.log(2) / np.pi) * np.exp(-((x - mu) / (sigma / (2 * np.sqrt(np.log(2)))))**2)
@@ -146,16 +132,8 @@ def fit_peak(w, u, v, x0, method='Powell', options=None, weights=None, fitIm=Fal
                 u - the real component of the power spectrum
                 v - the imaginary component of the power spectrum
             Keyword arguments:
-                theta0 - initial phase shift, theta
-                sigma0 - modulates the initial "width" of the peak
-                mu0    - initial center of the peak
-                a0     - initial area of peak
-                r0     - initial Gaussian/Lorentzian ratio
-                yOff0  - initial y offset
-    '''
-    # initialize x vector [theta, amplitude, mu, sigma, GL ratio]
-    # the sigma value must be initialized to be pretty small
 
+    '''
     result = sp.optimize.minimize(objective, x0, args=(w, u, v, kk_relation_vectorized, weights, fitIm), method=method, options=options)
     theta, r, yOff = result.x[:3]
     res = result.x[3:]
@@ -307,15 +285,6 @@ def increaseResolution(w, u, v, n=1000, kind='linear'):
     new_v = sp.interpolate.interp1d(w, v, kind=kind)(new_w)
 
     return new_w, new_u, new_v
-
-
-def approximate_theta(w, u, v):
-    def objective(theta, w, u, v):
-        V = u * np.cos(theta) - v * np.sin(theta)
-        area = scipy.integrate.simps(V, x=w)
-        return -area
-    res = sp.optimize.minimize_scalar(objective, args=(w, u, v), method='Bounded', bounds=(-np.pi, np.pi))
-    return res.x
 
 
 def shift_phase(u, v, theta):
