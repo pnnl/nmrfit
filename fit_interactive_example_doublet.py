@@ -14,7 +14,7 @@ inDir = "./Data/organophosphate/dc-070_cdcl3_kilimanjaro_25c_1d_1H_1_032716.fid"
 w, u, v, p0, p1 = nmrft.varian_process(os.path.join(inDir, 'fid'), os.path.join(inDir, 'procpar'))
 
 # initiate bounds selection
-bs = nmrft.BoundsSelector(w, u, v, supress=True)
+bs = nmrft.BoundsSelector(w, u, v, supress=False)
 w, u, v = bs.apply_bounds(low=3.2, high=3.65)
 
 # shift by phase approximation
