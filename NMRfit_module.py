@@ -120,7 +120,7 @@ def objective(x0, w, u, v, kk, weights, fitIm):
                 if fitIm is True:
                     I_residual = I_residual + np.square(I_data[idx] - I_fit[idx]).sum(axis=0) * weight
     if fitIm is True:
-        return V_residual + I_residual
+        return (V_residual + I_residual) / 2.0
     else:
         return V_residual
 
@@ -135,11 +135,17 @@ def fit_peak(w, u, v, x0, method='Powell', options=None, weights=None, fitIm=Fal
 
     '''
     result = sp.optimize.minimize(objective, x0, args=(w, u, v, kk_relation_vectorized, weights, fitIm), method=method, options=options)
-    theta, r, yOff = result.x[:3]
-    res = result.x[3:]
 
+    return result.x, result.fun
+
+
+def generate_fit(w, u, v, result):
+    w, u, v = increase_resolution(w, u, v)
     V_fit = np.zeros_like(u)
     I_fit = np.zeros_like(v)
+
+    theta, r, yOff = result[:3]
+    res = result[3:]
 
     for i in range(0, len(res), 3):
         sigma = res[i]
@@ -152,10 +158,10 @@ def fit_peak(w, u, v, x0, method='Powell', options=None, weights=None, fitIm=Fal
     u_fit = V_fit * np.cos(theta) + I_fit * np.sin(theta)
     v_fit = -V_fit * np.sin(theta) + I_fit * np.cos(theta)
 
-    return u_fit, v_fit, result.x, result.fun
+    return w, u, v, u_fit, v_fit
 
 
-def find_peak(X, re, est, searchwidth=0.5, returnwidth=0.25):
+def find_peak(X, re, est, searchwidth=0.5):
     """Find peak within tolerance
     """
     idx = np.where((X <= est + searchwidth) & (X >= est - searchwidth))
@@ -163,7 +169,6 @@ def find_peak(X, re, est, searchwidth=0.5, returnwidth=0.25):
     peakestY = re[idx]
     peakindex = np.argmax(peakestY)
     peakloc = peakestX[peakindex]
-    # peakX = X[np.where((X <= peakloc+returnwidth) & (X >= peakloc-returnwidth))]
 
     return peakestY[peakindex], peakloc
 
@@ -230,7 +235,7 @@ class BoundsSelector:
         if len(self.bounds) == 2:
             plt.close()
 
-    def applyBounds(self, low=None, high=None):
+    def apply_bounds(self, low=None, high=None):
         if not self.supress:
             low = min(self.bounds)
             high = max(self.bounds)
@@ -259,10 +264,10 @@ class PeakSelector:
     def __call__(self, event):
         self.points.append([event.xdata, event.ydata])
         if len(self.points) == 3:
-            self.parsePoints()
+            self.parse_points()
             plt.close()
 
-    def parsePoints(self):
+    def parse_points(self):
         self.points.sort()
         wMin = self.points[0][0]
         wMax = self.points[2][0]
@@ -279,7 +284,9 @@ class PeakSelector:
         self.area = sp.integrate.simps(self.u[self.idx], self.w[self.idx])
 
 
-def increaseResolution(w, u, v, n=1000, kind='linear'):
+def increase_resolution(w, u, v, f=4, kind='linear'):
+    n = int(len(w) * f)
+
     new_w = np.linspace(w.min(), w.max(), n)
     new_u = sp.interpolate.interp1d(w, u, kind=kind)(new_w)
     new_v = sp.interpolate.interp1d(w, v, kind=kind)(new_w)

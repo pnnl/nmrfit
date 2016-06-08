@@ -40,16 +40,16 @@ for dataset in folders.keys():
         print(os.path.split(fn)[-1])
         w, u, v, p0, p1 = nmrft.varian_process(os.path.join(fn, 'fid'), os.path.join(fn, 'procpar'))
         bs = nmrft.BoundsSelector(w, u, v, supress=True)
-        w, u, v = bs.applyBounds(low=3.20, high=3.65)
-        w, u, v = nmrft.increaseResolution(w, u, v)
+        w, u, v = bs.apply_bounds(low=3.20, high=3.65)
 
-        u_fit, v_fit, fitParams, error = nmrft.fit_peak(w, u, v, exp.initialConditions, method='Powell', options=None, weights=exp.weights, fitIm=False)
+        fitParams, error = nmrft.fit_peak(w, u, v, exp.initialConditions, method='Powell', options=None, weights=exp.weights, fitIm=False)
         percent = (fitParams[11] + fitParams[14] + fitParams[17] + fitParams[20]) / (fitParams[5] + fitParams[8] + fitParams[11] + fitParams[14] + fitParams[17] + fitParams[20])
 
         results[dataset].append(percent)
         ssd[dataset].append(error)
 
-        # nmrft.plot(w, u, u_fit)
+        w, u, v, u_fit, v_fit = nmrft.generate_fit(w, u, v, fitParams)
+        nmrft.plot(w, u, u_fit)
 
 for dataset in results.keys():
     print(dataset)
