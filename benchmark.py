@@ -42,7 +42,7 @@ for dataset in folders.keys():
         bs = nmrft.BoundsSelector(w, u, v, supress=True)
         w, u, v = bs.apply_bounds(low=3.20, high=3.65)
 
-        fitParams, error = nmrft.fit_peak(w, u, v, exp.initialConditions, method='Powell', options=None, weights=exp.weights, fitIm=False)
+        fitParams, error = nmrft.fit_peak(w, u, v, exp.initialConditions, method='Powell', options=None, weights=exp.weights, fitIm=True)
         percent = (fitParams[11] + fitParams[14] + fitParams[17] + fitParams[20]) / (fitParams[5] + fitParams[8] + fitParams[11] + fitParams[14] + fitParams[17] + fitParams[20])
 
         results[dataset].append(percent)

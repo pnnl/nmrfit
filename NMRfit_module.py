@@ -140,7 +140,7 @@ def fit_peak(w, u, v, x0, method='Powell', options=None, weights=None, fitIm=Fal
 
 
 def generate_fit(w, u, v, result, scale=4):
-    w, u, v = increase_resolution(w, u, v, f=scale)
+    # w, u, v = increase_resolution(w, u, v, f=scale)
     V_fit = np.zeros_like(u)
     I_fit = np.zeros_like(v)
 

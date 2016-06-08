@@ -1,23 +1,26 @@
 import NMRfit_module as nmrft
 import os
 import warnings
-import time
 
 
 warnings.filterwarnings("ignore")
 
 
 class Tutorial:
-    def __init__(self):
+    def __init__(self, outF):
         self.inDir = "./Data/organophosphate/"
-        self.datasets = ["dc-0445_cdcl3_kilimanjaro_22c_1d_1H_1_031816.fid",
-                         "dc-919V_cdcl3_kilimanjaro_25c_1d_1H_1_031916.fid",
-                         "dc-070_cdcl3_kilimanjaro_25c_1d_1H_1_032016.fid"]
+        # self.datasets = ["dc-0445_cdcl3_kilimanjaro_22c_1d_1H_1_031816.fid",
+        #                  "dc-919V_cdcl3_kilimanjaro_25c_1d_1H_1_031916.fid",
+        #                  "dc-070_cdcl3_kilimanjaro_25c_1d_1H_1_032016.fid"]
+        self.datasets = ["dc-0445_cdcl3_kilimanjaro_22c_1d_1H_1_031816.fid"] * 5
+        self.outF = open(outF, 'w')
         self.dataIndex = 0
         self.failedAttempts = 0
         self.firstTimePrompt()
         while self.dataIndex < len(self.datasets):
             self.run(self.datasets[self.dataIndex])
+        self.outF.close()
+        print('Done!')
 
     def firstTimePrompt(self):
         response = input("Welcome to the exciting new NMR fitting utility!  Is this your first time? (y/n) ")
@@ -77,7 +80,7 @@ class Tutorial:
                   "I am going to show you the results, and your job is to assess whether all the peaks were fit.")
         else:
             print("Results ready.")
-        input("Press enter when ready.")
+        input("Press enter when ready.  Simply close the plot when finished.")
         print()
 
     def fitEvaluation2(self):
@@ -86,8 +89,7 @@ class Tutorial:
         response = response.lower()
 
         if response == 'y' or response == 'yes':
-            self.dataIndex += 1
-            nLeft = len(self.datasets) - self.dataIndex
+            nLeft = len(self.datasets) - self.dataIndex - 1
             print("Great! We still have", str(nLeft), "more datasets for you to try.\n")
             return True
         if response == 'n' or response == 'no':
@@ -156,17 +158,28 @@ class Tutorial:
         percent = (fitParams[11] + fitParams[14] + fitParams[17] + fitParams[20]) / (fitParams[5] + fitParams[8] + fitParams[11] + fitParams[14] + fitParams[17] + fitParams[20])
 
         w, u, v, u_fit, v_fit = nmrft.generate_fit(w, u, v, fitParams, scale=4)
-        nmrft.plot(w, u, u_fit)
 
         self.fitEvaluation()
+        nmrft.plot(w, u, u_fit)
+
         success = self.fitEvaluation2()
         if success is True:
-            # store results
-            pass
+            self.outF.write('Dataset: ' + self.datasets[self.dataIndex] + '\n')
+            self.outF.write('Failed attempts: ' + str(self.failedAttempts) + '\n')
+            self.failedAttempts = 0
+            self.outF.write('Percent: ' + str(percent) + '\n')
+            self.outF.write('SSD: ' + str(error) + '\n')
+
+            out = ''
+            for j in fitParams:
+                out += ' ' + str(j)
+            self.outF.write('Fit params:' + out + '\n')
+            self.outF.write('\n')
+            self.dataIndex += 1
         else:
             self.failedAttempts += 1
 
         self.futurePrompts()
 
 if __name__ == '__main__':
-    t = Tutorial()
+    t = Tutorial('./sean.txt')
