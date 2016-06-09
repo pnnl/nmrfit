@@ -12,7 +12,7 @@ class Tutorial:
         # self.datasets = ["dc-0445_cdcl3_kilimanjaro_22c_1d_1H_1_031816.fid",
         #                  "dc-919V_cdcl3_kilimanjaro_25c_1d_1H_1_031916.fid",
         #                  "dc-070_cdcl3_kilimanjaro_25c_1d_1H_1_032016.fid"]
-        self.datasets = ["dc-0445_cdcl3_kilimanjaro_22c_1d_1H_1_031816.fid"] * 5
+        self.datasets = ["dc-919V_cdcl3_kilimanjaro_25c_1d_1H_1_031916.fid"] * 10
         self.outF = open(outF, 'w')
         self.dataIndex = 0
         self.failedAttempts = 0
@@ -72,7 +72,6 @@ class Tutorial:
             print("The fitting algorithm will now run.  This takes some time, so be patient.")
         else:
             print("Data is now being fit.")
-        print()
 
     def fitEvaluation(self):
         if self.firstTime is True:
@@ -90,7 +89,8 @@ class Tutorial:
 
         if response == 'y' or response == 'yes':
             nLeft = len(self.datasets) - self.dataIndex - 1
-            print("Great! We still have", str(nLeft), "more datasets for you to try.\n")
+            if nLeft > 0:
+                print("Great! We still have", str(nLeft), "more datasets for you to try.\n")
             return True
         if response == 'n' or response == 'no':
             print("It happens.  I'm going to have you try again.\n")
@@ -182,4 +182,4 @@ class Tutorial:
         self.futurePrompts()
 
 if __name__ == '__main__':
-    t = Tutorial('./sean.txt')
+    t = Tutorial('./sean_919V.txt')
