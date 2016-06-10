@@ -147,6 +147,9 @@ def generate_fit(w, u, v, result, scale=4):
     theta, r, yOff = result[:3]
     res = result[3:]
 
+    V_data = u * np.cos(theta) - v * np.sin(theta)
+    I_data = u * np.sin(theta) + v * np.cos(theta)
+
     for i in range(0, len(res), 3):
         sigma = res[i]
         mu = res[i + 1]
@@ -159,6 +162,8 @@ def generate_fit(w, u, v, result, scale=4):
     v_fit = -V_fit * np.sin(theta) + I_fit * np.cos(theta)
 
     return w, u, v, u_fit, v_fit
+
+    # return w, V_data, I_data, V_fit, I_fit
 
 
 def find_peak(X, re, est, searchwidth=0.5):
