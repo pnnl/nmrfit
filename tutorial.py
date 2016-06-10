@@ -9,13 +9,13 @@ warnings.filterwarnings("ignore")
 class Tutorial:
     def __init__(self, outF):
         self.datasets = []
-        # # for user test
-        # self.inDir = "./Data/organophosphate/"
-        # self.datasets = ["dc-919V_cdcl3_kilimanjaro_25c_1d_1H_1_031916.fid"] * 10
+        # for user test
+        self.inDir = "./Data/organophosphate/"
+        self.datasets = ["dc-919V_cdcl3_kilimanjaro_25c_1d_1H_1_031916.fid"] * 10
 
-        # for blinded evaluation
-        self.inDir = "./Data/blindedData"
-        self.datasets = ["dc_4a_cdcl3_kilimanjaro_25c_1d_1H_2_043016.fid"] * 3
+        # # for blinded evaluation
+        # self.inDir = "./Data/blindedData"
+        # self.datasets = ["dc_4b_cdcl3_kilimanjaro_25c_1d_1H_1_043016.fid"] * 3
 
         self.outF = open(outF, 'w')
         self.dataIndex = 0
@@ -186,4 +186,4 @@ class Tutorial:
         self.futurePrompts()
 
 if __name__ == '__main__':
-    t = Tutorial('./sean_dc_4a_cdcl3_kilimanjaro_25c_1d_1H_2_043016.fid.txt')
+    t = Tutorial('./rick_919V.txt')
