@@ -21,6 +21,76 @@ __license__ = 'Battelle Memorial Institute BSD-like license'
 __version__ = '2.0.0'
 
 
+class PeakFitter:
+    def __init__(self, w, u, v, x0, weights=None, fitIm=False):
+        self.result = Result()
+        self.data = Data()
+
+        self.data.w = w
+        self.data.u = u
+        self.data.v = v
+
+        self.x0 = x0
+        self.weights = weights
+        self.fitIm = fitIm
+
+    def fit(self, method='Powell', options=None, weights=None, fitIm=False):
+        '''
+        Fit a number of Voigt functions to the input data by objective function minimization.  By default, only the real
+        component of the data is used when performing the fit.  The imaginary data can be used, but at a severe performance
+        penalty (often with little to no gains in goodness of fit).
+        '''
+        result = sp.optimize.minimize(objective, self.x0, args=(self.data.w, self.data.u, self.data.v, kk_relation_vectorized, self.weights, self.fitIm), method=method, options=options)
+
+        self.result.fitParams = result.x
+        self.result.error = result.fun
+
+    def generate_result(self, scale=10):
+        '''
+        Uses the output of fit to generate results.  Because the data can be optionally upsampled,
+        a new copy of u and v are also returned.
+        '''
+        w = np.linspace(self.data.w.min(), self.data.w.max(), scale * self.data.w.shape[0])
+        V_fit = np.zeros_like(w)
+        I_fit = np.zeros_like(w)
+
+        theta, r, yOff = self.result.fitParams[:3]
+        res = self.result.fitParams[3:]
+
+        V_data = self.data.u * np.cos(theta) - self.data.v * np.sin(theta)
+        I_data = self.data.u * np.sin(theta) + self.data.v * np.cos(theta)
+
+        for i in range(0, len(res), 3):
+            sigma = res[i]
+            mu = res[i + 1]
+            a = res[i + 2]
+
+            V_fit = V_fit + voigt_1D(w, r, yOff, sigma, mu, a)
+            I_fit = I_fit + kk_relation_vectorized(w, r, yOff, sigma, mu, a)
+
+        u_fit = V_fit * np.cos(theta) + I_fit * np.sin(theta)
+        v_fit = -V_fit * np.sin(theta) + I_fit * np.cos(theta)
+
+        self.result.u = u_fit
+        self.result.v = v_fit
+        self.result.V = V_fit
+        self.result.I = I_fit
+        self.result.w = w
+
+        self.data.V = V_data
+        self.data.I = I_data
+
+
+class Result:
+    def __init__(self):
+        pass
+
+
+class Data:
+    def __init__(self):
+        pass
+
+
 def plot(x, y1, y2=None):
     """
     Plots up to two functions of the same independent variable. Useful for plotting both real and imaginary components,
@@ -126,48 +196,6 @@ def objective(x0, w, u, v, kk, weights, fitIm):
         return V_residual
 
 
-def fit_peak(w, u, v, x0, method='Powell', options=None, weights=None, fitIm=False):
-    '''
-    Fit a number of Voigt functions to the input data by objective function minimization.  By default, only the real
-    component of the data is used when performing the fit.  The imaginary data can be used, but at a severe performance
-    penalty (often with little to no gains in goodness of fit).
-    '''
-    result = sp.optimize.minimize(objective, x0, args=(w, u, v, kk_relation_vectorized, weights, fitIm), method=method, options=options)
-
-    return result.x, result.fun
-
-
-def generate_fit(w, u, v, result, scale=4):
-    '''
-    Uses the output of fit_peak() to generate results.  Because the data can be optionally upsampled,
-    a new copy of u and v are also returned.
-    '''
-    w, u1, v1 = increase_resolution(w, u, v, f=scale)
-    V_fit = np.zeros_like(u1)
-    I_fit = np.zeros_like(v1)
-
-    theta, r, yOff = result[:3]
-    res = result[3:]
-
-    V_data = u1 * np.cos(theta) - v1 * np.sin(theta)
-    I_data = u1 * np.sin(theta) + v1 * np.cos(theta)
-
-    for i in range(0, len(res), 3):
-        sigma = res[i]
-        mu = res[i + 1]
-        a = res[i + 2]
-
-        V_fit = V_fit + voigt_1D(w, r, yOff, sigma, mu, a)
-        I_fit = I_fit + kk_relation_vectorized(w, r, yOff, sigma, mu, a)
-
-    u_fit = V_fit * np.cos(theta) + I_fit * np.sin(theta)
-    v_fit = -V_fit * np.sin(theta) + I_fit * np.cos(theta)
-
-    return w, u1, v1, u_fit, v_fit
-
-    # return w, V_data, I_data, V_fit, I_fit
-
-
 def find_peak(X, re, est, searchwidth=0.5):
     """Find peak within tolerance
     """
@@ -232,7 +260,7 @@ class BoundsSelector:
             self.fig = plt.figure()  # figsize=(9, 5), dpi=300
             plt.plot(w, u)
             plt.axis([w[-1], w[0], min(u) - max(u) * 0.05, max(u) * 1.1])
-            plt.gca().invert_xaxis()
+            # plt.gca().invert_xaxis()
             self.cid = self.fig.canvas.mpl_connect('button_press_event', self)
             self.bounds = []
             plt.show()
@@ -289,16 +317,6 @@ class PeakSelector:
         self.bounds = [wMin, wMax]
 
         self.area = sp.integrate.simps(self.u[self.idx], self.w[self.idx])
-
-
-def increase_resolution(w, u, v, f=4, kind='linear'):
-    n = int(len(w) * f)
-
-    new_w = np.linspace(w.min(), w.max(), n)
-    new_u = sp.interpolate.interp1d(w, u, kind=kind)(new_w)
-    new_v = sp.interpolate.interp1d(w, v, kind=kind)(new_w)
-
-    return new_w, new_u, new_v
 
 
 def shift_phase(u, v, theta):

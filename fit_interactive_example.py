@@ -7,6 +7,7 @@ Copyright (c) 2015 Battelle Memorial Institute.
 # Import required modules and libraries
 import NMRfit_module as nmrft
 import os
+import matplotlib.pyplot as plt
 
 
 # Load and process data
@@ -37,7 +38,15 @@ x0 = [0, 0.1, 0,                            # shared params
       p1.width / 10, s2.loc, s2.area]       # s2 init
 
 # Fit peak and satellites
-fitParams, error = nmrft.fit_peak(w, u, v, x0, method='Powell', options=None, weights=weights, fitIm=False)
+pf = nmrft.PeakFitter(w, u, v, x0, weights=weights)
+pf.fit()
+pf.generate_result()
+
+fitParams = pf.result.fitParams
+plt.plot(pf.data.w, pf.data.V)
+plt.plot(pf.result.w, pf.result.V)
+plt.show()
+
 
 # print fit parameters
 print('theta, r, yOff')
@@ -50,11 +59,6 @@ print(fitParams[9:12])      # s2 -- 11
 # calculate area ratios
 percent = (fitParams[11] + fitParams[8]) / (fitParams[5] + fitParams[8] + fitParams[11])
 print('\narea ratio:', percent)
-
-# plot fit results in u-v space
-w, u, v, u_fit, v_fit = nmrft.generate_fit(w, u, v, fitParams, scale=4)
-nmrft.plot(w, u, u_fit)
-nmrft.plot(w, v, v_fit)
 
 # noiseS = 3.8
 # noiseE = 4.0
