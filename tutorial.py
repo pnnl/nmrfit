@@ -8,14 +8,13 @@ warnings.filterwarnings("ignore")
 
 class Tutorial:
     def __init__(self, outF):
-        self.datasets = []
-        # for user test
-        self.inDir = "./Data/organophosphate/"
-        self.datasets = ["dc-919V_cdcl3_kilimanjaro_25c_1d_1H_1_031916.fid"] * 10
+        # # for user test
+        # self.inDir = "./Data/organophosphate/"
+        # self.datasets = ["dc-919V_cdcl3_kilimanjaro_25c_1d_1H_1_031916.fid"] * 10
 
-        # # for blinded evaluation
-        # self.inDir = "./Data/blindedData"
-        # self.datasets = ["dc_4b_cdcl3_kilimanjaro_25c_1d_1H_1_043016.fid"] * 3
+        # for blinded evaluation
+        self.inDir = "./Data/blindedData"
+        self.datasets = ["dc_4d_cdcl3_kilimanjaro_25c_1d_1H_2_050116.fid"] * 3
 
         self.outF = open(outF, 'w')
         self.dataIndex = 0
@@ -158,7 +157,7 @@ class Tutorial:
         self.fittingPrompt()
 
         # Fit peak and satellites
-        fitParams, error = nmrft.fit_peak(w, u, v, x0, method='Powell', options=None, weights=weights, fitIm=False)
+        fitParams, error = nmrft.fit_peak(w, u, v, x0, method='SLSQP', options=None, weights=weights, fitIm=False)
         percent = (fitParams[11] + fitParams[14] + fitParams[17] + fitParams[20]) / (fitParams[5] + fitParams[8] + fitParams[11] + fitParams[14] + fitParams[17] + fitParams[20])
 
         w, u, v, u_fit, v_fit = nmrft.generate_fit(w, u, v, fitParams, scale=4)
@@ -186,4 +185,4 @@ class Tutorial:
         self.futurePrompts()
 
 if __name__ == '__main__':
-    t = Tutorial('./rick_919V.txt')
+    t = Tutorial('./sean_dc_4d_cdcl3_kilimanjaro_25c_1d_1H_2_050116.fid.txt')
