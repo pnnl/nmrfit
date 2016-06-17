@@ -21,28 +21,27 @@ __license__ = 'Battelle Memorial Institute BSD-like license'
 __version__ = '2.0.0'
 
 
-def plot(X, Y_re, Y_im=None):
-    """Plot function
+def plot(x, y1, y2=None):
     """
-    # plt.figure(figsize=(9, 5), dpi=300)
-    plt.plot(X, Y_re)
-    if Y_im is not None:
-        plt.plot(X, Y_im)
-        Y_min = min(np.min(Y_re), np.min(Y_im))
-        Y_max = max(np.max(Y_re), np.max(Y_im))
+    Plots up to two functions of the same independent variable. Useful for plotting both real and imaginary components,
+    or comparing a fit to the data.
+    """
+    plt.plot(x, y1)
+    if y2 is not None:
+        plt.plot(x, y2)
+        y_min = min(np.min(y1), np.min(y2))
+        y_max = max(np.max(y1), np.max(y2))
     else:
-        Y_min = min(Y_re)
-        Y_max = max(Y_re)
-    plt.axis([X[-1], X[0], Y_min - Y_max * 0.05, Y_max * 1.1])
+        y_min = min(y1)
+        y_max = max(y2)
+    plt.axis([x[-1], x[0], y_min - y_max * 0.05, y_max * 1.1])
     plt.gca().invert_xaxis()
     plt.show()
-    return
 
 
 def voigt_1D(x, r, yOff, sigma, mu, a):
     '''
-    Calculates a Voigt function over the range x based on the
-    relevant properties of the distribution.
+    Calculates a Voigt function over the range x based on the relevant properties of the distribution.
     '''
     L = (2 / (np.pi * sigma)) * 1 / (1 + ((x - mu) / (0.5 * sigma))**2)
     G = (2 / sigma) * np.sqrt(np.log(2) / np.pi) * np.exp(-((x - mu) / (sigma / (2 * np.sqrt(np.log(2)))))**2)
@@ -51,8 +50,9 @@ def voigt_1D(x, r, yOff, sigma, mu, a):
 
 
 def kk_equation(x, r, yOff, sigma, mu, a, w):
-    '''The equation inside the integral in the Kramers-Kronig relation.
-       Used to evaluate the V->I transform.
+    '''
+    The equation inside the integral in the Kramers-Kronig relation. Used to evaluate the V->I transform.
+    This specific implementation has been arranged such that the singularity at x==w is accounted for.
     '''
     L1 = (2 / (np.pi * sigma)) * 1 / (1 + ((x + w - mu) / (0.5 * sigma))**2)
     G1 = (2 / sigma) * np.sqrt(np.log(2) / np.pi) * np.exp(-((x + w - mu) / (sigma / (2 * np.sqrt(np.log(2)))))**2)
@@ -67,15 +67,19 @@ def kk_equation(x, r, yOff, sigma, mu, a, w):
 
 
 def kk_relation(w, r, yOff, sigma, mu, a):
-    '''Performs the integral required of the Kramers-Kronig relation using the kk_equation function
-       for a given w.
+    '''
+    Performs the integral required of the Kramers-Kronig relation using the kk_equation function
+    for a given w.  Note that this integral is only evaluated for a single w.  The vectorized form
+    (kk_relation_vectorized) may be used to calulate the Kramers-Kronig relation for all w.
     '''
     res, err = sp.integrate.quad(kk_equation, 0, np.inf, args=(r, yOff, sigma, mu, a, w))   # , weight='cauchy', wvar=0)
     return res / np.pi
 
 
 def objective(x0, w, u, v, kk, weights, fitIm):
-    '''Fits the data using a least-squares approach.
+    '''
+    The objective function used to fit supplied data.  Evaluates sum of squared differences
+    between the fit and the data.
     '''
     theta, r, yOff = x0[:3]
     x0 = x0[3:]
@@ -123,13 +127,10 @@ def objective(x0, w, u, v, kk, weights, fitIm):
 
 
 def fit_peak(w, u, v, x0, method='Powell', options=None, weights=None, fitIm=False):
-    '''Fit a Voigt body using both real and complex data.
-            Positional arguments:
-                w - the frequency vector
-                u - the real component of the power spectrum
-                v - the imaginary component of the power spectrum
-            Keyword arguments:
-
+    '''
+    Fit a number of Voigt functions to the input data by objective function minimization.  By default, only the real
+    component of the data is used when performing the fit.  The imaginary data can be used, but at a severe performance
+    penalty (often with little to no gains in goodness of fit).
     '''
     result = sp.optimize.minimize(objective, x0, args=(w, u, v, kk_relation_vectorized, weights, fitIm), method=method, options=options)
 
@@ -137,15 +138,19 @@ def fit_peak(w, u, v, x0, method='Powell', options=None, weights=None, fitIm=Fal
 
 
 def generate_fit(w, u, v, result, scale=4):
-    # w, u, v = increase_resolution(w, u, v, f=scale)
-    V_fit = np.zeros_like(u)
-    I_fit = np.zeros_like(v)
+    '''
+    Uses the output of fit_peak() to generate results.  Because the data can be optionally upsampled,
+    a new copy of u and v are also returned.
+    '''
+    w, u1, v1 = increase_resolution(w, u, v, f=scale)
+    V_fit = np.zeros_like(u1)
+    I_fit = np.zeros_like(v1)
 
     theta, r, yOff = result[:3]
     res = result[3:]
 
-    V_data = u * np.cos(theta) - v * np.sin(theta)
-    I_data = u * np.sin(theta) + v * np.cos(theta)
+    V_data = u1 * np.cos(theta) - v1 * np.sin(theta)
+    I_data = u1 * np.sin(theta) + v1 * np.cos(theta)
 
     for i in range(0, len(res), 3):
         sigma = res[i]
@@ -158,7 +163,7 @@ def generate_fit(w, u, v, result, scale=4):
     u_fit = V_fit * np.cos(theta) + I_fit * np.sin(theta)
     v_fit = -V_fit * np.sin(theta) + I_fit * np.cos(theta)
 
-    return w, u, v, u_fit, v_fit
+    return w, u1, v1, u_fit, v_fit
 
     # return w, V_data, I_data, V_fit, I_fit
 
