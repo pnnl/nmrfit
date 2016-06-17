@@ -40,12 +40,9 @@ def plot(X, Y_re, Y_im=None):
 
 
 def voigt_1D(x, r, yOff, sigma, mu, a):
-    '''Fit a Voigt body.
-            sigma - modulates the "width" of the peak
-            mu    - center of the peak
-            a     - area of peak
-            r     - Gaussian/Lorentzian ratio
-            yOff  - y offset
+    '''
+    Calculates a Voigt function over the range x based on the
+    relevant properties of the distribution.
     '''
     L = (2 / (np.pi * sigma)) * 1 / (1 + ((x - mu) / (0.5 * sigma))**2)
     G = (2 / sigma) * np.sqrt(np.log(2) / np.pi) * np.exp(-((x - mu) / (sigma / (2 * np.sqrt(np.log(2)))))**2)
