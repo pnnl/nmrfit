@@ -3,7 +3,9 @@ import os
 import NMRfit_module as nmrft
 import numpy as np
 import InitialConditions
+import warnings
 
+warnings.filterwarnings("ignore")
 
 # set input directory
 inDir = './Data/organophosphate'
@@ -53,8 +55,9 @@ for dataset in folders.keys():
 
 for dataset in results.keys():
     print(dataset)
-    print('mean:', np.mean(results[dataset]))
-    print('stdev:', np.std(results[dataset]))
-    print('mean ssd', np.mean(ssd[dataset]))
-    print('stdev ssd', np.std(ssd[dataset]))
+    print("Predictions:")
+    print(results[dataset])
+    print()
+    print("Error:")
+    print(ssd[dataset])
     print()
