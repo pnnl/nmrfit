@@ -16,9 +16,9 @@ class FitUtility:
     ----------
     data : instance of Data class
         Container for ndarrays relevant to the fitting process (w, u, v, V, I) of the data.
-    x0 : list
+    x0 : list(float)
         Initial conditions for the minimizer.
-    weights : list, optional
+    weights : list(list(float), float), optional
         Range, weight pairs for intervals corresponding to each peak.
     fitIm : bool, optional
         Flag to determine whether the imaginary component of the data will be fit.  Default is False.

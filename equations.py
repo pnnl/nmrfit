@@ -121,13 +121,13 @@ def objective(x0, w, u, v, weights, fitIm):
 
     Parameters
     ----------
-    x0 : list
+    x0 : list(float)
         Initial conditions for the minimizer.
     w : ndarray
         Array of frequency data.
     u, v : ndarray
         Arrays of the real and imaginary components of the frequency response.
-    weights : list
+    weights : list(list(float), float)
         Range, weight pairs for intervals corresponding to each peak.
     fitIm : bool
         Flag to determine whether the imaginary component of the data will be fit.
