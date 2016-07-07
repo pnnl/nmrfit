@@ -11,7 +11,7 @@ import os
 
 # Load and process data
 inDir = "./Data/organophosphate/dc-070_cdcl3_kilimanjaro_25c_1d_1H_1_032716.fid"
-w, u, v, p0, p1 = nmrft.varian_process(os.path.join(inDir, 'fid'), os.path.join(inDir, 'procpar'))
+w, u, v, p0 = nmrft.varian_process(os.path.join(inDir, 'fid'), os.path.join(inDir, 'procpar'))
 
 # initiate bounds selection
 bs = nmrft.BoundsSelector(w, u, v, supress=False)

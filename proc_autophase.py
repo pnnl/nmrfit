@@ -11,7 +11,6 @@ from __future__ import print_function
 import numpy as np
 import scipy.optimize
 
-#from .proc_base import ps
 
 def ps(data, p0=0.0, p1=0.0, inv=False):
     """
@@ -130,7 +129,7 @@ def _ps_acme_score(ph, data):
     data = np.real(s0)
 
     # Calculation of first derivatives
-    ds1 = np.abs((data[1:]-data[:-1]) / (stepsize*2))
+    ds1 = np.abs((data[1:] - data[:-1]) / (stepsize * 2))
     p1 = ds1 / np.sum(ds1)
 
     # Calculation of entropy
@@ -145,7 +144,7 @@ def _ps_acme_score(ph, data):
     sumas = np.sum(as_)
 
     if sumas < 0:
-        pfun = pfun + np.sum((as_/2) ** 2)
+        pfun = pfun + np.sum((as_ / 2) ** 2)
 
     p = 1000 * pfun
 
@@ -176,8 +175,8 @@ def _ps_peak_minima_score(ph, data):
     data = np.real(s0)
 
     i = np.argmax(data)
-    mina = np.min(data[i-100:i])
-    minb = np.min(data[i:i+100])
+    mina = np.min(data[i - 100:i])
+    minb = np.min(data[i:i + 100])
 
     return np.abs(mina - minb)
 
