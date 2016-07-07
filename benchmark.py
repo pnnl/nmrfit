@@ -44,20 +44,20 @@ for dataset in folders.keys():
         bs = nmrft.BoundsSelector(w, u, v, supress=True)
         w, u, v = bs.apply_bounds(low=3.20, high=3.65)
 
-        fitParams, error = nmrft.fit_peak(w, u, v, exp.initialConditions, method='Powell', options=None, weights=exp.weights, fitIm=True)
+        fitParams, error = nmrft.fit_peak(w, u, v, exp.initialConditions, method='Powell', options=None, weights=exp.weights, fitIm=False)
         percent = (fitParams[11] + fitParams[14] + fitParams[17] + fitParams[20]) / (fitParams[5] + fitParams[8] + fitParams[11] + fitParams[14] + fitParams[17] + fitParams[20])
 
         results[dataset].append(percent)
         ssd[dataset].append(error)
 
-        w, u, v, u_fit, v_fit = nmrft.generate_fit(w, u, v, fitParams, scale=4)
-        nmrft.plot(w, u, u_fit)
+        # w, u, v, u_fit, v_fit = nmrft.generate_fit(w, u, v, fitParams, scale=4)
+        # nmrft.plot(w, u, u_fit)
 
 for dataset in results.keys():
     print(dataset)
     print("Predictions:")
-    print(results[dataset])
+    for r in results[dataset]: print(r)
     print()
     print("Error:")
-    print(ssd[dataset])
+    for s in ssd[dataset]: print(s)
     print()
