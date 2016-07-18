@@ -1,6 +1,7 @@
-import NMRfit_module as nmrft
+import NMRfit as nmrft
 import os
 import warnings
+import matplotlib.pyplot as plt
 
 
 warnings.filterwarnings("ignore")
@@ -14,7 +15,7 @@ class Tutorial:
 
         # for blinded evaluation
         self.inDir = "./Data/blindedData"
-        self.datasets = ["dc_4d_cdcl3_kilimanjaro_25c_1d_1H_2_050116.fid"] * 3
+        self.datasets = [outF[7:-4]] * 3
 
         self.outF = open(outF, 'w')
         self.dataIndex = 0
@@ -115,55 +116,52 @@ class Tutorial:
     def run(self, dataset):
         # Load and process data
         path = os.path.join(self.inDir, dataset)
-        w, u, v, p0, p1 = nmrft.varian_process(os.path.join(path, 'fid'), os.path.join(path, 'procpar'))
+        w, u, v, theta0 = nmrft.varian_process(os.path.join(path, 'fid'), os.path.join(path, 'procpar'))
+
+        # create data object
+        data = nmrft.Data(w, u, v, theta0)
 
         self.boundsSelectionPrompt()
 
         # initiate bounds selection
-        bs = nmrft.BoundsSelector(w, u, v, supress=False)
-        w, u, v = bs.apply_bounds()
+        data.select_bounds()
 
         self.peakSelectionPrompt()
 
-        # shift by phase approximation
-        V, I = nmrft.shift_phase(u, v, p0)
-
-        # get approximate initial conditions
-        p1 = nmrft.PeakSelector(w, V, I)
-        p2 = nmrft.PeakSelector(w, V, I)
-
-        s1 = nmrft.PeakSelector(w, V, I)
-        s2 = nmrft.PeakSelector(w, V, I)
-        s3 = nmrft.PeakSelector(w, V, I)
-        s4 = nmrft.PeakSelector(w, V, I)
+        # interactively select peaks and satellites
+        p = data.select_peaks(2)
+        s = data.select_satellites(4)
 
         # weights across ROIs
         weights = [['all', 1.0],
                    ['all', 1.0],
-                   [s1.bounds, p1.height / s1.height],
-                   [s2.bounds, p1.height / s2.height],
-                   [s3.bounds, p1.height / s3.height],
-                   [s4.bounds, p1.height / s4.height]]
+                   [s[0].bounds, p[0].height / s[0].height],
+                   [s[1].bounds, p[0].height / s[1].height],
+                   [s[2].bounds, p[0].height / s[2].height],
+                   [s[3].bounds, p[0].height / s[3].height]]
 
         # initial conditions of the form [theta, r, yOff, sigma_n, mu_n, a_n,...]
-        x0 = [0, 0.1, 0,                            # shared params
-              p1.width / 10, p1.loc, p1.area,       # p1 init
-              p2.width / 10, p2.loc, p2.area,       # p2 init
-              p1.width / 10, s1.loc, s1.area,       # s1 init
-              p1.width / 10, s2.loc, s2.area,       # s2 init
-              p1.width / 10, s3.loc, s3.area,       # s3 init
-              p1.width / 10, s4.loc, s4.area]       # s4 init
+        x0 = [0, 0.1, 0,                                  # shared params
+              p[0].width / 10, p[0].loc, p[0].area,       # p1 init
+              p[1].width / 10, p[1].loc, p[1].area,       # p2 init
+              p[1].width / 10, s[0].loc, s[0].area,       # s1 init
+              p[1].width / 10, s[1].loc, s[1].area,       # s2 init
+              p[1].width / 10, s[2].loc, s[2].area,       # s3 init
+              p[1].width / 10, s[3].loc, s[3].area]       # s4 init
 
         self.fittingPrompt()
 
-        # Fit peak and satellites
-        fitParams, error = nmrft.fit_peak(w, u, v, x0, method='SLSQP', options=None, weights=weights, fitIm=False)
-        percent = (fitParams[11] + fitParams[14] + fitParams[17] + fitParams[20]) / (fitParams[5] + fitParams[8] + fitParams[11] + fitParams[14] + fitParams[17] + fitParams[20])
+        # fit data
+        fit = nmrft.FitUtility(data, x0, weights=weights)
 
-        w, u, v, u_fit, v_fit = nmrft.generate_fit(w, u, v, fitParams, scale=4)
+        # generate result
+        res = fit.generate_result(scale=10)
 
-        self.fitEvaluation()
-        nmrft.plot(w, u, u_fit)
+        plt.plot(data.w, data.v)
+        plt.plot(res.w, res.v)
+        plt.show()
+
+        percent = (res.params[11] + res.params[14] + res.params[17] + res.params[20]) / (res.params[5] + res.params[8] + res.params[11] + res.params[14] + res.params[17] + res.params[20])
 
         success = self.fitEvaluation2()
         if success is True:
@@ -171,10 +169,10 @@ class Tutorial:
             self.outF.write('Failed attempts: ' + str(self.failedAttempts) + '\n')
             self.failedAttempts = 0
             self.outF.write('Percent: ' + str(percent) + '\n')
-            self.outF.write('SSD: ' + str(error) + '\n')
+            self.outF.write('SSD: ' + str(res.error) + '\n')
 
             out = ''
-            for j in fitParams:
+            for j in res.params:
                 out += ' ' + str(j)
             self.outF.write('Fit params:' + out + '\n')
             self.outF.write('\n')
@@ -185,4 +183,4 @@ class Tutorial:
         self.futurePrompts()
 
 if __name__ == '__main__':
-    t = Tutorial('./sean_dc_4d_cdcl3_kilimanjaro_25c_1d_1H_2_050116.fid.txt')
+    t = Tutorial('./sean_dc_4a_cdcl3_kilimanjaro_25c_1d_1H_3_070916.fid.txt')
