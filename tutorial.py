@@ -155,7 +155,7 @@ class Tutorial:
         fit = nmrft.FitUtility(data, x0, weights=weights)
 
         # generate result
-        res = fit.generate_result(scale=10)
+        res = fit.generate_result(scale=1)
 
         plt.plot(data.w, data.v)
         plt.plot(res.w, res.v)
