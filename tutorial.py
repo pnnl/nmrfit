@@ -20,7 +20,8 @@ class Tutorial:
         self.outF = open(outF, 'w')
         self.dataIndex = 0
         self.failedAttempts = 0
-        self.firstTimePrompt()
+        # self.firstTimePrompt()
+        self.firstTime = False
         while self.dataIndex < len(self.datasets):
             self.run(self.datasets[self.dataIndex])
         self.outF.close()
@@ -121,24 +122,25 @@ class Tutorial:
         # create data object
         data = nmrft.Data(w, u, v, theta0)
 
-        self.boundsSelectionPrompt()
+        # self.boundsSelectionPrompt()
 
         # initiate bounds selection
-        data.select_bounds()
+        data.select_bounds(low=3.2, high=3.6)
 
-        self.peakSelectionPrompt()
+        # self.peakSelectionPrompt()
 
         # interactively select peaks and satellites
         p = data.select_peaks(2)
         s = data.select_satellites(4)
 
+        sca = 50
         # weights across ROIs
         weights = [['all', 1.0],
                    ['all', 1.0],
-                   [s[0].bounds, p[0].height / s[0].height],
-                   [s[1].bounds, p[0].height / s[1].height],
-                   [s[2].bounds, p[0].height / s[2].height],
-                   [s[3].bounds, p[0].height / s[3].height]]
+                   [s[0].bounds, sca * p[0].height / s[0].height],
+                   [s[1].bounds, sca * p[0].height / s[1].height],
+                   [s[2].bounds, sca * p[0].height / s[2].height],
+                   [s[3].bounds, sca * p[0].height / s[3].height]]
 
         # initial conditions of the form [theta, r, yOff, sigma_n, mu_n, a_n,...]
         x0 = [0, 0.1, 0,                                  # shared params
