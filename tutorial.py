@@ -133,7 +133,7 @@ class Tutorial:
         p = data.select_peaks(2)
         s = data.select_satellites(4)
 
-        sca = 50
+        sca = 30
         # weights across ROIs
         weights = [['all', 1.0],
                    ['all', 1.0],
@@ -185,4 +185,4 @@ class Tutorial:
         self.futurePrompts()
 
 if __name__ == '__main__':
-    t = Tutorial('./sean_dc_4a_cdcl3_kilimanjaro_25c_1d_1H_3_070916.fid.txt')
+    t = Tutorial('./sean_dc_4f_cdcl3_kilimanjaro_25c_1d_1H_5_070916.fid.txt')
