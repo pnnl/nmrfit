@@ -2,7 +2,7 @@ import numpy as np
 import scipy as sp
 import scipy.integrate
 
-from penalty_functions import exp_penalty
+from .penalty_functions import exp_penalty
 
 
 def kk_equation(x, r, yOff, sigma, mu, a, w):
@@ -116,15 +116,15 @@ def voigt(w, r, yOff, sigma, mu, a):
     return V
 
 
-def objective(x0, w, u, v, weights, fitIm):
+def objective(x, w, u, v, weights, fitIm, x0, p=10):
     '''
     The objective function used to fit supplied data.  Evaluates sum of squared differences
     between the fit and the data.
 
     Parameters
     ----------
-    x0 : list(float)
-        Initial conditions for the minimizer.
+    x : list(float)
+        Parameter vector.
     w : ndarray
         Array of frequency data.
     u, v : ndarray
@@ -133,6 +133,8 @@ def objective(x0, w, u, v, weights, fitIm):
         Range, weight pairs for intervals corresponding to each peak.
     fitIm : bool
         Flag to determine whether the imaginary component of the data will be fit.
+    x0 : list(float)
+        Initial conditions.
 
     Returns
     -------
@@ -141,8 +143,11 @@ def objective(x0, w, u, v, weights, fitIm):
     '''
 
     # global parameters
-    theta, r, yOff = x0[:3]
-    x0 = x0[3:]
+    theta, r, yOff = x[:3]
+    x = x[3:]
+
+    # initial global parameters
+    theta0, r0, yOff0 = x0[:3]
 
     # transform u and v to get V for the data
     V_data = u * np.cos(theta) - v * np.sin(theta)
@@ -152,6 +157,10 @@ def objective(x0, w, u, v, weights, fitIm):
 
     # initialize container for the V residual
     V_residual = 0
+
+    # penalties
+    penalty = exp_penalty(p, 0, 2 * np.pi, theta)  # theta must be betwen +/- pi
+    penalty += exp_penalty(p, 0, 1, r)              # r must be between 0 and 1
 
     if fitIm is True:
         # transform u and v to get I for the data
@@ -164,10 +173,20 @@ def objective(x0, w, u, v, weights, fitIm):
         I_residual = 0
 
     # iteratively add the contribution of each peak to the fits for V and (optionally) I
-    for i in range(0, len(x0), 3):
-        sigma = x0[i]
-        mu = x0[i + 1]
-        a = x0[i + 2]
+    for i in range(0, len(x), 3):
+        # current approximations
+        sigma = x[i]
+        mu = x[i + 1]
+        a = x[i + 2]
+
+        # initial approximations
+        sigma0 = x0[i]
+        mu0 = x0[i + 1]
+        a0 = x0[i + 2]
+
+        penalty += exp_penalty(p * 100, mu0 - 0.05, mu0 + 0.05, mu)
+        penalty += exp_penalty(p, 0, 1E-2, sigma)
+        # penalty += exp_penalty(p, 1E-3, np.inf, abs(a))
 
         V_fit = V_fit + voigt(w, r, yOff, sigma, mu, a)
         if fitIm is True:
@@ -193,9 +212,11 @@ def objective(x0, w, u, v, weights, fitIm):
 
     # return the total residual
     if fitIm is True:
-        return (V_residual + I_residual) / 2.0
+        residual = (V_residual + I_residual) / 2.0
     else:
-        return V_residual
+        residual = V_residual
+
+    return residual + penalty
 
 # the vectorized form can compute the integral for all w
 kk_relation_vectorized = np.vectorize(kk_relation, otypes=[np.float])

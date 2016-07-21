@@ -70,7 +70,7 @@ class FitUtility:
         '''
 
         # call to the minimization function
-        result = sp.optimize.minimize(objective, self.x0, args=(self.data.w, self.data.u, self.data.v, self.weights, self.fitIm), method=self.method, options=self.options)
+        result = sp.optimize.minimize(objective, self.x0, args=(self.data.w, self.data.u, self.data.v, self.weights, self.fitIm, self.x0), method=self.method, options=self.options)
 
         # store the fit parameters and error in the result object
         self.result.params = result.x
