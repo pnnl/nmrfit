@@ -2,10 +2,10 @@ import numpy as np
 import scipy as sp
 import scipy.optimize
 import nmrglue as ng
-import proc_autophase
-from equations import *
-from utility import *
-from containers import *
+from package import proc_autophase
+from package.equations import *
+from package.utility import *
+from package.containers import *
 
 
 class FitUtility:
