@@ -2,6 +2,8 @@ import numpy as np
 import scipy as sp
 import scipy.integrate
 
+from penalty_functions import exp_penalty
+
 
 def kk_equation(x, r, yOff, sigma, mu, a, w):
     '''
