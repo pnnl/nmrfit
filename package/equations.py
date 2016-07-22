@@ -116,7 +116,7 @@ def voigt(w, r, yOff, sigma, mu, a):
     return V
 
 
-def objective(x, w, u, v, weights, fitIm, x0, p=10):
+def objective(x, w, u, v, weights, fitIm, x0, p=100):
     '''
     The objective function used to fit supplied data.  Evaluates sum of squared differences
     between the fit and the data.
