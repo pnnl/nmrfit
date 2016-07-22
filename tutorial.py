@@ -125,7 +125,7 @@ class Tutorial:
         # self.boundsSelectionPrompt()
 
         # initiate bounds selection
-        data.select_bounds(low=3.2, high=3.6)
+        data.select_bounds(low=3.25, high=3.6)
 
         # self.peakSelectionPrompt()
 
@@ -185,4 +185,4 @@ class Tutorial:
         self.futurePrompts()
 
 if __name__ == '__main__':
-    t = Tutorial('./sean_dc_4f_cdcl3_kilimanjaro_25c_1d_1H_5_070916.fid.txt')
+    t = Tutorial('./sean_dc_4d_cdcl3_kilimanjaro_25c_1d_1H_2_050116.fid.txt')
