@@ -2,6 +2,8 @@ import numpy as np
 import scipy as sp
 import scipy.optimize
 import nmrglue as ng
+import matplotlib.pyplot as plt
+
 from package import proc_autophase
 from package.equations import *
 from package.utility import *
@@ -135,6 +137,92 @@ class FitUtility:
         self.data.I = I_data
 
         return self.result
+
+    def summary_plot(self, peaks, satellites):
+        peakBounds = []
+        for p in peaks:
+            low, high = p.bounds
+            peakBounds.append(low)
+            peakBounds.append(high)
+
+        peakRange = [min(peakBounds), max(peakBounds)]
+
+        set1Bounds = []
+        set2Bounds = []
+        for s in satellites:
+            low, high = s.bounds
+            if high < peakRange[0]:
+                set1Bounds.append(low)
+                set1Bounds.append(high)
+            else:
+                set2Bounds.append(low)
+                set2Bounds.append(high)
+
+        set1Range = [min(set1Bounds), max(set1Bounds)]
+        set2Range = [min(set2Bounds), max(set2Bounds)]
+
+        totalIdxData = np.where((self.data.w >= set1Range[0]) & (self.data.w <= set2Range[1]))
+        totalIdxFit = np.where((self.result.w >= set1Range[0]) & (self.result.w <= set2Range[1]))
+
+        peakIdxData = np.where((self.data.w >= peakRange[0]) & (self.data.w <= peakRange[1]))
+        peakIdxFit = np.where((self.result.w >= peakRange[0]) & (self.result.w <= peakRange[1]))
+
+        set1IdxData = np.where((self.data.w >= set1Range[0]) & (self.data.w <= set1Range[1]))
+        set1IdxFit = np.where((self.result.w >= set1Range[0]) & (self.result.w <= set1Range[1]))
+
+        set2IdxData = np.where((self.data.w >= set2Range[0]) & (self.data.w <= set2Range[1]))
+        set2IdxFit = np.where((self.result.w >= set2Range[0]) & (self.result.w <= set2Range[1]))
+
+        # set up figures
+        # real
+        fig_re = plt.figure(1)
+        ax1_re = plt.subplot(211)
+        ax2_re = plt.subplot(234)
+        ax3_re = plt.subplot(235)
+        ax4_re = plt.subplot(236)
+
+        # plot everything
+        ax1_re.plot(self.data.w[totalIdxData], self.data.V[totalIdxData])
+        ax1_re.plot(self.result.w[totalIdxFit], self.result.V[totalIdxFit])
+
+        # plot left sats
+        ax2_re.plot(self.data.w[set1IdxData], self.data.V[set1IdxData])
+        ax2_re.plot(self.result.w[set1IdxFit], self.result.V[set1IdxFit])
+
+        # plot main peaks
+        ax3_re.plot(self.data.w[peakIdxData], self.data.V[peakIdxData])
+        ax3_re.plot(self.result.w[peakIdxFit], self.result.V[peakIdxFit])
+
+        # plot right satellites
+        ax4_re.plot(self.data.w[set2IdxData], self.data.V[set2IdxData])
+        ax4_re.plot(self.result.w[set2IdxFit], self.result.V[set2IdxFit])
+
+        # imag
+        fig_im = plt.figure(2)
+        ax1_im = plt.subplot(211)
+        ax2_im = plt.subplot(234)
+        ax3_im = plt.subplot(235)
+        ax4_im = plt.subplot(236)
+
+        # plot everything
+        ax1_im.plot(self.data.w[totalIdxData], self.data.I[totalIdxData])
+        ax1_im.plot(self.result.w[totalIdxFit], self.result.I[totalIdxFit])
+
+        # plot left sats
+        ax2_im.plot(self.data.w[set1IdxData], self.data.I[set1IdxData])
+        ax2_im.plot(self.result.w[set1IdxFit], self.result.I[set1IdxFit])
+
+        # plot main peaks
+        ax3_im.plot(self.data.w[peakIdxData], self.data.I[peakIdxData])
+        ax3_im.plot(self.result.w[peakIdxFit], self.result.I[peakIdxFit])
+
+        # plot right satellites
+        ax4_im.plot(self.data.w[set2IdxData], self.data.I[set2IdxData])
+        ax4_im.plot(self.result.w[set2IdxFit], self.result.I[set2IdxFit])
+
+        # display
+        plt.tight_layout()
+        plt.show()
 
 
 def varian_process(fidfile, procfile):

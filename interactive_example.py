@@ -1,16 +1,15 @@
 import NMRfit as nmrft
 import os
-import matplotlib.pyplot as plt
 
 
-inDir = "./Data/blindedData/dc_4a_cdcl3_kilimanjaro_25c_1d_1H_1_043016.fid"
+inDir = "./Data/organophosphate/dc-919V_cdcl3_kilimanjaro_25c_1d_1H_1_031916.fid"
 w, u, v, theta0 = nmrft.varian_process(os.path.join(inDir, 'fid'), os.path.join(inDir, 'procpar'))
 
 # create data object
 data = nmrft.Data(w, u, v, theta0)
 
 # bound the data
-data.select_bounds()
+data.select_bounds(low=3.2, high=3.6)
 
 # interactively select peaks and satellites
 p = data.select_peaks(2)
@@ -39,10 +38,5 @@ fit = nmrft.FitUtility(data, x0, weights=weights)
 # generate result
 res = fit.generate_result(scale=1)
 
-plt.plot(data.w, data.v)
-plt.plot(res.w, res.v)
-plt.show()
-
-plt.plot(data.w, data.I)
-plt.plot(res.w, res.I)
-plt.show()
+# plot summary
+fit.summary_plot(p, s)
