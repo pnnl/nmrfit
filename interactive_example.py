@@ -41,12 +41,12 @@ x0 = [data.theta, 1., 0.,                                  # shared params
       s[3].width / 10., s[3].loc, s[3].area]       # s4 init
 
 bounds1 = ((None, None), (0., 1.), (None, None),
-           (small, None), (x0[4] - 0.05, x0[4] + 0.05), (None, None),
-           (small, None), (x0[7] - 0.05, x0[7] + 0.05), (None, None),
-           (small, None), (x0[10] - 0.05, x0[10] + 0.05), (None, None),
-           (small, None), (x0[13] - 0.05, x0[13] + 0.05), (None, None),
-           (small, None), (x0[16] - 0.05, x0[16] + 0.05), (None, None),
-           (small, None), (x0[19] - 0.05, x0[19] + 0.05), (None, None))
+           (None, None), (x0[4] - 0.05, x0[4] + 0.05), (None, None),
+           (None, None), (x0[7] - 0.05, x0[7] + 0.05), (None, None),
+           (None, None), (x0[10] - 0.05, x0[10] + 0.05), (None, None),
+           (None, None), (x0[13] - 0.05, x0[13] + 0.05), (None, None),
+           (None, None), (x0[16] - 0.05, x0[16] + 0.05), (None, None),
+           (None, None), (x0[19] - 0.05, x0[19] + 0.05), (None, None))
 
 # fit data
 fit = nmrft.FitUtility(data, x0, method='Powell', options=None)
