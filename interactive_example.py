@@ -10,6 +10,23 @@ def lblpars(i):
     elif (i == 9):
         print ('Minor Peak Parameters:')
 
+
+def print_summary(x0, res):
+    # print summary
+    print('\nSEED PARAMETER VALUES:\n')
+
+    for i in range(0, len(x0), 3):
+        lblpars(i)
+        print(x0[i:i + 3])
+
+    print('\nCONVERGED PARAMETER VALUES:\n')
+
+    for i in range(0, len(res.params), 3):
+        lblpars(i)
+        print(res.params[i:i + 3])
+
+    print("\nFINAL ERROR:  ", res.error)
+
 # Powell alone works
 # inDir = "./Data/blindedData/dc_4a_cdcl3_kilimanjaro_25c_1d_1H_1_043016.fid"
 
@@ -54,32 +71,11 @@ fit = nmrft.FitUtility(data, x0, method='Powell', options=None)
 # generate result
 res = fit.generate_result(scale=1)
 
-# print summary
-print()
-print ('SEED PARAMETER VALUES:')
-print()
-
-for i in range(0, len(x0), 3):
-    lblpars(i)
-    print(x0[i:i + 3])
-
-print()
-print ('CONVERGED PARAMETER VALUES:')
-print()
-
-for i in range(0, len(res.params), 3):
-    lblpars(i)
-    print(res.params[i:i + 3])
-
-print ()
-print ("FINAL ERROR:  ", res.error)
-
 # plot summary
 fit.summary_plot(p, s)
+print_summary(x0, res)
 
-print()
-print ('Moving onto TNC fit:')
-print()
+print ('\nMoving onto TNC fit:\n')
 
 # Now we will pass global results onto TNC
 x0[:3] = res.params[:3]
@@ -90,24 +86,6 @@ fit = nmrft.FitUtility(data, x0, method='TNC', bounds=bounds1, options=None)
 # generate result
 res = fit.generate_result(scale=1)
 
-print()
-print ('SEED PARAMETER VALUES:')
-print()
-
-for i in range(0, len(x0), 3):
-    lblpars(i)
-    print(x0[i:i + 3])
-
-print()
-print ('CONVERGED PARAMETER VALUES:')
-print()
-
-for i in range(0, len(res.params), 3):
-    lblpars(i)
-    print(res.params[i:i + 3])
-
-print ()
-print ("FINAL ERROR:  ", res.error)
-
 # plot summary
+print_summary(x0, res)
 fit.summary_plot(p, s)
