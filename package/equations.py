@@ -115,6 +115,7 @@ def voigt(w, r, yOff, sigma, mu, a):
 
     return V
 
+
 def objective(x, w, u, v, weights, fitIm, x0):
     '''
     The objective function used to fit supplied data.  Evaluates sum of squared differences
@@ -141,7 +142,7 @@ def objective(x, w, u, v, weights, fitIm, x0):
         The sum of squared differences between the data and fit.
     '''
 
-    p=0.0
+    p = 0.0
     # global parameters
     theta, r, yOff = x[:3]
 # The following statement makes the array point at the 4th element, because
@@ -199,19 +200,19 @@ def objective(x, w, u, v, weights, fitIm, x0):
 
     # increment the residuals for V and (optionally) I
     if weights is None:
-        roibounds=[]
+        roibounds = []
         for i in range(4, len(x0), 3):
-            roibounds.append((x0[i]-0.05,x0[i]+0.05))
-        V_residual = np.square(np.multiply(wts(roibounds,V_data,w,0.5),(V_data - V_fit))).sum(axis=None)
+            roibounds.append((x0[i] - 0.05, x0[i] + 0.05))
+        V_residual = np.square(np.multiply(wts(roibounds, V_data, w, 0.5), (V_data - V_fit))).sum(axis=None)
 
-#Potentially use higher exponents for TNC than for Powell
+# Potentially use higher exponents for TNC than for Powell
 #        V_residual = np.square(np.multiply(wts(roibounds,V_data,w,0.75),(V_data - V_fit))).sum(axis=None)
 
         if fitIm is True:
             I_residual = np.square(I_data - I_fit).sum(axis=None)
     else:
         for q in weights:
-            print("weights=",weights)
+            print("weights=", weights)
             bounds, weight = q
             if bounds == 'all':
                 V_residual = V_residual + np.square(V_data - V_fit).sum(axis=0) * weight
@@ -234,31 +235,31 @@ def objective(x, w, u, v, weights, fitIm, x0):
 # the vectorized form can compute the integral for all w
 kk_relation_vectorized = np.vectorize(kk_relation, otypes=[np.float])
 
-def wts(roibounds,V_data,w,expon):
+
+def wts(roibounds, V_data, w, expon):
     """
-    Given sequence ((LHB[0],RHB[0]),...,(LHB[n-1],RHB[n-1])) of bounds and V_data 
+    Given sequence ((LHB[0],RHB[0]),...,(LHB[n-1],RHB[n-1])) of bounds and V_data
     weights, we obtain maximums of |V_data| for each ROI (region of interest) and
     then choose weight 1 for largest-max-region and all non-ROI regions, whereas
     we choose weight (largest/max[I])^expon for all non-max ROI regions.
     """
-    indleft=np.zeros(len(roibounds),dtype=np.int)
-    indright=np.zeros(len(roibounds),dtype=np.int)
-    maxabs=np.zeros(len(roibounds))
-    for i , bound in enumerate(roibounds):
-        indleft[i]=np.argmin(np.abs(w-bound[0]))
-        indright[i]=np.argmin(np.abs(w-bound[1]))
-        if indleft[i]>indright[i]:
-            temp=indleft[i]
-            indleft[i]=indright[i]
-            indright[i]=temp
-        maxabs[i]=np.amax(np.abs(V_data[indleft[i]:indright[i]+1]))
+    indleft = np.zeros(len(roibounds), dtype=np.int)
+    indright = np.zeros(len(roibounds), dtype=np.int)
+    maxabs = np.zeros(len(roibounds))
+    for i, bound in enumerate(roibounds):
+        indleft[i] = np.argmin(np.abs(w - bound[0]))
+        indright[i] = np.argmin(np.abs(w - bound[1]))
+        if indleft[i] > indright[i]:
+            temp = indleft[i]
+            indleft[i] = indright[i]
+            indright[i] = temp
+        maxabs[i] = np.amax(np.abs(V_data[indleft[i]:indright[i] + 1]))
 
-    biggest=np.amax(maxabs)
+    biggest = np.amax(maxabs)
 
-    wts=np.ones(len(w))
+    wts = np.ones(len(w))
 
-    for i , bound in enumerate(roibounds):
-        wts[indleft[i]:indright[i]+1]=np.power(biggest/maxabs[i],expon)
+    for i, bound in enumerate(roibounds):
+        wts[indleft[i]:indright[i] + 1] = np.power(biggest / maxabs[i], expon)
 
     return wts
-
