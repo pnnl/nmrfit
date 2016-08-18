@@ -31,7 +31,7 @@ class BoundsSelector:
         if not self.supress:
             self.fig = plt.figure()  # figsize=(9, 5), dpi=300
             plt.plot(w, u)
-            plt.axis([w[-1], w[0], min(u) - max(u) * 0.05, max(u) * 1.1])
+            # plt.axis([w[-1], w[0], min(u) - max(u) * 0.05, max(u) * 1.1])
             # plt.gca().invert_xaxis()
             self.cid = self.fig.canvas.mpl_connect('button_press_event', self)
             self.bounds = []
@@ -96,7 +96,7 @@ class PeakSelector:
         # initialize plot
         self.fig = plt.figure()
         plt.plot(w, u)
-        plt.axis([w[-1], w[0], min(u) - max(u) * 0.05, max(u) * 1.1])
+        # plt.axis([w[-1], w[0], min(u) - max(u) * 0.05, max(u) * 1.1])
         # plt.gca().invert_xaxis()
 
         # start event listener

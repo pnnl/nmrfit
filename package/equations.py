@@ -114,15 +114,15 @@ def voigt(w, r, yOff, sigma, mu, a):
     return V
 
 
-def objective(x0, w, u, v, weights, fitIm):
+def objective(x, w, u, v, weights, fitIm, x0):
     '''
     The objective function used to fit supplied data.  Evaluates sum of squared differences
     between the fit and the data.
 
     Parameters
     ----------
-    x0 : list(float)
-        Initial conditions for the minimizer.
+    x : list(float)
+        Parameter vector.
     w : ndarray
         Array of frequency data.
     u, v : ndarray
@@ -131,6 +131,8 @@ def objective(x0, w, u, v, weights, fitIm):
         Range, weight pairs for intervals corresponding to each peak.
     fitIm : bool
         Flag to determine whether the imaginary component of the data will be fit.
+    x0 : list(float)
+        Initial conditions.
 
     Returns
     -------
@@ -139,8 +141,10 @@ def objective(x0, w, u, v, weights, fitIm):
     '''
 
     # global parameters
-    theta, r, yOff = x0[:3]
-    x0 = x0[3:]
+    theta, r, yOff = x[:3]
+
+    # initial global parameters
+    theta0, r0, yOff0 = x0[:3]
 
     # transform u and v to get V for the data
     V_data = u * np.cos(theta) - v * np.sin(theta)
@@ -151,49 +155,54 @@ def objective(x0, w, u, v, weights, fitIm):
     # initialize container for the V residual
     V_residual = 0
 
-    if fitIm is True:
-        # transform u and v to get I for the data
-        I_data = u * np.sin(theta) + v * np.cos(theta)
-
-        # initialize array for the fit of I
-        I_fit = np.zeros_like(V_data)
-
-        # initialize container for the I residual
-        I_residual = 0
-
     # iteratively add the contribution of each peak to the fits for V and (optionally) I
-    for i in range(0, len(x0), 3):
-        sigma = x0[i]
-        mu = x0[i + 1]
-        a = x0[i + 2]
+    for i in range(3, len(x), 3):
+        # current approximations
+        sigma = x[i]
+        mu = x[i + 1]
+        a = x[i + 2]
 
         V_fit = V_fit + voigt(w, r, yOff, sigma, mu, a)
-        if fitIm is True:
-            I_fit = I_fit + kk_relation_vectorized(w, r, yOff, sigma, mu, a)
 
-    # increment the residuals for V and (optionally) I
-    if weights is None:
-        V_residual = np.square(V_data - V_fit).sum(axis=None)
-        if fitIm is True:
-            I_residual = np.square(I_data - I_fit).sum(axis=None)
-    else:
-        for q in weights:
-            bounds, weight = q
-            if bounds == 'all':
-                V_residual = V_residual + np.square(V_data - V_fit).sum(axis=0) * weight
-                if fitIm is True:
-                    I_residual = I_residual + np.square(I_data - I_fit).sum(axis=0) * weight
-            else:
-                idx = np.where((w > bounds[0]) & (w < bounds[1]))
-                V_residual = V_residual + np.square(V_data[idx] - V_fit[idx]).sum(axis=0) * weight
-                if fitIm is True:
-                    I_residual = I_residual + np.square(I_data[idx] - I_fit[idx]).sum(axis=0) * weight
+    roibounds = []
+    for i in range(4, len(x0), 3):
+        roibounds.append((x0[i] - 0.05, x0[i] + 0.05))
+    V_residual = np.square(np.multiply(wts(roibounds, V_data, w, 0.5), (V_data - V_fit))).sum(axis=None)
+
+    # Potentially use higher exponents for TNC than for Powell
+    # V_residual = np.square(np.multiply(wts(roibounds,V_data,w,0.75),(V_data - V_fit))).sum(axis=None)
 
     # return the total residual
-    if fitIm is True:
-        return (V_residual + I_residual) / 2.0
-    else:
-        return V_residual
+    return V_residual
 
 # the vectorized form can compute the integral for all w
 kk_relation_vectorized = np.vectorize(kk_relation, otypes=[np.float])
+
+
+def wts(roibounds, V_data, w, expon):
+    """
+    Given sequence ((LHB[0],RHB[0]),...,(LHB[n-1],RHB[n-1])) of bounds and V_data
+    weights, we obtain maximums of |V_data| for each ROI (region of interest) and
+    then choose weight 1 for largest-max-region and all non-ROI regions, whereas
+    we choose weight (largest/max[I])^expon for all non-max ROI regions.
+    """
+    lIdx = np.zeros(len(roibounds), dtype=np.int)
+    rIdx = np.zeros(len(roibounds), dtype=np.int)
+    maxabs = np.zeros(len(roibounds))
+    for i, bound in enumerate(roibounds):
+        lIdx[i] = np.argmin(np.abs(w - bound[0]))
+        rIdx[i] = np.argmin(np.abs(w - bound[1]))
+        if lIdx[i] > rIdx[i]:
+            temp = lIdx[i]
+            lIdx[i] = rIdx[i]
+            rIdx[i] = temp
+        maxabs[i] = np.amax(np.abs(V_data[lIdx[i]:rIdx[i] + 1]))
+
+    biggest = np.amax(maxabs)
+
+    wts = np.ones(len(w))
+
+    for i, bound in enumerate(roibounds):
+        wts[lIdx[i]:rIdx[i] + 1] = np.power(biggest / maxabs[i], expon)
+
+    return wts

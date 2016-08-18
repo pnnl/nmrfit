@@ -20,12 +20,8 @@ class FitUtility:
         Container for ndarrays relevant to the fitting process (w, u, v, V, I) of the data.
     x0 : list(float)
         Initial conditions for the minimizer.
-    weights : list(list(float), float), optional
-        Range, weight pairs for intervals corresponding to each peak.
-    fitIm : bool, optional
-        Flag to determine whether the imaginary component of the data will be fit.  Default is False.
     method: string, optional
-        Determines optimization algorithm to be used for minimization.  Default is "Powell."
+        Determines optimization algorithm to be used for minimization.  Default is "Powell"
     options: dict, optional
         Used to pass additional options to the minimizer.
 
@@ -34,21 +30,18 @@ class FitUtility:
     None.
     '''
 
-    def __init__(self, data, x0, weights=None, fitIm=False, method='Powell', options=None):
+    def __init__(self, data, x0, method='Powell', bounds=None, options=None):
         self.result = Result()
         self.data = data
 
         # initial condition vector
         self.x0 = x0
 
-        # weight vector
-        self.weights = weights
-
-        # boolean to decide whether the imaginary data will be fit simulataneously (major performance hit)
-        self.fitIm = fitIm
-
         # method used in the minimization step
         self.method = method
+
+        # bounds
+        self.bounds = bounds
 
         # any additional options for the minimization step
         self.options = options
@@ -72,7 +65,7 @@ class FitUtility:
         '''
 
         # call to the minimization function
-        result = sp.optimize.minimize(objective, self.x0, args=(self.data.w, self.data.u, self.data.v, self.weights, self.fitIm), method=self.method, options=self.options)
+        result = sp.optimize.minimize(objective, self.x0, args=(self.data.w, self.data.u, self.data.v, self.x0), method=self.method, bounds=self.bounds, options=self.options)
 
         # store the fit parameters and error in the result object
         self.result.params = result.x
@@ -265,4 +258,4 @@ def varian_process(fidfile, procfile):
     u = data[0, :].real
     v = data[0, :].imag
 
-    return w, u, v, p0
+    return w[::-1], u[::-1], v[::-1], p0
