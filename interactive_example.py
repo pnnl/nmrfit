@@ -19,7 +19,6 @@ def lblpars(i):
 # Even TNC can't get them all
 inDir = "./Data/blindedData/dc_4h_cdcl3_kilimanjaro_25c_1d_1H_2_050616.fid"
 
->>>>>>> develop
 w, u, v, theta0 = nmrft.varian_process(os.path.join(inDir, 'fid'), os.path.join(inDir, 'procpar'))
 
 # create data object
@@ -41,7 +40,6 @@ x0 = [data.theta, 1., 0.,                                  # shared params
       s[2].width / 10., s[2].loc, s[2].area,       # s3 init
       s[3].width / 10., s[3].loc, s[3].area]       # s4 init
 
-small = 1.e-8
 bounds1 = ((None, None), (0., 1.), (None, None),
            (small, None), (x0[4] - 0.05, x0[4] + 0.05), (None, None),
            (small, None), (x0[7] - 0.05, x0[7] + 0.05), (None, None),
