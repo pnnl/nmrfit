@@ -2,8 +2,6 @@ import numpy as np
 import scipy as sp
 import scipy.integrate
 
-from .penalty_functions import exp_penalty as penalty_function
-
 
 def kk_equation(x, r, yOff, sigma, mu, a, w):
     '''
@@ -142,13 +140,8 @@ def objective(x, w, u, v, weights, fitIm, x0):
         The sum of squared differences between the data and fit.
     '''
 
-    p = 0.0
     # global parameters
     theta, r, yOff = x[:3]
-# The following statement makes the array point at the 4th element, because
-# the first 3 elements have been copied to theta, r, yOff.  This seems
-# dangerous.  We will adjust so that pointer to x is not shifted.
-#    x = x[3:]
 
     # initial global parameters
     theta0, r0, yOff0 = x0[:3]
@@ -162,21 +155,6 @@ def objective(x, w, u, v, weights, fitIm, x0):
     # initialize container for the V residual
     V_residual = 0
 
-    # penalties
-    penalty = 0.
-#    penalty += penalty_function(0, 2 * np.pi, theta, p)  # theta must be betwen +/- pi
-    penalty += penalty_function(0, 1, r, p)              # r must be between 0 and 1
-
-    if fitIm is True:
-        # transform u and v to get I for the data
-        I_data = u * np.sin(theta) + v * np.cos(theta)
-
-        # initialize array for the fit of I
-        I_fit = np.zeros_like(V_data)
-
-        # initialize container for the I residual
-        I_residual = 0
-
     # iteratively add the contribution of each peak to the fits for V and (optionally) I
     for i in range(3, len(x), 3):
         # current approximations
@@ -184,53 +162,18 @@ def objective(x, w, u, v, weights, fitIm, x0):
         mu = x[i + 1]
         a = x[i + 2]
 
-        # initial approximations
-        sigma0 = x0[i]
-        mu0 = x0[i + 1]
-        a0 = x0[i + 2]
-
-#        penalty += penalty_function(mu0 - 0.05, mu0 + 0.05, mu, p * 100)
-        penalty += penalty_function(mu0 - 0.01, mu0 + 0.01, mu, p * 100)
-        penalty += penalty_function(0, 1E-2, sigma, p)
-        # penalty += penalty_function(1E-3, np.inf, abs(a), p)
-
         V_fit = V_fit + voigt(w, r, yOff, sigma, mu, a)
-        if fitIm is True:
-            I_fit = I_fit + kk_relation_vectorized(w, r, yOff, sigma, mu, a)
 
-    # increment the residuals for V and (optionally) I
-    if weights is None:
-        roibounds = []
-        for i in range(4, len(x0), 3):
-            roibounds.append((x0[i] - 0.05, x0[i] + 0.05))
-        V_residual = np.square(np.multiply(wts(roibounds, V_data, w, 0.5), (V_data - V_fit))).sum(axis=None)
+    roibounds = []
+    for i in range(4, len(x0), 3):
+        roibounds.append((x0[i] - 0.05, x0[i] + 0.05))
+    V_residual = np.square(np.multiply(wts(roibounds, V_data, w, 0.5), (V_data - V_fit))).sum(axis=None)
 
-# Potentially use higher exponents for TNC than for Powell
-#        V_residual = np.square(np.multiply(wts(roibounds,V_data,w,0.75),(V_data - V_fit))).sum(axis=None)
-
-        if fitIm is True:
-            I_residual = np.square(I_data - I_fit).sum(axis=None)
-    else:
-        for q in weights:
-            print("weights=", weights)
-            bounds, weight = q
-            if bounds == 'all':
-                V_residual = V_residual + np.square(V_data - V_fit).sum(axis=0) * weight
-                if fitIm is True:
-                    I_residual = I_residual + np.square(I_data - I_fit).sum(axis=0) * weight
-            else:
-                idx = np.where((w > bounds[0]) & (w < bounds[1]))
-                V_residual = V_residual + np.square(V_data[idx] - V_fit[idx]).sum(axis=0) * weight
-                if fitIm is True:
-                    I_residual = I_residual + np.square(I_data[idx] - I_fit[idx]).sum(axis=0) * weight
+    # Potentially use higher exponents for TNC than for Powell
+    # V_residual = np.square(np.multiply(wts(roibounds,V_data,w,0.75),(V_data - V_fit))).sum(axis=None)
 
     # return the total residual
-    if fitIm is True:
-        residual = (V_residual + I_residual) / 2.0
-    else:
-        residual = V_residual
-
-    return residual + penalty
+    return V_residual
 
 # the vectorized form can compute the integral for all w
 kk_relation_vectorized = np.vectorize(kk_relation, otypes=[np.float])
@@ -243,23 +186,23 @@ def wts(roibounds, V_data, w, expon):
     then choose weight 1 for largest-max-region and all non-ROI regions, whereas
     we choose weight (largest/max[I])^expon for all non-max ROI regions.
     """
-    indleft = np.zeros(len(roibounds), dtype=np.int)
-    indright = np.zeros(len(roibounds), dtype=np.int)
+    lIdx = np.zeros(len(roibounds), dtype=np.int)
+    rIdx = np.zeros(len(roibounds), dtype=np.int)
     maxabs = np.zeros(len(roibounds))
     for i, bound in enumerate(roibounds):
-        indleft[i] = np.argmin(np.abs(w - bound[0]))
-        indright[i] = np.argmin(np.abs(w - bound[1]))
-        if indleft[i] > indright[i]:
-            temp = indleft[i]
-            indleft[i] = indright[i]
-            indright[i] = temp
-        maxabs[i] = np.amax(np.abs(V_data[indleft[i]:indright[i] + 1]))
+        lIdx[i] = np.argmin(np.abs(w - bound[0]))
+        rIdx[i] = np.argmin(np.abs(w - bound[1]))
+        if lIdx[i] > rIdx[i]:
+            temp = lIdx[i]
+            lIdx[i] = rIdx[i]
+            rIdx[i] = temp
+        maxabs[i] = np.amax(np.abs(V_data[lIdx[i]:rIdx[i] + 1]))
 
     biggest = np.amax(maxabs)
 
     wts = np.ones(len(w))
 
     for i, bound in enumerate(roibounds):
-        wts[indleft[i]:indright[i] + 1] = np.power(biggest / maxabs[i], expon)
+        wts[lIdx[i]:rIdx[i] + 1] = np.power(biggest / maxabs[i], expon)
 
     return wts
