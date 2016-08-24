@@ -1,7 +1,7 @@
 import NMRfit as nmrft
 import os
+import matplotlib.pyplot as plt
 
-# print this is a test
 
 def lblpars(i):
     if (i == 0):
@@ -46,25 +46,15 @@ data = nmrft.Data(w, u, v, theta0)
 data.select_bounds(low=3.2, high=3.6)
 
 # interactively select peaks and satellites
-p = data.select_peaks(2)
-s = data.select_satellites(4)
+peaks = data.select_peaks()
 
 # initial conditions of the form [theta, r, yOff, sigma_n, mu_n, a_n,...]
-x0 = [data.theta, 1., 0.,                                  # shared params
-      p[0].width / 10., p[0].loc, p[0].area,       # p1 init
-      p[1].width / 10., p[1].loc, p[1].area,       # p2 init
-      s[0].width / 10., s[0].loc, s[0].area,       # s1 init
-      s[1].width / 10., s[1].loc, s[1].area,       # s2 init
-      s[2].width / 10., s[2].loc, s[2].area,       # s3 init
-      s[3].width / 10., s[3].loc, s[3].area]       # s4 init
+x0 = [data.theta, 1., 0.]
+bounds = [(None, None), (0., 1.), (None, None)]
 
-bounds1 = ((None, None), (0., 1.), (None, None),
-           (None, None), (x0[4] - 0.05, x0[4] + 0.05), (None, None),
-           (None, None), (x0[7] - 0.05, x0[7] + 0.05), (None, None),
-           (None, None), (x0[10] - 0.05, x0[10] + 0.05), (None, None),
-           (None, None), (x0[13] - 0.05, x0[13] + 0.05), (None, None),
-           (None, None), (x0[16] - 0.05, x0[16] + 0.05), (None, None),
-           (None, None), (x0[19] - 0.05, x0[19] + 0.05), (None, None))
+for p in peaks:
+    x0.extend([p.sigma, p.loc, p.area])
+    bounds.extend([(None, None), (p.loc - 0.05, p.loc + 0.05), (None, None)])
 
 # fit data
 fit = nmrft.FitUtility(data, x0, method='Powell', options=None)
@@ -73,8 +63,13 @@ fit = nmrft.FitUtility(data, x0, method='Powell', options=None)
 res = fit.generate_result(scale=1)
 
 # plot summary
-fit.summary_plot(p, s)
 print_summary(x0, res)
+
+# fit.summary_plot(p, s)  # currently broken.  need to split peaks/satellites
+plt.plot(data.w, data.V)
+plt.plot(res.w, res.V)
+plt.show()
+
 
 print ('\nMoving onto TNC fit:\n')
 
@@ -82,11 +77,15 @@ print ('\nMoving onto TNC fit:\n')
 x0[:3] = res.params[:3]
 
 # fit data
-fit = nmrft.FitUtility(data, x0, method='TNC', bounds=bounds1, options=None)
+fit = nmrft.FitUtility(data, x0, method='TNC', bounds=bounds, options=None)
 
 # generate result
 res = fit.generate_result(scale=1)
 
 # plot summary
 print_summary(x0, res)
-fit.summary_plot(p, s)
+
+# fit.summary_plot(p, s)
+plt.plot(data.w, data.V)
+plt.plot(res.w, res.V)
+plt.show()
