@@ -70,6 +70,20 @@ class BoundsSelector:
         return self.w, self.u, self.v
 
 
+class Peak:
+    def __init__(self):
+        pass
+
+    def __repr__(self):
+        return '''\
+               Location: %s
+               Height: %s
+               Bounds: [%s, %s]
+               Sigma: %s
+               Area: %s\
+               ''' % (self.loc, self.height, self.bounds[0], self.bounds[1], self.sigma, self.area)
+
+
 class PeakSelector:
     '''
     Interactive utility used to identify peaks and calculate approximations to peak height, width, and area.
@@ -129,8 +143,9 @@ class PeakSelector:
 
         Returns
         -------
-        None.
+        Instance of Peak class
         '''
+        peak = Peak()
 
         # sort points in frequency
         self.points.sort()
@@ -140,22 +155,78 @@ class PeakSelector:
         wMax = self.points[2][0]
 
         # determine width from min and max
-        self.width = wMax - wMin
+        peak.sigma = (wMax - wMin) / 3.
 
         # initial prediction for peak center
         peakest = self.points[1][0]
 
         # determine peak height and location of peak by searching over an interval
-        self.height, self.loc = find_peak(self.w, self.u, peakest, searchwidth=self.width / 2.)
+        peak.height, peak.loc = find_peak(self.w, self.u, peakest, searchwidth=self.width / 2.)
 
         # determine indices within the peak width
-        self.idx = np.where((self.w > wMin) & (self.w < wMax))
+        peak.idx = np.where((self.w > wMin) & (self.w < wMax))
 
         # store min/max bounds
-        self.bounds = [wMin, wMax]
+        peak.bounds = [wMin, wMax]
 
         # calculate AUC over the width of the peak numerically
-        self.area = sp.integrate.simps(self.u[self.idx], self.w[self.idx])
+        peak.area = sp.integrate.simps(self.u[self.idx], self.w[self.idx])
+
+        self.peak = peak
+
+    def get_peak(self):
+        return self.peak
+
+
+class AutoPeakSelector:
+    def __init__(self, w, u, v):
+
+        f = sp.interpolate.interp1d(w, u)
+
+        self.w = np.linspace(w.min(), w.max(), int(len(w) * 100))  # arbitrary upsampling
+        self.u = f(self.w)
+        self.v = v
+
+        self.u_smoothed = sp.signal.savgol_filter(self.u, 11, 4)
+
+        self.peaks = []
+
+    def findMaxima(self):
+        x_spacing = self.w[1] - self.w[0]
+        window = int(0.02 / x_spacing)  # arbitrary spacing (0.02)
+
+        idx = sp.signal.argrelmax(self.u_smoothed, order=window)
+
+        u_peaks = self.u[idx]
+        w_peaks = self.w[idx]
+
+        for y, x in zip(u_peaks, w_peaks):
+            p = Peak()
+            p.loc = x
+            p.height = y
+            self.peaks.append(p)
+
+    def findSigma(self):
+        for p in self.peaks:
+            d = np.sign(p.height / 2. - self.u[0:-1]) - np.sign(p.height / 2. - self.u[1:])
+            rightIdx = np.where(d < 0)[0]  # right
+            leftIdx = np.where(d > 0)[0]  # left
+
+            x_right = self.w[rightIdx[np.argmin(np.abs(self.w[rightIdx] - p.loc))]]
+            x_left = self.w[leftIdx[np.argmin(np.abs(self.w[leftIdx] - p.loc))]]
+
+            p.bounds = [p.loc - (3 * (p.loc - x_left)), p.loc + (3 * (x_right - p.loc))]
+            p.sigma = x_right - x_left
+
+            p.idx = np.where((self.w >= p.bounds[0]) & (self.w <= p.bounds[1]))
+
+            p.area = sp.integrate.simps(self.u[p.idx], self.w[p.idx])
+
+    def findPeaks(self):
+        self.findMaxima()
+        self.findSigma()
+
+        return self.peaks
 
 
 def find_peak(x, y, est, searchwidth=0.5):
