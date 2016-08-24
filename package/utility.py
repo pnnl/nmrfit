@@ -191,7 +191,7 @@ class AutoPeakSelector:
 
         self.peaks = []
 
-    def findMaxima(self):
+    def find_maxima(self):
         x_spacing = self.w[1] - self.w[0]
         window = int(0.02 / x_spacing)  # arbitrary spacing (0.02)
 
@@ -206,7 +206,7 @@ class AutoPeakSelector:
             p.height = y
             self.peaks.append(p)
 
-    def findSigma(self):
+    def find_sigma(self):
         for p in self.peaks:
             d = np.sign(p.height / 2. - self.u[0:-1]) - np.sign(p.height / 2. - self.u[1:])
             rightIdx = np.where(d < 0)[0]  # right
@@ -222,9 +222,9 @@ class AutoPeakSelector:
 
             p.area = sp.integrate.simps(self.u[p.idx], self.w[p.idx])
 
-    def findPeaks(self):
-        self.findMaxima()
-        self.findSigma()
+    def find_peaks(self):
+        self.find_maxima()
+        self.find_sigma()
 
         return self.peaks
 

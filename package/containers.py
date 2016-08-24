@@ -128,7 +128,7 @@ class Data:
 
         elif method.lower() == 'auto':
             aps = AutoPeakSelector(self.w, self.V, self.I)
-            peaks = aps.findPeaks()
+            peaks = aps.find_peaks()
 
         else:
             raise("Method must be 'auto' or 'manual'.")
