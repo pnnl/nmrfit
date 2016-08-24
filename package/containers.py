@@ -1,6 +1,7 @@
 import numpy as np
 from .utility import BoundsSelector
 from .utility import PeakSelector
+from .utility import AutoPeakSelector
 
 
 class Result:
@@ -102,45 +103,34 @@ class Data:
 
         self.shift_phase(self.theta)
 
-    def select_peaks(self, n):
+    def select_peaks(self, method='auto', n=None):
         '''
         Method to interface with the utility class PeakSelector.  Will open an interactive utility used to select
         peaks n times.
 
         Parameters
         ----------
-        n : int
-            Number of peaks to select.
-
+        method : str, optional
+            Flag to determine whether peaks will be selected automatically ('auto') or manually ('manual')
+        n : int, optional
+            Number of peaks to select.  Only required if 'manual' is selected.
+        
         Returns
         -------
         peaks : list(PeakSelector)
-            List containing instances of PeakSelector objects, which contain information about each peak.
+            List containing instances of Peak objects, which contain information about each peak.
         '''
+        if method.lower() == 'manual':
+            peaks = []
+            for i in range(n):
+                ps = PeakSelector(self.w, self.V, self.I)
+                peaks.append(ps.get_peak())
 
-        peaks = []
-        for i in range(n):
-            ps = PeakSelector(self.w, self.V, self.I)
-            peaks.append(ps)
+        elif method.lower() == 'auto':
+            aps = AutoPeakSelector(self.w, self.V, self.I)
+            peaks = aps.findPeaks()
+
+        else:
+            raise("Method must be 'auto' or 'manual'.")
 
         return peaks
-
-    def select_satellites(self, n):
-        '''
-        Method to interface with the utility class PeakSelector.  Will open an interactive utility used to select
-        satellites n times.
-
-        Parameters
-        ----------
-        n : int
-            Number of satellites to select.
-
-        Returns
-        -------
-        satellites : list(PeakSelector)
-            List containing instances of PeakSelector objects, which contain information about each satellite.
-
-        Note: functionally the same as the select_peaks method, but allows user to distinguish between peaks and
-        satellites conceptually (and keep them seperate).
-        '''
-        return self.select_peaks(n)
