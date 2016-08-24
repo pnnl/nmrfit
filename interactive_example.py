@@ -1,6 +1,7 @@
 import NMRfit as nmrft
 import os
 
+# print this is a test
 
 def lblpars(i):
     if (i == 0):
