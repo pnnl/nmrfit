@@ -35,7 +35,10 @@ def print_summary(x0, res):
 # inDir = "./Data/blindedData/dc_4e_cdcl3_kilimanjaro_25c_1d_1H_1_050116.fid"
 
 # Even TNC can't get them all
-inDir = "./Data/blindedData/dc_4h_cdcl3_kilimanjaro_25c_1d_1H_2_050616.fid"
+# inDir = "./Data/blindedData/dc_4h_cdcl3_kilimanjaro_25c_1d_1H_2_050616.fid"
+
+# Another random
+inDir = "./Data/blindedData/dc_4b_cdcl3_kilimanjaro_25c_1d_1H_5_071116.fid"
 
 w, u, v, theta0 = nmrft.varian_process(os.path.join(inDir, 'fid'), os.path.join(inDir, 'procpar'))
 
