@@ -49,7 +49,7 @@ data = nmrft.Data(w, u, v, theta0)
 data.select_bounds(low=3.2, high=3.6)
 
 # interactively select peaks and satellites
-peaks = data.select_peaks()
+peaks = data.select_peaks('manual',6)
 
 # initial conditions of the form [theta, r, yOff, sigma_n, mu_n, a_n,...]
 x0 = [data.theta, 1., 0.]
