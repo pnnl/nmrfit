@@ -161,7 +161,7 @@ class PeakSelector:
         peakest = self.points[1][0]
 
         # determine peak height and location of peak by searching over an interval
-        peak.height, peak.loc = find_peak(self.w, self.u, peakest, searchwidth=self.width / 2.)
+        peak.height, peak.loc = find_peak(self.w, self.u, peakest, searchwidth=peak.sigma / 2.)
 
         # determine indices within the peak width
         peak.idx = np.where((self.w > wMin) & (self.w < wMax))
@@ -170,7 +170,7 @@ class PeakSelector:
         peak.bounds = [wMin, wMax]
 
         # calculate AUC over the width of the peak numerically
-        peak.area = sp.integrate.simps(self.u[self.idx], self.w[self.idx])
+        peak.area = sp.integrate.simps(self.u[peak.idx], self.w[peak.idx])
 
         self.peak = peak
 
