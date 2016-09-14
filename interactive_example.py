@@ -28,6 +28,7 @@ def print_summary(x0, res):
 
     print("FINAL ERROR:  ", res.error)
 
+
 # Powell alone works
 # inDir = "./Data/blindedData/dc_4a_cdcl3_kilimanjaro_25c_1d_1H_1_043016.fid"
 
@@ -49,7 +50,8 @@ data = nmrft.Data(w, u, v, theta0)
 data.select_bounds(low=3.2, high=3.6)
 
 # interactively select peaks and satellites
-peaks = data.select_peaks(method='manual', n=None)
+
+peaks = data.select_peaks(method='manual', n=6)
 
 # initial conditions of the form [theta, r, yOff, sigma_n, mu_n, a_n,...]
 x0 = [data.theta, 1., 0.]
