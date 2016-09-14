@@ -26,7 +26,7 @@ def print_summary(x0, res):
         lblpars(i)
         print(res.params[i:i + 3])
 
-    print("\nFINAL ERROR:  ", res.error)
+    print("FINAL ERROR:  ", res.error)
 
 # Powell alone works
 # inDir = "./Data/blindedData/dc_4a_cdcl3_kilimanjaro_25c_1d_1H_1_043016.fid"

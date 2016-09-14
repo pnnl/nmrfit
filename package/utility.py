@@ -99,9 +99,8 @@ class PeakSelector:
     -------
     None.
     '''
-    def __init__(self, w, u, v):
+    def __init__(self, w, u):
         self.u = u
-        self.v = v
         self.w = w
 
         # empty list to store point information from clicks
@@ -179,13 +178,12 @@ class PeakSelector:
 
 
 class AutoPeakSelector:
-    def __init__(self, w, u, v):
+    def __init__(self, w, u):
 
         f = sp.interpolate.interp1d(w, u)
 
         self.w = np.linspace(w.min(), w.max(), int(len(w) * 100))  # arbitrary upsampling
         self.u = f(self.w)
-        self.v = v
 
         self.u_smoothed = sp.signal.savgol_filter(self.u, 11, 4)
 
@@ -207,6 +205,7 @@ class AutoPeakSelector:
             self.peaks.append(p)
 
     def find_sigma(self):
+        screened_peaks = []
         for p in self.peaks:
             d = np.sign(p.height / 2. - self.u[0:-1]) - np.sign(p.height / 2. - self.u[1:])
             rightIdx = np.where(d < 0)[0]  # right
@@ -215,12 +214,17 @@ class AutoPeakSelector:
             x_right = self.w[rightIdx[np.argmin(np.abs(self.w[rightIdx] - p.loc))]]
             x_left = self.w[leftIdx[np.argmin(np.abs(self.w[leftIdx] - p.loc))]]
 
-            p.bounds = [p.loc - (3 * (p.loc - x_left)), p.loc + (3 * (x_right - p.loc))]
-            p.sigma = x_right - x_left
+            if x_left < x_right:
+                p.bounds = [p.loc - (3 * (p.loc - x_left)), p.loc + (3 * (x_right - p.loc))]
+                p.sigma = x_right - x_left
 
-            p.idx = np.where((self.w >= p.bounds[0]) & (self.w <= p.bounds[1]))
+                p.idx = np.where((self.w >= p.bounds[0]) & (self.w <= p.bounds[1]))
 
-            p.area = sp.integrate.simps(self.u[p.idx], self.w[p.idx])
+                p.area = sp.integrate.simps(self.u[p.idx], self.w[p.idx])
+
+                screened_peaks.append(p)
+
+        self.peaks = screened_peaks
 
     def find_peaks(self):
         self.find_maxima()
