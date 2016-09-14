@@ -117,20 +117,23 @@ class Data:
 
         Returns
         -------
-        peaks : list(PeakSelector)
+        peaks : list(Peak)
             List containing instances of Peak objects, which contain information about each peak.
         '''
         if method.lower() == 'manual':
-            peaks = []
-            for i in range(n):
-                ps = PeakSelector(self.w, self.V)
-                peaks.append(ps.get_peak())
+            if isinstance(n, int) and n > 0:
+                peaks = []
+                for i in range(n):
+                    ps = PeakSelector(self.w, self.V)
+                    peaks.append(ps.get_peak())
+            else:
+                raise ValueError("Number of peaks must be specified when using 'manual' flag")
 
         elif method.lower() == 'auto':
             aps = AutoPeakSelector(self.w, self.V)
             peaks = aps.find_peaks()
 
         else:
-            raise("Method must be 'auto' or 'manual'.")
+            raise ValueError("Method must be 'auto' or 'manual'.")
 
         return peaks

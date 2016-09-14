@@ -155,7 +155,7 @@ def objective(x, w, u, v, x0):
     # initialize container for the V residual
     V_residual = 0
 
-    # iteratively add the contribution of each peak to the fits for V and (optionally) I
+    # iteratively add the contribution of each peak to the fits for V
     for i in range(3, len(x), 3):
         # current approximations
         sigma = x[i]
