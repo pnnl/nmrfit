@@ -154,7 +154,7 @@ class PeakSelector:
         wMax = self.points[2][0]
 
         # determine width from min and max
-        peak.sigma = (wMax - wMin) / 3.
+        peak.sigma = (wMax - wMin) / 6.
 
         # initial prediction for peak center
         peakest = self.points[1][0]
@@ -216,7 +216,7 @@ class AutoPeakSelector:
 
             if x_left < x_right:
                 p.bounds = [p.loc - (3 * (p.loc - x_left)), p.loc + (3 * (x_right - p.loc))]
-                p.sigma = x_right - x_left
+                p.sigma = (x_right - x_left) / 2.
 
                 p.idx = np.where((self.w >= p.bounds[0]) & (self.w <= p.bounds[1]))
 
