@@ -216,7 +216,7 @@ class AutoPeakSelector:
 
             if x_left < x_right:
                 p.bounds = [p.loc - (3 * (p.loc - x_left)), p.loc + (3 * (x_right - p.loc))]
-                p.sigma = (x_right - x_left) / 2.
+                p.sigma = (x_right - x_left) / 2.3548
 
                 p.idx = np.where((self.w >= p.bounds[0]) & (self.w <= p.bounds[1]))
 
