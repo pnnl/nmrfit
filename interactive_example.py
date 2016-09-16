@@ -1,50 +1,12 @@
 import NMRfit as nmrft
 import os
-import matplotlib.pyplot as plt
 
 
-def lblpars(i):
-    if (i == 0):
-        print ('Global Parameters:')
-    elif (i == 3):
-        print ('Major Peak Parameters:')
-    elif (i == 9):
-        print ('Minor Peak Parameters:')
-
-
-def print_summary(x0, res):
-    # print summary
-    print('\nSEED PARAMETER VALUES:\n')
-
-    for i in range(0, len(x0), 3):
-        lblpars(i)
-        print(x0[i:i + 3])
-
-    print('\nCONVERGED PARAMETER VALUES:\n')
-
-    for i in range(0, len(res.params), 3):
-        lblpars(i)
-        print(res.params[i:i + 3])
-
-    print("FINAL ERROR:  ", res.error)
-
-
-# Powell alone works
-# inDir = "./Data/blindedData/dc_4a_cdcl3_kilimanjaro_25c_1d_1H_1_043016.fid"
-
-# TNC adds value
-# inDir = "./Data/blindedData/dc_4e_cdcl3_kilimanjaro_25c_1d_1H_1_050116.fid"
-
-# Even TNC can't get them all
-# inDir = "./Data/blindedData/dc_4h_cdcl3_kilimanjaro_25c_1d_1H_2_050616.fid"
-
-# Another random
+# input directory
 inDir = "./Data/blindedData/dc_4d_cdcl3_kilimanjaro_25c_1d_1H_2_050116.fid"
 
-w, u, v, theta0 = nmrft.varian_process(os.path.join(inDir, 'fid'), os.path.join(inDir, 'procpar'))
-
-# create data object
-data = nmrft.Data(w, u, v, theta0)
+# read in data
+data = nmrft.varian_process(os.path.join(inDir, 'fid'), os.path.join(inDir, 'procpar'))
 
 # bound the data
 data.select_bounds(low=3.25, high=3.6)
@@ -52,39 +14,30 @@ data.select_bounds(low=3.25, high=3.6)
 # interactively select peaks and satellites
 peaks = data.select_peaks(method='auto', n=6)
 
-# generate bounds in initial conditions
+# generate bounds and initial conditions
 x0, bounds = data.generate_initial_conditions()
 
 # fit data
-fit = nmrft.FitUtility(data, x0, method='Powell', options=None)
+fit = nmrft.FitUtility(data, x0, method='Powell')
 
 # generate result
 res = fit.generate_result(scale=1)
 
-# plot summary
-print_summary(x0, res)
+# summary
+fit.print_summary()
+fit.summary_plot()
 
-fit.summary_plot()  # currently broken.  need to split peaks/satellites
-# plt.plot(data.w, data.V)
-# plt.plot(res.w, res.V)
-# plt.show()
+print ('\nMoving onto TNC fit:\n')
 
+# Now we will pass global results onto TNC
+x0[:3] = res.params[:3]
 
-# print ('\nMoving onto TNC fit:\n')
+# fit data
+fit = nmrft.FitUtility(data, x0, method='TNC', bounds=bounds, options=None)
 
-# # Now we will pass global results onto TNC
-# x0[:3] = res.params[:3]
+# generate result
+res = fit.generate_result(scale=1)
 
-# # fit data
-# fit = nmrft.FitUtility(data, x0, method='TNC', bounds=bounds, options=None)
-
-# # generate result
-# res = fit.generate_result(scale=1)
-
-# # plot summary
-# print_summary(x0, res)
-
-# # fit.summary_plot(p, s)
-# plt.plot(data.w, data.V)
-# plt.plot(res.w, res.V)
-# plt.show()
+# summary
+fit.print_summary()
+fit.summary_plot()

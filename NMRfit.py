@@ -219,6 +219,35 @@ class FitUtility:
         plt.tight_layout()
         plt.show()
 
+    def print_summary(self):
+        # print summary
+        print()
+        print('SEED PARAMETER VALUES:')
+        print('----------------------')
+
+        for i in range(0, len(self.x0), 3):
+            lblpars(i)
+            print(self.x0[i:i + 3])
+
+        print()
+        print('CONVERGED PARAMETER VALUES:')
+        print('---------------------------')
+
+        for i in range(0, len(self.result.params), 3):
+            lblpars(i)
+            print(self.result.params[i:i + 3])
+
+        print("Error:  ", self.result.error)
+
+
+def lblpars(i):
+    if (i == 0):
+        print ('Global Parameters:')
+    elif (i == 3):
+        print ('Major Peak Parameters:')
+    elif (i == 9):
+        print ('Minor Peak Parameters:')
+
 
 def varian_process(fidfile, procfile):
     """
@@ -260,4 +289,4 @@ def varian_process(fidfile, procfile):
     u = data[0, :].real
     v = data[0, :].imag
 
-    return w[::-1], u[::-1], v[::-1], p0
+    return Data(w[::-1], u[::-1], v[::-1], p0)
