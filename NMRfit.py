@@ -239,6 +239,11 @@ class FitUtility:
 
         print("Error:  ", self.result.error)
 
+    def summary(self, plot=True):
+        self.print_summary()
+        if plot is True:
+            self.summary_plot()
+
 
 def lblpars(i):
     if (i == 0):

@@ -24,10 +24,9 @@ fit = nmrft.FitUtility(data, x0, method='Powell')
 res = fit.generate_result(scale=1)
 
 # summary
-fit.print_summary()
-fit.summary_plot()
+fit.summary()
 
-print ('\nMoving onto TNC fit:\n')
+print ('\nMoving on to TNC fit:\n')
 
 # Now we will pass global results onto TNC
 x0[:3] = res.params[:3]
@@ -39,5 +38,4 @@ fit = nmrft.FitUtility(data, x0, method='TNC', bounds=bounds, options=None)
 res = fit.generate_result(scale=1)
 
 # summary
-fit.print_summary()
-fit.summary_plot()
+fit.summary()
