@@ -39,7 +39,7 @@ def print_summary(x0, res):
 # inDir = "./Data/blindedData/dc_4h_cdcl3_kilimanjaro_25c_1d_1H_2_050616.fid"
 
 # Another random
-inDir = "./Data/blindedData/dc_4b_cdcl3_kilimanjaro_25c_1d_1H_5_071116.fid"
+inDir = "./Data/blindedData/dc_4d_cdcl3_kilimanjaro_25c_1d_1H_2_050116.fid"
 
 w, u, v, theta0 = nmrft.varian_process(os.path.join(inDir, 'fid'), os.path.join(inDir, 'procpar'))
 
@@ -47,11 +47,11 @@ w, u, v, theta0 = nmrft.varian_process(os.path.join(inDir, 'fid'), os.path.join(
 data = nmrft.Data(w, u, v, theta0)
 
 # bound the data
-data.select_bounds(low=3.2, high=3.6)
+data.select_bounds(low=3.25, high=3.6)
 
 # interactively select peaks and satellites
 
-peaks = data.select_peaks(method='manual', n=6)
+peaks = data.select_peaks(method='auto', n=6)
 
 # initial conditions of the form [theta, r, yOff, sigma_n, mu_n, a_n,...]
 x0 = [data.theta, 1., 0.]
