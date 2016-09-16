@@ -136,4 +136,15 @@ class Data:
         else:
             raise ValueError("Method must be 'auto' or 'manual'.")
 
+        self.peaks = peaks
         return peaks
+
+    def generate_initial_conditions(self, tol=0.05):
+        x0 = [self.theta, 1., 0.]
+        bounds = [(None, None), (0., 1.), (None, None)]
+
+        for p in self.peaks:
+            x0.extend([p.sigma, p.loc, p.area])
+            bounds.extend([(None, None), (p.loc - tol, p.loc + tol), (None, None)])
+
+        return x0, bounds

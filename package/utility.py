@@ -154,7 +154,7 @@ class PeakSelector:
         wMax = self.points[1][0]
 
         # determine width from min and max
-        peak.sigma = (wMax - wMin) / 6.
+        peak.sigma = (wMax - wMin) / 3.
 
         # determine peak height and location of peak by searching over an interval
         peak.height, peak.loc = find_peak(self.w, self.u, wMin, wMax)

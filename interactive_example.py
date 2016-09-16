@@ -50,16 +50,10 @@ data = nmrft.Data(w, u, v, theta0)
 data.select_bounds(low=3.25, high=3.6)
 
 # interactively select peaks and satellites
+peaks = data.select_peaks(method='auto', n=6)
 
-peaks = data.select_peaks(method='manual', n=6)
-
-# initial conditions of the form [theta, r, yOff, sigma_n, mu_n, a_n,...]
-x0 = [data.theta, 1., 0.]
-bounds = [(None, None), (0., 1.), (None, None)]
-
-for p in peaks:
-    x0.extend([p.sigma, p.loc, p.area])
-    bounds.extend([(None, None), (p.loc - 0.05, p.loc + 0.05), (None, None)])
+# generate bounds in initial conditions
+x0, bounds = data.generate_initial_conditions()
 
 # fit data
 fit = nmrft.FitUtility(data, x0, method='Powell', options=None)
