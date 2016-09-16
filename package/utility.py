@@ -121,19 +121,19 @@ class PeakSelector:
     def __call__(self, event):
         '''
         Called whenever the user clicks on the plot.  Stores x and y location of the cursor.
-        After 3 clicks, the plot is closed as the peak has been "defined."
+        After 2 clicks, the plot is closed as the peak has been "defined."
         '''
 
         # add x,y location of click
         self.points.append([event.xdata, event.ydata])
 
-        if len(self.points) == 3:
+        if len(self.points) == 2:
             self.parse_points()
             plt.close()
 
     def parse_points(self):
         '''
-        Called after 3 clicks on the plot.  Sorts the stored points in terms of frequency (w) to define
+        Called after 2 clicks on the plot.  Sorts the stored points in terms of frequency (w) to define
         low, middle, and high.  Subsequently determines approximate peak height, width, and area.
 
         Parameters
@@ -151,16 +151,13 @@ class PeakSelector:
 
         # determine minimum and maximum
         wMin = self.points[0][0]
-        wMax = self.points[2][0]
+        wMax = self.points[1][0]
 
         # determine width from min and max
         peak.sigma = (wMax - wMin) / 6.
 
-        # initial prediction for peak center
-        peakest = self.points[1][0]
-
         # determine peak height and location of peak by searching over an interval
-        peak.height, peak.loc = find_peak(self.w, self.u, peakest, searchwidth=peak.sigma / 2.)
+        peak.height, peak.loc = find_peak(self.w, self.u, wMin, wMax)
 
         # determine indices within the peak width
         peak.idx = np.where((self.w > wMin) & (self.w < wMax))
@@ -233,7 +230,7 @@ class AutoPeakSelector:
         return self.peaks
 
 
-def find_peak(x, y, est, searchwidth=0.5):
+def find_peak(x, y, low, high):
     """
     Find peak within tolerance, as well as maximum value.
 
@@ -254,7 +251,7 @@ def find_peak(x, y, est, searchwidth=0.5):
     """
 
     # indices of frequency values around the estimate within the tolerance
-    idx = np.where((x <= est + searchwidth) & (x >= est - searchwidth))
+    idx = np.where((x <= high) & (x >= low))
 
     # x and y for these indices
     peakestX = x[idx]
@@ -262,8 +259,8 @@ def find_peak(x, y, est, searchwidth=0.5):
 
     # determine peak index and location
     peakindex = np.argmax(peakestY)
-    peakloc = peakestX[peakindex]
 
+    peakloc = peakestX[peakindex]
     peakheight = peakestY[peakindex]
 
     return peakheight, peakloc

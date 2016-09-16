@@ -51,7 +51,7 @@ data.select_bounds(low=3.25, high=3.6)
 
 # interactively select peaks and satellites
 
-peaks = data.select_peaks(method='auto', n=6)
+peaks = data.select_peaks(method='manual', n=6)
 
 # initial conditions of the form [theta, r, yOff, sigma_n, mu_n, a_n,...]
 x0 = [data.theta, 1., 0.]
