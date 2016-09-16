@@ -1,7 +1,8 @@
 import numpy as np
-from .utility import BoundsSelector
-from .utility import PeakSelector
 from .utility import AutoPeakSelector
+from .utility import PeakSelector
+from .utility import BoundsSelector
+from .utility import Peaks
 
 
 class Result:
@@ -122,7 +123,7 @@ class Data:
         '''
         if method.lower() == 'manual':
             if isinstance(n, int) and n > 0:
-                peaks = []
+                peaks = Peaks()
                 for i in range(n):
                     ps = PeakSelector(self.w, self.V)
                     peaks.append(ps.get_peak())

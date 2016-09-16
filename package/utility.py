@@ -4,6 +4,41 @@ import scipy as sp
 import scipy.integrate
 
 
+class Peaks(list):
+    def average_height(self):
+        h = 0.
+        for p in self:
+            h += abs(p.height)
+        return h / len(self)
+
+    def split(self):
+        h = self.average_height()
+        sats = Peaks()
+        peaks = Peaks()
+
+        for p in self:
+            if abs(p.height) >= h:
+                peaks.append(p)
+            else:
+                sats.append(p)
+
+        return peaks, sats
+
+
+class Peak:
+    def __init__(self):
+        pass
+
+    def __repr__(self):
+        return '''\
+               Location: %s
+               Height: %s
+               Bounds: [%s, %s]
+               Sigma: %s
+               Area: %s\
+               ''' % (self.loc, self.height, self.bounds[0], self.bounds[1], self.sigma, self.area)
+
+
 class BoundsSelector:
     '''
     Interactive utility used to bound the spectroscopy data.  The user clicks twice on a plot to
@@ -68,20 +103,6 @@ class BoundsSelector:
         self.v = self.v[idx]
         self.w = self.w[idx]
         return self.w, self.u, self.v
-
-
-class Peak:
-    def __init__(self):
-        pass
-
-    def __repr__(self):
-        return '''\
-               Location: %s
-               Height: %s
-               Bounds: [%s, %s]
-               Sigma: %s
-               Area: %s\
-               ''' % (self.loc, self.height, self.bounds[0], self.bounds[1], self.sigma, self.area)
 
 
 class PeakSelector:
@@ -184,7 +205,7 @@ class AutoPeakSelector:
 
         self.u_smoothed = sp.signal.savgol_filter(self.u, 11, 4)
 
-        self.peaks = []
+        self.peaks = Peaks()
 
     def find_maxima(self):
         x_spacing = self.w[1] - self.w[0]
@@ -202,7 +223,7 @@ class AutoPeakSelector:
             self.peaks.append(p)
 
     def find_sigma(self):
-        screened_peaks = []
+        screened_peaks = Peaks()
         for p in self.peaks:
             d = np.sign(p.height / 2. - self.u[0:-1]) - np.sign(p.height / 2. - self.u[1:])
             rightIdx = np.where(d < 0)[0]  # right

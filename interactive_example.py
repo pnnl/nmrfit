@@ -64,27 +64,27 @@ res = fit.generate_result(scale=1)
 # plot summary
 print_summary(x0, res)
 
-# fit.summary_plot(p, s)  # currently broken.  need to split peaks/satellites
-plt.plot(data.w, data.V)
-plt.plot(res.w, res.V)
-plt.show()
+fit.summary_plot()  # currently broken.  need to split peaks/satellites
+# plt.plot(data.w, data.V)
+# plt.plot(res.w, res.V)
+# plt.show()
 
 
-print ('\nMoving onto TNC fit:\n')
+# print ('\nMoving onto TNC fit:\n')
 
-# Now we will pass global results onto TNC
-x0[:3] = res.params[:3]
+# # Now we will pass global results onto TNC
+# x0[:3] = res.params[:3]
 
-# fit data
-fit = nmrft.FitUtility(data, x0, method='TNC', bounds=bounds, options=None)
+# # fit data
+# fit = nmrft.FitUtility(data, x0, method='TNC', bounds=bounds, options=None)
 
-# generate result
-res = fit.generate_result(scale=1)
+# # generate result
+# res = fit.generate_result(scale=1)
 
-# plot summary
-print_summary(x0, res)
+# # plot summary
+# print_summary(x0, res)
 
-# fit.summary_plot(p, s)
-plt.plot(data.w, data.V)
-plt.plot(res.w, res.V)
-plt.show()
+# # fit.summary_plot(p, s)
+# plt.plot(data.w, data.V)
+# plt.plot(res.w, res.V)
+# plt.show()

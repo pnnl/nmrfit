@@ -131,7 +131,9 @@ class FitUtility:
 
         return self.result
 
-    def summary_plot(self, peaks, satellites):
+    def summary_plot(self):
+        peaks, satellites = self.data.peaks.split()
+
         peakBounds = []
         for p in peaks:
             low, high = p.bounds
