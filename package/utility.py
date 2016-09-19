@@ -233,8 +233,8 @@ class AutoPeakSelector:
             x_left = self.w[leftIdx[np.argmin(np.abs(self.w[leftIdx] - p.loc))]]
 
             if x_left < x_right:
-                p.bounds = [p.loc - (3 * (p.loc - x_left)), p.loc + (3 * (x_right - p.loc))]
                 p.sigma = (x_right - x_left) / 2.3548
+                p.bounds = [p.loc - (3 * p.sigma), p.loc + 3 * p.sigma]
 
                 p.idx = np.where((self.w >= p.bounds[0]) & (self.w <= p.bounds[1]))
 
@@ -249,6 +249,15 @@ class AutoPeakSelector:
         self.find_sigma()
 
         return self.peaks
+
+    def plot(self):
+        plt.plot(self.w, self.u, color='b')
+        for p in self.peaks:
+            plt.scatter(p.loc, p.height, color='r')
+            plt.axvline(p.bounds[0], color='g')
+            plt.axvline(p.bounds[1], color='g')
+
+        plt.show()
 
 
 def find_peak(x, y, low, high):

@@ -156,18 +156,6 @@ class FitUtility:
         set1Range = [min(set1Bounds), max(set1Bounds)]
         set2Range = [min(set2Bounds), max(set2Bounds)]
 
-        totalIdxData = np.where((self.data.w >= set1Range[0]) & (self.data.w <= set2Range[1]))
-        totalIdxFit = np.where((self.result.w >= set1Range[0]) & (self.result.w <= set2Range[1]))
-
-        peakIdxData = np.where((self.data.w >= peakRange[0]) & (self.data.w <= peakRange[1]))
-        peakIdxFit = np.where((self.result.w >= peakRange[0]) & (self.result.w <= peakRange[1]))
-
-        set1IdxData = np.where((self.data.w >= set1Range[0]) & (self.data.w <= set1Range[1]))
-        set1IdxFit = np.where((self.result.w >= set1Range[0]) & (self.result.w <= set1Range[1]))
-
-        set2IdxData = np.where((self.data.w >= set2Range[0]) & (self.data.w <= set2Range[1]))
-        set2IdxFit = np.where((self.result.w >= set2Range[0]) & (self.result.w <= set2Range[1]))
-
         # set up figures
         # real
         fig_re = plt.figure(1)
@@ -177,20 +165,27 @@ class FitUtility:
         ax4_re = plt.subplot(236)
 
         # plot everything
-        ax1_re.plot(self.data.w[totalIdxData], self.data.V[totalIdxData])
-        ax1_re.plot(self.result.w[totalIdxFit], self.result.V[totalIdxFit])
+        ax1_re.plot(self.data.w, self.data.V)
+        ax1_re.plot(self.result.w, self.result.V)
+        ax1_re.autoscale_view()
 
         # plot left sats
-        ax2_re.plot(self.data.w[set1IdxData], self.data.V[set1IdxData])
-        ax2_re.plot(self.result.w[set1IdxFit], self.result.V[set1IdxFit])
+        ax2_re.plot(self.data.w, self.data.V)
+        ax2_re.plot(self.result.w, self.result.V)
+        ax2_re.autoscale_view()
+        ax2_re.set_xlim(set1Range)
 
         # plot main peaks
-        ax3_re.plot(self.data.w[peakIdxData], self.data.V[peakIdxData])
-        ax3_re.plot(self.result.w[peakIdxFit], self.result.V[peakIdxFit])
+        ax3_re.plot(self.data.w, self.data.V)
+        ax3_re.plot(self.result.w, self.result.V)
+        ax3_re.autoscale_view()
+        ax3_re.set_xlim(peakRange)
 
         # plot right satellites
-        ax4_re.plot(self.data.w[set2IdxData], self.data.V[set2IdxData])
-        ax4_re.plot(self.result.w[set2IdxFit], self.result.V[set2IdxFit])
+        ax4_re.plot(self.data.w, self.data.V)
+        ax4_re.plot(self.result.w, self.result.V)
+        ax4_re.autoscale_view()
+        ax4_re.set_xlim(set2Range)
 
         # imag
         fig_im = plt.figure(2)
@@ -200,20 +195,27 @@ class FitUtility:
         ax4_im = plt.subplot(236)
 
         # plot everything
-        ax1_im.plot(self.data.w[totalIdxData], self.data.I[totalIdxData])
-        ax1_im.plot(self.result.w[totalIdxFit], self.result.I[totalIdxFit])
+        ax1_im.plot(self.data.w, self.data.I)
+        ax1_im.plot(self.result.w, self.result.I)
+        ax1_im.autoscale_view(tight=True)
 
         # plot left sats
-        ax2_im.plot(self.data.w[set1IdxData], self.data.I[set1IdxData])
-        ax2_im.plot(self.result.w[set1IdxFit], self.result.I[set1IdxFit])
+        ax2_im.plot(self.data.w, self.data.I)
+        ax2_im.plot(self.result.w, self.result.I)
+        ax2_im.autoscale_view(tight=True)
+        ax2_im.set_xlim(set1Range)
 
         # plot main peaks
-        ax3_im.plot(self.data.w[peakIdxData], self.data.I[peakIdxData])
-        ax3_im.plot(self.result.w[peakIdxFit], self.result.I[peakIdxFit])
+        ax3_im.plot(self.data.w, self.data.I)
+        ax3_im.plot(self.result.w, self.result.I)
+        ax3_im.autoscale_view(tight=True)
+        ax3_im.set_xlim(peakRange)
 
         # plot right satellites
-        ax4_im.plot(self.data.w[set2IdxData], self.data.I[set2IdxData])
-        ax4_im.plot(self.result.w[set2IdxFit], self.result.I[set2IdxFit])
+        ax4_im.plot(self.data.w, self.data.I)
+        ax4_im.plot(self.result.w, self.result.I)
+        ax4_im.autoscale_view(tight=True)
+        ax4_im.set_xlim(set2Range)
 
         # display
         plt.tight_layout()
