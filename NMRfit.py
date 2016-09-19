@@ -220,22 +220,35 @@ class FitUtility:
         plt.show()
 
     def print_summary(self):
+        x0 = np.array(self.x0).reshape((-1, 3))
+        x0_globals = x0[0, :]
+        x0 = x0[1:, :]
+        res = np.array(self.result.params).reshape((-1, 3))
+        res_globals = res[0, :]
+        res = res[1:, :]
+
+        idx = x0[:, 1].argsort()[::-1]
+        x0 = x0[idx]
+        res = res[idx]
+
         # print summary
         print()
         print('SEED PARAMETER VALUES:')
         print('----------------------')
-
-        for i in range(0, len(self.x0), 3):
-            lblpars(i)
-            print(self.x0[i:i + 3])
+        print('Global parameters')
+        print(x0_globals)
+        print('Peak parameters')
+        for i in range(x0.shape[0]):
+            print(x0[i, :])
 
         print()
         print('CONVERGED PARAMETER VALUES:')
         print('---------------------------')
-
-        for i in range(0, len(self.result.params), 3):
-            lblpars(i)
-            print(self.result.params[i:i + 3])
+        print('Global parameters')
+        print(res_globals)
+        print('Peak parameters')
+        for i in range(res.shape[0]):
+            print(res[i, :])
 
         print("Error:  ", self.result.error)
 
@@ -243,15 +256,6 @@ class FitUtility:
         self.print_summary()
         if plot is True:
             self.summary_plot()
-
-
-def lblpars(i):
-    if (i == 0):
-        print ('Global Parameters:')
-    elif (i == 3):
-        print ('Major Peak Parameters:')
-    elif (i == 9):
-        print ('Minor Peak Parameters:')
 
 
 def varian_process(fidfile, procfile):
