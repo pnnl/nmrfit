@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy as sp
 import scipy.integrate
+import peakutils
 
 
 class Peaks(list):
@@ -205,27 +206,26 @@ class AutoPeakSelector:
 
         self.u_smoothed = sp.signal.savgol_filter(self.u, 11, 4)
 
+        self.baseline = piecewise_baseline(self.w, self.u_smoothed)
+
         self.peaks = Peaks()
 
     def find_maxima(self):
         x_spacing = self.w[1] - self.w[0]
         window = int(0.02 / x_spacing)  # arbitrary spacing (0.02)
 
-        idx = sp.signal.argrelmax(self.u_smoothed, order=window)
+        idx = sp.signal.argrelmax(self.u_smoothed, order=window)[0]
 
-        u_peaks = self.u[idx]
-        w_peaks = self.w[idx]
-
-        for y, x in zip(u_peaks, w_peaks):
+        for i in idx:
             p = Peak()
-            p.loc = x
-            p.height = y
+            p.loc = self.w[i]
+            p.height = self.u[i] - self.baseline[i]
             self.peaks.append(p)
 
     def find_sigma(self):
         screened_peaks = Peaks()
         for p in self.peaks:
-            d = np.sign(p.height / 2. - self.u[0:-1]) - np.sign(p.height / 2. - self.u[1:])
+            d = np.sign(p.height / 2. - (self.u[0:-1] - self.baseline[0:-1])) - np.sign(p.height / 2. - (self.u[1:] - self.baseline[1:]))
             rightIdx = np.where(d < 0)[0]  # right
             leftIdx = np.where(d > 0)[0]  # left
 
@@ -331,3 +331,19 @@ def sample_noise(X, Y, xstart, xstop):
     noise = noiseY - baselinefit(noiseX)
 
     return np.std(noise)
+
+
+def piecewise_baseline(x, y):
+    third = x.shape[0] / 3
+
+    y1 = y[0:third]
+    y2 = y[third:2 * third]
+    y3 = y[2 * third:]
+
+    base1 = peakutils.baseline(y1, 2)
+    base2 = np.ones(y2.shape) * np.median(y2)
+    base3 = peakutils.baseline(y3, 2)
+
+    baseline = np.concatenate((base1, base2, base3))
+
+    return baseline
