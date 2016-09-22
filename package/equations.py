@@ -200,7 +200,8 @@ def wts(roibounds, V_data, w, expon):
 
     biggest = np.amax(maxabs)
 
-    wts = np.ones(len(w))
+    defaultweight=0.1
+    wts = np.ones(len(w))*defaultweight
 
     for i, bound in enumerate(roibounds):
         wts[lIdx[i]:rIdx[i] + 1] = np.power(biggest / maxabs[i], expon)
