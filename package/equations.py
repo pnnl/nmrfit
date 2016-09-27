@@ -175,6 +175,7 @@ def objective(x, w, u, v, x0):
     # return the total residual
     return V_residual
 
+
 # the vectorized form can compute the integral for all w
 kk_relation_vectorized = np.vectorize(kk_relation, otypes=[np.float])
 
