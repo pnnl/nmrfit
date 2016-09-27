@@ -131,11 +131,11 @@ class PeakSelector:
         # initialize plot
         self.fig = plt.figure()
         plt.plot(w, u)
-        # plt.axis([w[-1], w[0], min(u) - max(u) * 0.05, max(u) * 1.1])
-        # plt.gca().invert_xaxis()
 
         # start event listener
         self.cid = self.fig.canvas.mpl_connect('button_press_event', self)
+
+        self.baseline = piecewise_baseline(self.w, self.u)
 
         # display the plot
         plt.show()
@@ -179,7 +179,9 @@ class PeakSelector:
         peak.sigma = (wMax - wMin) / 3.
 
         # determine peak height and location of peak by searching over an interval
-        peak.height, peak.loc = find_peak(self.w, self.u, wMin, wMax)
+        peak.height, peak.loc, peak.i = find_peak(self.w, self.u, wMin, wMax)
+
+        peak.height = peak.height - self.baseline[peak.i]
 
         # determine indices within the peak width
         peak.idx = np.where((self.w > wMin) & (self.w < wMax))
@@ -188,7 +190,7 @@ class PeakSelector:
         peak.bounds = [wMin, wMax]
 
         # calculate AUC over the width of the peak numerically
-        peak.area = sp.integrate.simps(self.u[peak.idx], self.w[peak.idx])
+        peak.area = sp.integrate.simps(self.u[peak.idx] - self.baseline[peak.idx], self.w[peak.idx])
 
         self.peak = peak
 
@@ -219,6 +221,7 @@ class AutoPeakSelector:
         for i in idx:
             p = Peak()
             p.loc = self.w[i]
+            p.i = i
             p.height = self.u[i] - self.baseline[i]
             self.peaks.append(p)
 
@@ -238,7 +241,7 @@ class AutoPeakSelector:
 
                 p.idx = np.where((self.w >= p.bounds[0]) & (self.w <= p.bounds[1]))
 
-                p.area = sp.integrate.simps(self.u[p.idx], self.w[p.idx])
+                p.area = sp.integrate.simps(self.u[p.idx] - self.baseline[p.idx], self.w[p.idx])
 
                 screened_peaks.append(p)
 
@@ -253,7 +256,8 @@ class AutoPeakSelector:
     def plot(self):
         plt.plot(self.w, self.u, color='b')
         for p in self.peaks:
-            plt.scatter(p.loc, p.height, color='r')
+            print(p.height, self.baseline[p.i])
+            plt.scatter(p.loc, p.height + self.baseline[p.i], color='r')
             plt.axvline(p.bounds[0], color='g')
             plt.axvline(p.bounds[1], color='g')
 
@@ -293,7 +297,7 @@ def find_peak(x, y, low, high):
     peakloc = peakestX[peakindex]
     peakheight = peakestY[peakindex]
 
-    return peakheight, peakloc
+    return peakheight, peakloc, peakindex
 
 
 def rnd_data(sigma, origdata):
