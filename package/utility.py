@@ -256,7 +256,6 @@ class AutoPeakSelector:
     def plot(self):
         plt.plot(self.w, self.u, color='b')
         for p in self.peaks:
-            print(p.height, self.baseline[p.i])
             plt.scatter(p.loc, p.height + self.baseline[p.i], color='r')
             plt.axvline(p.bounds[0], color='g')
             plt.axvline(p.bounds[1], color='g')
