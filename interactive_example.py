@@ -26,7 +26,7 @@ res = fit.generate_result(scale=1)
 # summary
 fit.summary()
 
-print ('\nMoving on to TNC fit:\n')
+print('\nMoving on to TNC fit:\n')
 
 # Now we will pass global results onto TNC
 x0[:3] = res.params[:3]
