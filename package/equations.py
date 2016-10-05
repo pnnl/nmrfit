@@ -208,7 +208,7 @@ def wts(roibounds, V_data, w, expon):
 
     n=10
     omega=0.33333333
-    wts=laplace1d(wts,n,omega)
+    laplace1d(wts,n,omega)
 
     return wts
 
@@ -219,7 +219,4 @@ def laplace1d(x,n,omega):
     omega.  The end values of x are constrained to not change.
     """
     for i in range(0,n):
-        xl=np.lib.pad(x[1:], (0,1), 'reflect',reflect_type='odd')
-        xr=np.lib.pad(x[:-1], (1,0),'reflect',reflect_type='odd')
-        x=(1.-omega)*x+omega*0.5*(xl+xr)
-    return x
+        x[1:-1]=(1.-omega)*x[1:-1]+omega*0.5*(x[2:]+x[:-2])
