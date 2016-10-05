@@ -3,13 +3,13 @@ import os
 
 
 # input directory
-inDir = "./Data/blindedData/dc_4d_cdcl3_kilimanjaro_25c_1d_1H_2_050116.fid"
+inDir = "./Data/blindedData/dc_4b_cdcl3_kilimanjaro_25c_1d_1H_1_043016.fid"
 
 # read in data
 data = nmrft.varian_process(os.path.join(inDir, 'fid'), os.path.join(inDir, 'procpar'))
 
 # bound the data
-data.select_bounds(low=3.25, high=3.6)
+data.select_bounds(low=3.23, high=3.6)
 
 # interactively select peaks and satellites
 peaks = data.select_peaks(method='auto', n=6, plot=True)
