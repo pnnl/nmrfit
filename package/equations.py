@@ -213,6 +213,11 @@ def wts(roibounds, V_data, w, expon):
     return wts
 
 def laplace1d(x,n,omega):
+    """
+    Given an array x, we perform 1d laplacian smoothing on the 
+    values in x for n iterations and with relaxation factor 
+    omega.  The end values of x are constrained to not change.
+    """
     for i in range(0,n):
         xl=np.lib.pad(x[1:], (0,1), 'reflect',reflect_type='odd')
         xr=np.lib.pad(x[:-1], (1,0),'reflect',reflect_type='odd')
