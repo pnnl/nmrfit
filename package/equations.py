@@ -201,23 +201,24 @@ def wts(roibounds, V_data, w, expon):
 
     biggest = np.amax(maxabs)
 
-    defaultweight=0.1
-    wts = np.ones(len(w))*defaultweight
+    defaultweight = 0.1
+    wts = np.ones(len(w)) * defaultweight
 
     for i, bound in enumerate(roibounds):
         wts[lIdx[i]:rIdx[i] + 1] = np.power(biggest / maxabs[i], expon)
 
-    n=10
-    omega=0.33333333
-    laplace1d(wts,n,omega)
+    n = 10
+    omega = 0.33333333
+    laplace1d(wts, n, omega)
 
     return wts
 
-def laplace1d(x,n,omega):
+
+def laplace1d(x, n, omega):
     """
-    Given an array x, we perform 1d laplacian smoothing on the 
-    values in x for n iterations and with relaxation factor 
+    Given an array x, we perform 1d laplacian smoothing on the
+    values in x for n iterations and with relaxation factor
     omega.  The end values of x are constrained to not change.
     """
-    for i in range(0,n):
-        x[1:-1]=(1.-omega)*x[1:-1]+omega*0.5*(x[2:]+x[:-2])
+    for i in range(0, n):
+        x[1:-1] = (1. - omega) * x[1:-1] + omega * 0.5 * (x[2:] + x[:-2])

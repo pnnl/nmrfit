@@ -12,7 +12,8 @@ data = nmrft.varian_process(os.path.join(inDir, 'fid'), os.path.join(inDir, 'pro
 data.select_bounds(low=3.23, high=3.6)
 
 # interactively select peaks and satellites
-peaks = data.select_peaks(method='auto', n=6, plot=True)
+peaks = data.select_peaks(method='manual', n=6, plot=True)
+quit()
 
 # generate bounds and initial conditions
 x0, bounds = data.generate_initial_conditions()
@@ -26,7 +27,7 @@ res = fit.generate_result(scale=1)
 # summary
 fit.summary()
 
-print ('\nMoving on to TNC fit:\n')
+print('\nMoving on to TNC fit:\n')
 
 # Now we will pass global results onto TNC
 x0[:3] = res.params[:3]

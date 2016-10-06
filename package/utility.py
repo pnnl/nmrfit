@@ -58,6 +58,7 @@ class BoundsSelector:
     -------
     None.
     '''
+
     def __init__(self, w, u, v, supress=False):
         self.u = u
         self.v = v
@@ -121,9 +122,14 @@ class PeakSelector:
     -------
     None.
     '''
-    def __init__(self, w, u):
+
+    def __init__(self, w, u, n):
         self.u = u
         self.w = w
+        self.n = n
+
+        # peak container
+        self.peaks = Peaks()
 
         # empty list to store point information from clicks
         self.points = []
@@ -149,9 +155,15 @@ class PeakSelector:
         # add x,y location of click
         self.points.append([event.xdata, event.ydata])
 
-        if len(self.points) == 2:
+        if (len(self.points) % 2 == 0) and (len(self.peaks) < self.n):
+            # add the peak
             self.parse_points()
-            plt.close()
+
+            # clear the list of points
+            self.points = []
+
+            if len(self.peaks) >= self.n:
+                plt.close()
 
     def parse_points(self):
         '''
@@ -192,10 +204,16 @@ class PeakSelector:
         # calculate AUC over the width of the peak numerically
         peak.area = sp.integrate.simps(self.u[peak.idx] - self.baseline[peak.idx], self.w[peak.idx])
 
-        self.peak = peak
+        self.peaks.append(peak)
 
-    def get_peak(self):
-        return self.peak
+    def plot(self):
+        plt.plot(self.w, self.u, color='b')
+        for p in self.peaks:
+            plt.scatter(p.loc, p.height + self.baseline[p.i], color='r')
+            plt.axvline(p.bounds[0], color='g')
+            plt.axvline(p.bounds[1], color='g')
+
+        plt.show()
 
 
 class AutoPeakSelector:
@@ -251,7 +269,7 @@ class AutoPeakSelector:
         self.find_maxima()
         self.find_sigma()
 
-        return self.peaks
+        # return self.peaks
 
     def plot(self):
         plt.plot(self.w, self.u, color='b')
@@ -337,7 +355,7 @@ def sample_noise(X, Y, xstart, xstop):
 
 
 def piecewise_baseline(x, y):
-    third = x.shape[0] / 3
+    third = int(x.shape[0] / 3)
 
     y1 = y[0:third]
     y2 = y[third:2 * third]
