@@ -137,7 +137,8 @@ class Data:
         if plot is True:
             ps.plot()
 
-        return ps.peaks
+        self.peaks = ps.peaks
+        return self.peaks
 
     def generate_initial_conditions(self, tol=0.05):
         x0 = [self.theta, 1., 0.]
