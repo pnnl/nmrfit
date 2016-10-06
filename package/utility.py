@@ -53,10 +53,6 @@ class BoundsSelector:
         Arrays of the real and imaginary components of the frequency response.
     supress : bool, optional
         Flag to specify whether the interactive portion will be invoked.
-
-    Returns
-    -------
-    None.
     '''
 
     def __init__(self, w, u, v, supress=False):
@@ -117,10 +113,6 @@ class PeakSelector:
         Array of frequency data.
     u, v : ndarray
         Arrays of the real and imaginary components of the frequency response.
-
-    Returns
-    -------
-    None.
     '''
 
     def __init__(self, w, u, n):
@@ -169,14 +161,6 @@ class PeakSelector:
         '''
         Called after 2 clicks on the plot.  Sorts the stored points in terms of frequency (w) to define
         low, middle, and high.  Subsequently determines approximate peak height, width, and area.
-
-        Parameters
-        ----------
-        None.
-
-        Returns
-        -------
-        Instance of Peak class
         '''
         peak = Peak()
 
