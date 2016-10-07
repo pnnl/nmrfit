@@ -17,6 +17,7 @@ class Result:
     -------
     None.
     '''
+
     def __init__(self):
         self.params = None
         self.error = None
@@ -46,6 +47,7 @@ class Data:
     -------
     None.
     '''
+
     def __init__(self, w, u, v, thetaEst):
         self.w = w
         self.u = u
@@ -69,7 +71,6 @@ class Data:
         -------
         None.
         '''
-
         # calculate V and I from u, v, and theta
         V = self.u * np.cos(theta) - self.v * np.sin(theta)
         I = self.u * np.sin(theta) + self.v * np.cos(theta)
@@ -94,7 +95,6 @@ class Data:
         -------
         None.
         '''
-
         if low is not None and high is not None:
             bs = BoundsSelector(self.w, self.u, self.v, supress=True)
             self.w, self.u, self.v = bs.apply_bounds(low=low, high=high)
@@ -123,24 +123,22 @@ class Data:
         '''
         if method.lower() == 'manual':
             if isinstance(n, int) and n > 0:
-                peaks = Peaks()
-                for i in range(n):
-                    ps = PeakSelector(self.w, self.V)
-                    peaks.append(ps.get_peak())
+                ps = PeakSelector(self.w, self.V, n)
             else:
                 raise ValueError("Number of peaks must be specified when using 'manual' flag")
 
         elif method.lower() == 'auto':
-            aps = AutoPeakSelector(self.w, self.V)
-            peaks = aps.find_peaks()
-            if plot is True:
-                aps.plot()
+            ps = AutoPeakSelector(self.w, self.V)
+            ps.find_peaks()
 
         else:
             raise ValueError("Method must be 'auto' or 'manual'.")
 
-        self.peaks = peaks
-        return peaks
+        if plot is True:
+            ps.plot()
+
+        self.peaks = ps.peaks
+        return self.peaks
 
     def generate_initial_conditions(self, tol=0.05):
         x0 = [self.theta, 1., 0.]
