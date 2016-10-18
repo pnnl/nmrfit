@@ -11,8 +11,8 @@ data = nmrft.varian_process(os.path.join(inDir, 'fid'), os.path.join(inDir, 'pro
 # bound the data
 data.select_bounds(low=3.23, high=3.6)
 
-# interactively select peaks and satellites
-peaks = data.select_peaks(method='manual', n=6, plot=True)
+# select peaks and satellites
+peaks = data.select_peaks(method='auto', n=6, plot=True)
 
 # generate bounds and initial conditions
 x0, bounds = data.generate_initial_conditions()
@@ -26,16 +26,18 @@ res = fit.generate_result(scale=1)
 # summary
 fit.summary()
 
-print('\nMoving on to TNC fit:\n')
+print(fit.calculate_area_fraction())
 
-# Now we will pass global results onto TNC
-x0[:3] = res.params[:3]
+# print('\nMoving on to TNC fit:\n')
 
-# fit data
-fit = nmrft.FitUtility(data, x0, method='TNC', bounds=bounds, options=None)
+# # Now we will pass global results onto TNC
+# x0[:3] = res.params[:3]
 
-# generate result
-res = fit.generate_result(scale=1)
+# # fit data
+# fit = nmrft.FitUtility(data, x0, method='TNC', bounds=bounds, options=None)
 
-# summary
-fit.summary()
+# # generate result
+# res = fit.generate_result(scale=1)
+
+# # summary
+# fit.summary()

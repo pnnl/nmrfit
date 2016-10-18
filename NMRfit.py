@@ -129,7 +129,18 @@ class FitUtility:
         self.data.V = V_data
         self.data.I = I_data
 
+        # calculate area fraction
+        self.result.area_fraction = self.calculate_area_fraction()
+
         return self.result
+
+    def calculate_area_fraction(self):
+        areas = np.array([self.result.params[i] for i in range(5, len(self.result.params), 3)])
+        m = np.median(areas)
+        peaks = areas[areas >= m].sum()
+        sats = areas[areas < m].sum()
+
+        return(sats / (peaks + sats))
 
     def summary_plot(self):
         peaks, satellites = self.data.peaks.split()
