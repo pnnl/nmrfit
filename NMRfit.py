@@ -136,7 +136,7 @@ class FitUtility:
 
     def calculate_area_fraction(self):
         areas = np.array([self.result.params[i] for i in range(5, len(self.result.params), 3)])
-        m = np.median(areas)
+        m = np.mean(areas)
         peaks = areas[areas >= m].sum()
         sats = areas[areas < m].sum()
 
