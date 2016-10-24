@@ -9,7 +9,8 @@ inDir = "./Data/blindedData/dc_4b_cdcl3_kilimanjaro_25c_1d_1H_1_043016.fid"
 data = nmrft.varian_process(os.path.join(inDir, 'fid'), os.path.join(inDir, 'procpar'))
 
 # bound the data
-data.select_bounds(low=3.23, high=3.6)
+data.select_bounds()
+
 
 # select peaks and satellites
 peaks = data.select_peaks(method='auto', n=6, plot=True)

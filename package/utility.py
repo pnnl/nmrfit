@@ -63,9 +63,9 @@ class BoundsSelector:
 
         if not self.supress:
             self.fig = plt.figure()  # figsize=(9, 5), dpi=300
-            plt.plot(w, u)
-            # plt.axis([w[-1], w[0], min(u) - max(u) * 0.05, max(u) * 1.1])
-            # plt.gca().invert_xaxis()
+            plt.plot(w, u, linewidth=2)
+            plt.xlabel('Frequency')
+            plt.ylabel('Amplitude')
             self.cid = self.fig.canvas.mpl_connect('button_press_event', self)
             self.bounds = []
             plt.show()
@@ -128,7 +128,9 @@ class PeakSelector:
 
         # initialize plot
         self.fig = plt.figure()
-        plt.plot(w, u)
+        plt.plot(w, u, linewidth=2)
+        plt.xlabel('Frequency')
+        plt.ylabel('Amplitude')
 
         # start event listener
         self.cid = self.fig.canvas.mpl_connect('button_press_event', self)
@@ -191,12 +193,14 @@ class PeakSelector:
         self.peaks.append(peak)
 
     def plot(self):
-        plt.plot(self.w, self.u, color='b')
+        plt.plot(self.w, self.u, color='b', linewidth=2)
         for p in self.peaks:
             plt.scatter(p.loc, p.height + self.baseline[p.i], color='r')
             plt.axvline(p.bounds[0], color='g')
             plt.axvline(p.bounds[1], color='g')
 
+        plt.xlabel('Frequency')
+        plt.ylabel('Amplitude')
         plt.show()
 
 
@@ -256,11 +260,14 @@ class AutoPeakSelector:
         # return self.peaks
 
     def plot(self):
-        plt.plot(self.w, self.u, color='b')
+        plt.plot(self.w, self.u, color='b', linewidth=2)
         for p in self.peaks:
             plt.scatter(p.loc, p.height + self.baseline[p.i], color='r')
             plt.axvline(p.bounds[0], color='g')
             plt.axvline(p.bounds[1], color='g')
+
+        plt.xlabel('Frequency')
+        plt.ylabel('Amplitude')
 
         plt.show()
 
