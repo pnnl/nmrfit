@@ -229,7 +229,8 @@ class AutoPeakSelector:
             p.loc = self.w[i]
             p.i = i
             p.height = self.u[i] - self.baseline[i]
-            self.peaks.append(p)
+            if p.height > 0.0025:
+                self.peaks.append(p)
 
     def find_sigma(self):
         screened_peaks = Peaks()
