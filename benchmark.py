@@ -8,7 +8,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 # input directory
-inDir = "./Data/blindedData/"
+inDir = "./Data/blinded/"
 experiments = glob.glob(os.path.join(inDir, '*.fid'))
 
 c = ['id', 'sample', 'method', 'error', 'fraction',
