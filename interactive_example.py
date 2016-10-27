@@ -27,7 +27,7 @@ fit = nmrft.FitUtility(data, x0, method='Powell')
 res = fit.generate_result(scale=1)
 
 # summary
-# fit.summary()
+fit.summary()
 
 # print(fit.calculate_area_fraction())
 
@@ -42,7 +42,7 @@ x0[:3] = res.params[:3]
 mult = np.ones_like(x0)
 for i, item in enumerate(mult):
     if (i>2 and (i%3==0)):
-        mult[i]=0.5
+        mult[i]=0.75
 
 x0_adj=x0*mult
 
@@ -50,14 +50,14 @@ print("x0=",x0)
 print("x0_adj=",x0_adj)
 
 # fit data
-fit = nmrft.FitUtility(data, x0, method='TNC', bounds=bounds, options=None)
-#fit = nmrft.FitUtility(data, x0_adj, method='TNC', bounds=bounds, options=None)
+#fit = nmrft.FitUtility(data, x0, method='TNC', bounds=bounds, options=None)
+fit = nmrft.FitUtility(data, x0_adj, method='TNC', bounds=bounds, options=None)
 
 # generate result
-res = fit.generate_result(scale=10)
+res = fit.generate_result(scale=1)
 
 # # summary
-# fit.summary()
+fit.summary()
 
 plt.plot(fit.data.w, fit.data.V, linewidth=2, alpha=0.5)
 plt.plot(fit.result.w, fit.result.V, linewidth=2, alpha=0.5)
