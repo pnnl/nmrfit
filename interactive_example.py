@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 
 # input directory
-inDir = "./Data/blindedData/dc_4f_cdcl3_kilimanjaro_25c_1d_1H_2_050216.fid"
+inDir = "./Data/blindedData/dc_4e_cdcl3_kilimanjaro_25c_1d_1H_1_050116.fid"
 
 # read in data
 data = nmrft.varian_process(os.path.join(inDir, 'fid'), os.path.join(inDir, 'procpar'))
@@ -38,20 +38,23 @@ x0[:3] = res.params[:3]
 fit = nmrft.FitUtility(data, x0, method='TNC', bounds=bounds, options=None)
 
 # generate result
-res = fit.generate_result(scale=1)
+res = fit.generate_result(scale=10)
 
 # # summary
 # fit.summary()
 
-plt.figure(figsize=(9, 5))
-plt.plot(fit.data.w, fit.data.V, linewidth=2, alpha=0.5)
-# plt.plot(fit.result.w, fit.result.V, linewidth=2, alpha=0.5)
+plt.figure(figsize=(5, 5))
+plt.plot(fit.data.w, fit.data.V, linewidth=2, alpha=0.5, color='b', label='Data')
+plt.plot(fit.result.w, fit.result.V, linewidth=2, alpha=0.5, color='r', label='Fit')
+plt.legend()
 plt.xlabel('Frequency', fontsize=16)
 plt.ylabel('Amplitude', fontsize=16)
 plt.show()
 
-# plt.plot(fit.data.w, fit.data.I, linewidth=2, alpha=0.5)
-# plt.plot(fit.result.w, fit.result.I, linewidth=2, alpha=0.5)
-# plt.xlabel('Frequency')
-# plt.ylabel('Amplitude')
-# plt.show()
+plt.figure(figsize=(5, 5))
+plt.plot(fit.data.w, fit.data.I, linewidth=2, alpha=0.5, color='b', label='Data')
+plt.plot(fit.result.w, fit.result.I, linewidth=2, alpha=0.5, color='r', label='Fit')
+plt.legend()
+plt.xlabel('Frequency', fontsize=16)
+plt.ylabel('Amplitude', fontsize=16)
+plt.show()
