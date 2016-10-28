@@ -13,7 +13,6 @@ data = nmrft.varian_process(os.path.join(inDir, 'fid'), os.path.join(inDir, 'pro
 # bound the data
 data.select_bounds(low=3.23, high=3.6)
 
-
 # select peaks and satellites
 peaks = data.select_peaks(method='auto', n=6, plot=True)
 
@@ -30,8 +29,6 @@ res = fit.generate_result(scale=1)
 fit.summary()
 
 # print(fit.calculate_area_fraction())
-
-
 
 print('\nMoving on to TNC fit:\n')
 
@@ -59,14 +56,18 @@ res = fit.generate_result(scale=1)
 # # summary
 fit.summary()
 
-plt.plot(fit.data.w, fit.data.V, linewidth=2, alpha=0.5)
-plt.plot(fit.result.w, fit.result.V, linewidth=2, alpha=0.5)
-plt.xlabel('Frequency')
-plt.ylabel('Amplitude')
+plt.figure(figsize=(5, 5))
+plt.plot(fit.data.w, fit.data.V, linewidth=2, alpha=0.5, color='b', label='Data')
+plt.plot(fit.result.w, fit.result.V, linewidth=2, alpha=0.5, color='r', label='Fit')
+plt.legend()
+plt.xlabel('Frequency', fontsize=16)
+plt.ylabel('Amplitude', fontsize=16)
 plt.show()
 
-plt.plot(fit.data.w, fit.data.I, linewidth=2, alpha=0.5)
-plt.plot(fit.result.w, fit.result.I, linewidth=2, alpha=0.5)
-plt.xlabel('Frequency')
-plt.ylabel('Amplitude')
+plt.figure(figsize=(5, 5))
+plt.plot(fit.data.w, fit.data.I, linewidth=2, alpha=0.5, color='b', label='Data')
+plt.plot(fit.result.w, fit.result.I, linewidth=2, alpha=0.5, color='r', label='Fit')
+plt.legend()
+plt.xlabel('Frequency', fontsize=16)
+plt.ylabel('Amplitude', fontsize=16)
 plt.show()

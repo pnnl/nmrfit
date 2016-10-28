@@ -193,14 +193,15 @@ class PeakSelector:
         self.peaks.append(peak)
 
     def plot(self):
+        plt.figure(figsize=(9, 5))
         plt.plot(self.w, self.u, color='b', linewidth=2)
         for p in self.peaks:
             plt.scatter(p.loc, p.height + self.baseline[p.i], color='r')
             plt.axvline(p.bounds[0], color='g')
             plt.axvline(p.bounds[1], color='g')
 
-        plt.xlabel('Frequency')
-        plt.ylabel('Amplitude')
+        plt.xlabel('Frequency', fontsize=16)
+        plt.ylabel('Amplitude', fontsize=16)
         plt.show()
 
 
@@ -261,14 +262,15 @@ class AutoPeakSelector:
         # return self.peaks
 
     def plot(self):
+        plt.figure(figsize=(9, 5))
         plt.plot(self.w, self.u, color='b', linewidth=2)
         for p in self.peaks:
             plt.scatter(p.loc, p.height + self.baseline[p.i], color='r')
             plt.axvline(p.bounds[0], color='g')
             plt.axvline(p.bounds[1], color='g')
 
-        plt.xlabel('Frequency')
-        plt.ylabel('Amplitude')
+        plt.xlabel('Frequency', fontsize=16)
+        plt.ylabel('Amplitude', fontsize=16)
 
         plt.show()
 
