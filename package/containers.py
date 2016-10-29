@@ -146,6 +146,6 @@ class Data:
 
         for p in self.peaks:
             x0.extend([p.sigma, p.loc, p.area])
-            bounds.extend([(None, None), (p.loc - tol, p.loc + tol), (None, None)])
+            bounds.extend([(p.sigma*0.1, None), (p.loc - tol, p.loc + tol), (p.area*0.1, None)])
 
         return x0, bounds

@@ -34,21 +34,11 @@ print('\nMoving on to TNC fit:\n')
 
 # Now we will pass global results onto TNC
 x0[:3] = res.params[:3]
-
-# create x0_adj, adjusted initial condition vector that has smaller sigmas
-mult = np.ones_like(x0)
-for i, item in enumerate(mult):
-    if (i>2 and (i%3==0)):
-        mult[i]=0.75
-
-x0_adj=x0*mult
-
-print("x0=",x0)
-print("x0_adj=",x0_adj)
+x0[1]=max(0.,min(1.,x0[1]))
 
 # fit data
 #fit = nmrft.FitUtility(data, x0, method='TNC', bounds=bounds, options=None)
-fit = nmrft.FitUtility(data, x0_adj, method='TNC', bounds=bounds, options=None)
+fit = nmrft.FitUtility(data, x0, method='TNC', bounds=bounds, options={'maxCGit':1000,'maxiter':1000})
 
 # generate result
 res = fit.generate_result(scale=1)
