@@ -58,9 +58,10 @@ for exp in experiments:
 
     # Now we will pass global results onto TNC
     x0[:3] = res.params[:3]
+    x0[1]=max(0.,min(1.,x0[1]))
 
     # fit data
-    fit = nmrft.FitUtility(data, x0, method='TNC', bounds=bounds, options=None)
+    fit = nmrft.FitUtility(data, x0, method='TNC', bounds=bounds, options={'maxCGit':1000,'maxiter':1000})
 
     # generate result
     res = fit.generate_result(scale=1)
