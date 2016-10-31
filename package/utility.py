@@ -113,6 +113,8 @@ class PeakSelector:
         Array of frequency data.
     u, v : ndarray
         Arrays of the real and imaginary components of the frequency response.
+    n : int
+        Number of peaks to select.
     '''
 
     def __init__(self, w, u, n):
@@ -180,8 +182,8 @@ class PeakSelector:
         peak.height, peak.loc, peak.i = find_peak(self.w, self.u, wMin, wMax)
 
         # adjust wMin, wMax to be at +/- 4 sigmas
-        wMin=peak.loc-4*peak.sigma
-        wMax=peak.loc+4*peak.sigma
+        wMin = peak.loc - 4 * peak.sigma
+        wMax = peak.loc + 4 * peak.sigma
 
         peak.height = peak.height - self.baseline[peak.i]
 
@@ -197,6 +199,10 @@ class PeakSelector:
         self.peaks.append(peak)
 
     def plot(self):
+        '''
+        Plots the result of the peak selection process to indicate detected peak locations and bounds.
+        '''
+
         plt.figure(figsize=(9, 5))
         plt.plot(self.w, self.u, color='b', linewidth=2)
         for p in self.peaks:
@@ -210,6 +216,19 @@ class PeakSelector:
 
 
 class AutoPeakSelector:
+    '''
+    Automatic utility used to identify peaks and calculate approximations to peak height, width, and area.
+    Uses local non-maxima supression to find relative maxima (peaks) and FWHM analysis to determine an
+    approximation of width/sigma.
+
+    Parameters
+    ----------
+    w : ndarray
+        Array of frequency data.
+    u, v : ndarray
+        Arrays of the real and imaginary components of the frequency response.
+    '''
+
     def __init__(self, w, u):
 
         f = sp.interpolate.interp1d(w, u)
@@ -224,6 +243,10 @@ class AutoPeakSelector:
         self.peaks = Peaks()
 
     def find_maxima(self):
+        '''
+        Local non-maxima supression to find peaks.
+        '''
+
         x_spacing = self.w[1] - self.w[0]
         window = int(0.02 / x_spacing)  # arbitrary spacing (0.02)
 
@@ -234,10 +257,14 @@ class AutoPeakSelector:
             p.loc = self.w[i]
             p.i = i
             p.height = self.u[i] - self.baseline[i]
-            if p.height > 0.0025:
+            if p.height > 0.0025:  # hard-coded threshold for peak size...
                 self.peaks.append(p)
 
     def find_sigma(self):
+        '''
+        Using peak information, finds FWHM and performs a conversion to get sigma.
+        '''
+
         screened_peaks = Peaks()
         for p in self.peaks:
             d = np.sign(p.height / 2. - (self.u[0:-1] - self.baseline[0:-1])) - np.sign(p.height / 2. - (self.u[1:] - self.baseline[1:]))
@@ -260,12 +287,19 @@ class AutoPeakSelector:
         self.peaks = screened_peaks
 
     def find_peaks(self):
+        '''
+        Convenience function to call both peak detection and FWHM analysis methods
+        in appropriate order.
+        '''
+
         self.find_maxima()
         self.find_sigma()
 
-        # return self.peaks
-
     def plot(self):
+        '''
+        Plots the result of the peak selection process to indicate detected peak locations and bounds.
+        '''
+
         plt.figure(figsize=(9, 5))
         plt.plot(self.w, self.u, color='b', linewidth=2)
         for p in self.peaks:
@@ -353,6 +387,21 @@ def sample_noise(X, Y, xstart, xstop):
 
 
 def piecewise_baseline(x, y):
+    '''
+    Calculates a piecewise baseline from the x/y data.  Splits the data into thirds and fits a baseline
+    to each section.  Used to correct for baseline offsest during initial condition selection.
+
+    Parameters
+    ----------
+    x, y : ndarray
+        x and y components of the data.
+
+    Returns
+    -------
+    baseline : ndarray
+        Array of y values representing the baseline.  Same shape as x, y.
+    '''
+
     third = int(x.shape[0] / 3)
 
     y1 = y[0:third]
