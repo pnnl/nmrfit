@@ -178,8 +178,8 @@ class PeakSelector:
         # determine width from min and max
         # ====================================================
         # IMPORTANT CHANGE.  MAKE SURE THIS IS RIGHT
-        # user captures 8 stdevs with clicks
-        peak.width = (wMax - wMin) / (16 * np.sqrt(2 * np.log(2)))
+        # user captures +/- 3 FWHMs with clicks
+        peak.width = (wMax - wMin) / 6
         # ====================================================
 
         # determine peak height and location of peak by searching over an interval
@@ -228,12 +228,17 @@ class AutoPeakSelector:
     ----------
     w : ndarray
         Array of frequency data.
-    u, v : ndarray
-        Arrays of the real and imaginary components of the frequency response.
+    u : ndarray
+        Array of the real component of the frequency response.
+    thresh : float
+        Threshold for minimum amplitude cutoff in peak selection.
+    window : float
+        Window size for local non-maximum supression. 
     '''
 
-    def __init__(self, w, u, thresh):
+    def __init__(self, w, u, thresh, window):
         self.thresh = thresh
+        self.window = window
         f = sp.interpolate.interp1d(w, u)
 
         self.w = np.linspace(w.min(), w.max(), int(len(w) * 100))  # arbitrary upsampling
@@ -251,7 +256,7 @@ class AutoPeakSelector:
         '''
 
         x_spacing = self.w[1] - self.w[0]
-        window = int(0.02 / x_spacing)  # arbitrary spacing (0.02)
+        window = int(self.window / x_spacing)  # arbitrary spacing (0.02)
 
         idx = sp.signal.argrelmax(self.u_smoothed, order=window)[0]
 
