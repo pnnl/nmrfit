@@ -15,7 +15,6 @@ data.select_bounds(low=3.23, high=3.6)
 
 # select peaks and satellites
 peaks = data.select_peaks(method='manual', n=6, plot=True)
-quit()
 
 # generate bounds and initial conditions
 x0, bounds = data.generate_initial_conditions()
