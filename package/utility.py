@@ -185,7 +185,6 @@ class PeakSelector:
         # determine peak height and location of peak by searching over an interval
         peak.height, peak.loc, peak.i = find_peak(self.w, self.u, wMin, wMax)
 
-        # adjust wMin, wMax to be at +/- 4 widths
         # ====================================================
         # IMPORTANT CHANGE.  MAKE SURE THIS IS RIGHT
         # bounds are +/- 3 widths
