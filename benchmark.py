@@ -8,13 +8,13 @@ import warnings
 warnings.filterwarnings("ignore")
 
 # input directory
-inDir = "./Data/blinded/"
+inDir = "./Data/blindedData/"
 experiments = glob.glob(os.path.join(inDir, '*.fid'))
 
 c = ['id', 'sample', 'method', 'error', 'fraction',
      'theta', 'GLratio', 'yoff']
 for i in range(1, 7):
-    c.extend(['s' + str(i), 'mu' + str(i), 'a' + str(i)])
+    c.extend(['s' + str(i), 'loc' + str(i), 'a' + str(i)])
 
 l = []
 for exp in experiments:

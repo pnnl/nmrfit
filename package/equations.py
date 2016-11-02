@@ -3,7 +3,7 @@ import scipy as sp
 import scipy.integrate
 
 
-def kk_equation(x, r, yOff, width, mu, a, w):
+def kk_equation(x, r, yOff, width, loc, a, w):
     '''
     The equation inside the integral in the Kramers-Kronig relation. Used to evaluate the V->I transform.
     This specific implementation has been arranged such that the singularity at x==w is accounted for.
@@ -18,7 +18,7 @@ def kk_equation(x, r, yOff, width, mu, a, w):
         Y-offset of the Voigt function.
     width : float
         The width of the Voigt function.
-    mu : float
+    loc : float
         Center of the Voigt function.
     a : float
         Area of the Voigt function.
@@ -32,13 +32,13 @@ def kk_equation(x, r, yOff, width, mu, a, w):
     '''
 
     # first half of integral (Lorentzian, Gaussian, and Voigt, respectively)
-    L1 = (2 / (np.pi * width)) * 1 / (1 + ((x + w - mu) / (0.5 * width))**2)
-    G1 = (2 / width) * np.sqrt(np.log(2) / np.pi) * np.exp(-((x + w - mu) / (width / (2 * np.sqrt(np.log(2)))))**2)
+    L1 = (2 / (np.pi * width)) * 1 / (1 + ((x + w - loc) / (0.5 * width))**2)
+    G1 = (2 / width) * np.sqrt(np.log(2) / np.pi) * np.exp(-((x + w - loc) / (width / (2 * np.sqrt(np.log(2)))))**2)
     V1 = yOff + a * (r * L1 + (1 - r) * G1)
 
     # second half of integral
-    L2 = (2 / (np.pi * width)) * 1 / (1 + ((-x + w - mu) / (0.5 * width))**2)
-    G2 = (2 / width) * np.sqrt(np.log(2) / np.pi) * np.exp(-((-x + w - mu) / (width / (2 * np.sqrt(np.log(2)))))**2)
+    L2 = (2 / (np.pi * width)) * 1 / (1 + ((-x + w - loc) / (0.5 * width))**2)
+    G2 = (2 / width) * np.sqrt(np.log(2) / np.pi) * np.exp(-((-x + w - loc) / (width / (2 * np.sqrt(np.log(2)))))**2)
     V2 = yOff + a * (r * L2 + (1 - r) * G2)
 
     # combining both halves for the total integral
@@ -46,7 +46,7 @@ def kk_equation(x, r, yOff, width, mu, a, w):
     return V
 
 
-def kk_relation(w, r, yOff, width, mu, a):
+def kk_relation(w, r, yOff, width, loc, a):
     '''
     Performs the integral required of the Kramers-Kronig relation using the kk_equation function
     for a given w.  Note that this integral is only evaluated for a single w.  The vectorized form
@@ -62,7 +62,7 @@ def kk_relation(w, r, yOff, width, mu, a):
         Y-offset of the Voigt function.
     width : float
         The width of the Voigt function.
-    mu : float
+    loc : float
         Center of the Voigt function.
     a : float
         Area of the Voigt function.
@@ -73,11 +73,11 @@ def kk_relation(w, r, yOff, width, mu, a):
         Value of the integral evaluated at w.
     '''
 
-    res, err = sp.integrate.quad(kk_equation, 0, np.inf, args=(r, yOff, width, mu, a, w))
+    res, err = sp.integrate.quad(kk_equation, 0, np.inf, args=(r, yOff, width, loc, a, w))
     return res / np.pi
 
 
-def voigt(w, r, yOff, width, mu, a):
+def voigt(w, r, yOff, width, loc, a):
     '''
     Calculates a Voigt function over the range w based on the relevant properties of the distribution.
 
@@ -91,7 +91,7 @@ def voigt(w, r, yOff, width, mu, a):
         Y-offset of the Voigt function.
     width : float
         The width of the Voigt function.
-    mu : float
+    loc : float
         Center of the Voigt function.
     a : float
         Area of the Voigt function.
@@ -103,10 +103,10 @@ def voigt(w, r, yOff, width, mu, a):
     '''
 
     # Lorentzian component
-    L = (2 / (np.pi * width)) * 1 / (1 + ((w - mu) / (0.5 * width))**2)
+    L = (2 / (np.pi * width)) * 1 / (1 + ((w - loc) / (0.5 * width))**2)
 
     # Gaussian component
-    G = (2 / width) * np.sqrt(np.log(2) / np.pi) * np.exp(-((w - mu) / (width / (2 * np.sqrt(np.log(2)))))**2)
+    G = (2 / width) * np.sqrt(np.log(2) / np.pi) * np.exp(-((w - loc) / (width / (2 * np.sqrt(np.log(2)))))**2)
 
     # Voigt body
     V = yOff + a * (r * L + (1 - r) * G)
@@ -159,10 +159,10 @@ def objective(x, w, u, v, x0):
     for i in range(3, len(x), 3):
         # current approximations
         width = x[i]
-        mu = x[i + 1]
+        loc = x[i + 1]
         a = x[i + 2]
 
-        V_fit = V_fit + voigt(w, r, yOff, width, mu, a)
+        V_fit = V_fit + voigt(w, r, yOff, width, loc, a)
 
     roibounds = []
     for i in range(4, len(x0), 3):

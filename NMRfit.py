@@ -108,11 +108,11 @@ class FitUtility:
         # iteratively add the contribution of each peak to the fits for V and I
         for i in range(0, len(res), 3):
             width = res[i]
-            mu = res[i + 1]
+            loc = res[i + 1]
             a = res[i + 2]
 
-            V_fit = V_fit + voigt(w, r, yOff, width, mu, a)
-            I_fit = I_fit + kk_relation_vectorized(w, r, yOff, width, mu, a)
+            V_fit = V_fit + voigt(w, r, yOff, width, loc, a)
+            I_fit = I_fit + kk_relation_vectorized(w, r, yOff, width, loc, a)
 
         # transform the fits for V and I to get fits for u and v
         u_fit = V_fit * np.cos(theta) + I_fit * np.sin(theta)
