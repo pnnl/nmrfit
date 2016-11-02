@@ -104,7 +104,7 @@ class Data:
 
         self.shift_phase(self.theta)
 
-    def select_peaks(self, method='auto', n=None, plot=False):
+    def select_peaks(self, method='auto', n=None, thresh=0.0, plot=False):
         '''
         Method to interface with the utility class PeakSelector.  Will open an interactive utility used to select
         peaks n times.
@@ -128,7 +128,7 @@ class Data:
                 raise ValueError("Number of peaks must be specified when using 'manual' flag")
 
         elif method.lower() == 'auto':
-            ps = AutoPeakSelector(self.w, self.V)
+            ps = AutoPeakSelector(self.w, self.V, thresh)
             ps.find_peaks()
 
         else:
@@ -145,7 +145,7 @@ class Data:
         bounds = [(None, None), (0., 1.), (None, None)]
 
         for p in self.peaks:
-            x0.extend([p.sigma, p.loc, p.area])
-            bounds.extend([(p.sigma*0.1, None), (p.loc - tol, p.loc + tol), (p.area*0.1, None)])
+            x0.extend([p.width, p.loc, p.area])
+            bounds.extend([(p.width * 0.1, None), (p.loc - tol, p.loc + tol), (p.area * 0.1, None)])
 
         return x0, bounds

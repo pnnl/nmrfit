@@ -142,7 +142,7 @@ class Tutorial:
                    [s[2].bounds, sca * p[0].height / s[2].height],
                    [s[3].bounds, sca * p[0].height / s[3].height]]
 
-        # initial conditions of the form [theta, r, yOff, sigma_n, mu_n, a_n,...]
+        # initial conditions of the form [theta, r, yOff, width_n, mu_n, a_n,...]
         x0 = [0, 0.1, 0,                                  # shared params
               p[0].width / 10, p[0].loc, p[0].area,       # p1 init
               p[1].width / 10, p[1].loc, p[1].area,       # p2 init

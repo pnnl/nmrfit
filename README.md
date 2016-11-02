@@ -29,7 +29,7 @@ peaks = data.select_peaks(method='auto', plot=True)
 peaks = data.select_peaks(method='manual', n=6, plot=True
 ```
 
-The generate_initial_conditions() method is then used to create an initial condition vector to seed a fit by least-squares minimization.  The initial-condition vector contains 3 global parameters (phase, theta; Gaussian-Lorentzian ratio, r; and y-offset, dy) and 3 parameters per peak (standard deviation, sigma;  center, mu; and area, a).  These values are used to construct area-parameterized Voigt-body approximations for each peak [2009 paper].  
+The generate_initial_conditions() method is then used to create an initial condition vector to seed a fit by least-squares minimization.  The initial-condition vector contains 3 global parameters (phase, theta; Gaussian-Lorentzian ratio, r; and y-offset, dy) and 3 parameters per peak (width;  center, mu; and area, a).  These values are used to construct area-parameterized Voigt-body approximations for each peak [2009 paper].  
 
 ```python
 # generate the initial condition vector

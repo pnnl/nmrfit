@@ -35,9 +35,9 @@ class Peak:
                Location: %s
                Height: %s
                Bounds: [%s, %s]
-               Sigma: %s
+               Width: %s
                Area: %s\
-               ''' % (self.loc, self.height, self.bounds[0], self.bounds[1], self.sigma, self.area)
+               ''' % (self.loc, self.height, self.bounds[0], self.bounds[1], self.width, self.area)
 
 
 class BoundsSelector:
@@ -176,22 +176,26 @@ class PeakSelector:
         wMax = self.points[1][0]
 
         # determine width from min and max
-        peak.sigma = (wMax - wMin) / 8.
+        # ====================================================
+        # IMPORTANT CHANGE.  MAKE SURE THIS IS RIGHT
+        # user captures 8 stdevs with clicks
+        peak.width = (wMax - wMin) / (16 * np.sqrt(2 * np.log(2)))
+        # ====================================================
 
         # determine peak height and location of peak by searching over an interval
         peak.height, peak.loc, peak.i = find_peak(self.w, self.u, wMin, wMax)
 
-        # adjust wMin, wMax to be at +/- 4 sigmas
-        wMin = peak.loc - 4 * peak.sigma
-        wMax = peak.loc + 4 * peak.sigma
+        # adjust wMin, wMax to be at +/- 4 widths
+        # ====================================================
+        # IMPORTANT CHANGE.  MAKE SURE THIS IS RIGHT
+        # bounds are +/- 3 widths
+        peak.bounds = [peak.loc - 3 * peak.width, peak.loc + 3 * peak.width]
+        # ====================================================
 
         peak.height = peak.height - self.baseline[peak.i]
 
         # determine indices within the peak width
-        peak.idx = np.where((self.w > wMin) & (self.w < wMax))
-
-        # store min/max bounds
-        peak.bounds = [wMin, wMax]
+        peak.idx = np.where((self.w > peak.bounds[0]) & (self.w < peak.bounds[1]))
 
         # calculate AUC over the width of the peak numerically
         peak.area = sp.integrate.simps(self.u[peak.idx] - self.baseline[peak.idx], self.w[peak.idx])
@@ -219,7 +223,7 @@ class AutoPeakSelector:
     '''
     Automatic utility used to identify peaks and calculate approximations to peak height, width, and area.
     Uses local non-maxima supression to find relative maxima (peaks) and FWHM analysis to determine an
-    approximation of width/sigma.
+    approximation of width/width.
 
     Parameters
     ----------
@@ -229,8 +233,8 @@ class AutoPeakSelector:
         Arrays of the real and imaginary components of the frequency response.
     '''
 
-    def __init__(self, w, u):
-
+    def __init__(self, w, u, thresh):
+        self.thresh = thresh
         f = sp.interpolate.interp1d(w, u)
 
         self.w = np.linspace(w.min(), w.max(), int(len(w) * 100))  # arbitrary upsampling
@@ -257,12 +261,12 @@ class AutoPeakSelector:
             p.loc = self.w[i]
             p.i = i
             p.height = self.u[i] - self.baseline[i]
-            if p.height > 0.0025:  # hard-coded threshold for peak size...
+            if p.height > self.thresh:
                 self.peaks.append(p)
 
-    def find_sigma(self):
+    def find_width(self):
         '''
-        Using peak information, finds FWHM and performs a conversion to get sigma.
+        Using peak information, finds FWHM and performs a conversion to get width.
         '''
 
         screened_peaks = Peaks()
@@ -275,8 +279,17 @@ class AutoPeakSelector:
             x_left = self.w[leftIdx[np.argmin(np.abs(self.w[leftIdx] - p.loc))]]
 
             if x_left < x_right:
-                p.sigma = (x_right - x_left) / 2.3548
-                p.bounds = [p.loc - (4 * p.sigma), p.loc + 4 * p.sigma]
+                # ====================================================
+                # IMPORTANT CHANGE.  MAKE SURE THIS IS RIGHT
+                # width equals FWHM
+                p.width = x_right - x_left
+                # ====================================================
+
+                # ====================================================
+                # IMPORTANT CHANGE.  MAKE SURE THIS IS RIGHT
+                # bounds are +/- 3 widths
+                p.bounds = [p.loc - 3 * p.width, p.loc + 3 * p.width]
+                # ====================================================
 
                 p.idx = np.where((self.w >= p.bounds[0]) & (self.w <= p.bounds[1]))
 
@@ -293,7 +306,7 @@ class AutoPeakSelector:
         '''
 
         self.find_maxima()
-        self.find_sigma()
+        self.find_width()
 
     def plot(self):
         '''
@@ -349,7 +362,7 @@ def find_peak(x, y, low, high):
     return peakheight, peakloc, peakindex
 
 
-def rnd_data(sigma, origdata):
+def rnd_data(width, origdata):
     """
     Add normally distributed noise.
 
@@ -360,7 +373,7 @@ def rnd_data(sigma, origdata):
     -------
     """
 
-    synthnoise = sigma * np.random.randn(origdata.size)
+    synthnoise = width * np.random.randn(origdata.size)
     synthdata = origdata + synthnoise
     return synthdata
 
