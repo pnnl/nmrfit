@@ -114,7 +114,7 @@ def voigt(w, r, yOff, width, loc, a):
     return V
 
 
-def objective(x, w, u, v, x0):
+def objective(x, w, u, v, x0, weights, roibounds):
     '''
     The objective function used to fit supplied data.  Evaluates sum of squared differences
     between the fit and the data.
@@ -127,8 +127,11 @@ def objective(x, w, u, v, x0):
         Array of frequency data.
     u, v : ndarray
         Arrays of the real and imaginary components of the frequency response.
-    weights : list(list(float), float)
-        Range, weight pairs for intervals corresponding to each peak.
+    weights : ndarray
+        Array giving freq dependent weighting of error.  If array has zero length, weights will be
+        computed by objective function on each call.
+    roibounds : list of 2-tuples
+        bounds used for dynamic weight computation.
     fitIm : bool
         Flag to determine whether the imaginary component of the data will be fit.
     x0 : list(float)
@@ -164,10 +167,13 @@ def objective(x, w, u, v, x0):
 
         V_fit = V_fit + voigt(w, r, yOff, width, loc, a)
 
-    roibounds = []
-    for i in range(4, len(x0), 3):
-        roibounds.append((x0[i] - 0.05, x0[i] + 0.05))
-    V_residual = np.square(np.multiply(wts(roibounds, V_data, w, 0.5), (V_data - V_fit))).sum(axis=None)
+#    roibounds = []
+#    for i in range(4, len(x0), 3):
+#        roibounds.append((x0[i] - 0.05, x0[i] + 0.05))
+    if len(weights)==0:
+        V_residual = np.square(np.multiply(wts(roibounds, V_data, w), (V_data - V_fit))).sum(axis=None)
+    else:    
+        V_residual = np.square(np.multiply(weights, (V_data - V_fit))).sum(axis=None)
 
     # Potentially use higher exponents for TNC than for Powell
     # V_residual = np.square(np.multiply(wts(roibounds,V_data,w,0.75),(V_data - V_fit))).sum(axis=None)
@@ -180,7 +186,7 @@ def objective(x, w, u, v, x0):
 kk_relation_vectorized = np.vectorize(kk_relation, otypes=[np.float])
 
 
-def wts(roibounds, V_data, w, expon):
+def wts(roibounds, V_data, w, expon=0.5):
     """
     Given sequence ((LHB[0],RHB[0]),...,(LHB[n-1],RHB[n-1])) of bounds and V_data
     weights, we obtain maximums of |V_data| for each ROI (region of interest) and
