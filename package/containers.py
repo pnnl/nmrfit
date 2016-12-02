@@ -144,7 +144,7 @@ class Data:
         self.peaks = ps.peaks
 
         self.roibounds = []
-        for p in self.data.peaks:
+        for p in self.peaks:
             self.roibounds.append(p.bounds)
 
         return self.peaks
@@ -164,3 +164,12 @@ class Data:
         for p in self.peaks:
             areas.append(p.area)
         return areas
+
+    def approximate_area_fraction(self):
+        areas = np.array(self.approximate_areas())
+
+        m = np.mean(areas)
+        peaks = areas[areas >= m].sum()
+        sats = areas[areas < m].sum()
+
+        return(sats / (peaks + sats))

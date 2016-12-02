@@ -73,7 +73,8 @@ class FitUtility:
             self.weights = self.compute_weights()
 
         # call to the minimization function
-        result = sp.optimize.minimize(objective, self.x0, args=(self.data.w, self.data.u, self.data.v, self.x0, self.weights, self.roibounds), method=self.method, bounds=self.bounds, options=self.options)
+        result = sp.optimize.minimize(objective, self.x0, args=(self.data.w, self.data.u, self.data.v, self.x0, self.weights, self.data.roibounds),
+                                      method=self.method, bounds=self.bounds, options=self.options)
 
         # store the fit parameters and error in the result object
         self.result.params = result.x
@@ -85,8 +86,8 @@ class FitUtility:
         maxabs = np.zeros(len(self.data.peaks))
 
         for i, p in enumerate(self.data.peaks):
-            lIdx[i] = np.argmin(np.abs(self.w - p.bounds[0]))
-            rIdx[i] = np.argmin(np.abs(self.w - p.bounds[1]))
+            lIdx[i] = np.argmin(np.abs(self.data.w - p.bounds[0]))
+            rIdx[i] = np.argmin(np.abs(self.data.w - p.bounds[1]))
             if lIdx[i] > rIdx[i]:
                 temp = lIdx[i]
                 lIdx[i] = rIdx[i]
@@ -97,7 +98,7 @@ class FitUtility:
         biggest = np.amax(maxabs)
 
         defaultweight = 0.1
-        weights = np.ones(len(self.w)) * defaultweight
+        weights = np.ones(len(self.data.w)) * defaultweight
 
         expon = 0.5
         for i in range(len(self.data.peaks)):
