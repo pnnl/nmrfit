@@ -149,7 +149,7 @@ class Data:
 
         return self.peaks
 
-    def generate_initial_conditions(self, tol=0.05):
+    def generate_initial_conditions(self):
         x0 = [self.theta, 1., 0.]
         bounds = [(None, None), (0., 1.), (None, None)]
 
@@ -158,3 +158,9 @@ class Data:
             bounds.extend([(p.width * 0.1, p.width * 10.), (p.bounds[0], p.bounds[1]), (p.area * 0.1, p.area * 10.)])
 
         return x0, bounds
+
+    def approximate_areas(self):
+        areas = []
+        for p in self.peaks:
+            areas.append(p.area)
+        return areas
