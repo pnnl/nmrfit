@@ -167,12 +167,9 @@ def objective(x, w, u, v, x0, weights, roibounds):
 
         V_fit = V_fit + voigt(w, r, yOff, width, loc, a)
 
-#    roibounds = []
-#    for i in range(4, len(x0), 3):
-#        roibounds.append((x0[i] - 0.05, x0[i] + 0.05))
-    if len(weights)==0:
+    if len(weights) == 0:
         V_residual = np.square(np.multiply(wts(roibounds, V_data, w), (V_data - V_fit))).sum(axis=None)
-    else:    
+    else:
         V_residual = np.square(np.multiply(weights, (V_data - V_fit))).sum(axis=None)
 
     # Potentially use higher exponents for TNC than for Powell

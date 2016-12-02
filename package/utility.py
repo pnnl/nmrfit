@@ -176,20 +176,14 @@ class PeakSelector:
         wMax = self.points[1][0]
 
         # determine width from min and max
-        # ====================================================
-        # IMPORTANT CHANGE.  MAKE SURE THIS IS RIGHT
         # user captures +/- 3 FWHMs with clicks
         peak.width = (wMax - wMin) / 6
-        # ====================================================
 
         # determine peak height and location of peak by searching over an interval
         peak.height, peak.loc, peak.i = find_peak(self.w, self.u, wMin, wMax)
 
-        # ====================================================
-        # IMPORTANT CHANGE.  MAKE SURE THIS IS RIGHT
         # bounds are +/- 3 widths
         peak.bounds = [peak.loc - 3 * peak.width, peak.loc + 3 * peak.width]
-        # ====================================================
 
         peak.height = peak.height - self.baseline[peak.i]
 
@@ -233,7 +227,7 @@ class AutoPeakSelector:
     thresh : float
         Threshold for minimum amplitude cutoff in peak selection.
     window : float
-        Window size for local non-maximum supression. 
+        Window size for local non-maximum supression.
     '''
 
     def __init__(self, w, u, thresh, window):
@@ -283,20 +277,16 @@ class AutoPeakSelector:
             x_left = self.w[leftIdx[np.argmin(np.abs(self.w[leftIdx] - p.loc))]]
 
             if x_left < x_right:
-                # ====================================================
-                # IMPORTANT CHANGE.  MAKE SURE THIS IS RIGHT
                 # width equals FWHM
                 p.width = x_right - x_left
-                # ====================================================
 
-                # ====================================================
-                # IMPORTANT CHANGE.  MAKE SURE THIS IS RIGHT
                 # bounds are +/- 3 widths
                 p.bounds = [p.loc - 3 * p.width, p.loc + 3 * p.width]
-                # ====================================================
 
+                # peak indices
                 p.idx = np.where((self.w >= p.bounds[0]) & (self.w <= p.bounds[1]))
 
+                # area over peak indices
                 p.area = sp.integrate.simps(self.u[p.idx] - self.baseline[p.idx], self.w[p.idx])
 
                 screened_peaks.append(p)
