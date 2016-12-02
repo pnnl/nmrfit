@@ -17,6 +17,7 @@ class Result:
     -------
     None.
     '''
+
     def __init__(self):
         self.params = None
         self.error = None
@@ -46,6 +47,7 @@ class Data:
     -------
     None.
     '''
+
     def __init__(self, w, u, v, thetaEst):
         self.w = w
         self.u = u
@@ -69,7 +71,6 @@ class Data:
         -------
         None.
         '''
-
         # calculate V and I from u, v, and theta
         V = self.u * np.cos(theta) - self.v * np.sin(theta)
         I = self.u * np.sin(theta) + self.v * np.cos(theta)
@@ -94,7 +95,6 @@ class Data:
         -------
         None.
         '''
-
         if low is not None and high is not None:
             bs = BoundsSelector(self.w, self.u, self.v, supress=True)
             self.w, self.u, self.v = bs.apply_bounds(low=low, high=high)
@@ -104,7 +104,7 @@ class Data:
 
         self.shift_phase(self.theta)
 
-    def select_peaks(self, method='auto', n=None, plot=False):
+    def select_peaks(self, method='auto', n=None, thresh=0.0, window=0.02, plot=False):
         '''
         Method to interface with the utility class PeakSelector.  Will open an interactive utility used to select
         peaks n times.
@@ -113,8 +113,12 @@ class Data:
         ----------
         method : str, optional
             Flag to determine whether peaks will be selected automatically ('auto') or manually ('manual')
-        n : int, optional
+        n : int
             Number of peaks to select.  Only required if 'manual' is selected.
+        thresh : float, optional
+            Threshold for peak detection. Only used if 'auto' is selected.
+        window : float, optional
+            Window for local non-maximum supression. Only used if 'auto' is selected.
 
         Returns
         -------
@@ -123,31 +127,49 @@ class Data:
         '''
         if method.lower() == 'manual':
             if isinstance(n, int) and n > 0:
-                peaks = Peaks()
-                for i in range(n):
-                    ps = PeakSelector(self.w, self.V)
-                    peaks.append(ps.get_peak())
+                ps = PeakSelector(self.w, self.V, n)
             else:
                 raise ValueError("Number of peaks must be specified when using 'manual' flag")
 
         elif method.lower() == 'auto':
-            aps = AutoPeakSelector(self.w, self.V)
-            peaks = aps.find_peaks()
-            if plot is True:
-                aps.plot()
+            ps = AutoPeakSelector(self.w, self.V, thresh, window)
+            ps.find_peaks()
 
         else:
             raise ValueError("Method must be 'auto' or 'manual'.")
 
-        self.peaks = peaks
-        return peaks
+        if plot is True:
+            ps.plot()
 
-    def generate_initial_conditions(self, tol=0.05):
+        self.peaks = ps.peaks
+
+        self.roibounds = []
+        for p in self.peaks:
+            self.roibounds.append(p.bounds)
+
+        return self.peaks
+
+    def generate_initial_conditions(self):
         x0 = [self.theta, 1., 0.]
         bounds = [(None, None), (0., 1.), (None, None)]
 
         for p in self.peaks:
-            x0.extend([p.sigma, p.loc, p.area])
-            bounds.extend([(None, None), (p.loc - tol, p.loc + tol), (None, None)])
+            x0.extend([p.width, p.loc, p.area])
+            bounds.extend([(p.width * 0.1, p.width * 10.), (p.bounds[0], p.bounds[1]), (p.area * 0.1, p.area * 10.)])
 
         return x0, bounds
+
+    def approximate_areas(self):
+        areas = []
+        for p in self.peaks:
+            areas.append(p.area)
+        return areas
+
+    def approximate_area_fraction(self):
+        areas = np.array(self.approximate_areas())
+
+        m = np.mean(areas)
+        peaks = areas[areas >= m].sum()
+        sats = areas[areas < m].sum()
+
+        return(sats / (peaks + sats))

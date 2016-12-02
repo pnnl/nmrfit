@@ -3,7 +3,7 @@ import scipy as sp
 import scipy.integrate
 
 
-def kk_equation(x, r, yOff, sigma, mu, a, w):
+def kk_equation(x, r, yOff, width, loc, a, w):
     '''
     The equation inside the integral in the Kramers-Kronig relation. Used to evaluate the V->I transform.
     This specific implementation has been arranged such that the singularity at x==w is accounted for.
@@ -16,9 +16,9 @@ def kk_equation(x, r, yOff, sigma, mu, a, w):
         Ratio between the Guassian and Lorentzian functions
     yOff : float
         Y-offset of the Voigt function.
-    sigma : float
+    width : float
         The width of the Voigt function.
-    mu : float
+    loc : float
         Center of the Voigt function.
     a : float
         Area of the Voigt function.
@@ -32,13 +32,13 @@ def kk_equation(x, r, yOff, sigma, mu, a, w):
     '''
 
     # first half of integral (Lorentzian, Gaussian, and Voigt, respectively)
-    L1 = (2 / (np.pi * sigma)) * 1 / (1 + ((x + w - mu) / (0.5 * sigma))**2)
-    G1 = (2 / sigma) * np.sqrt(np.log(2) / np.pi) * np.exp(-((x + w - mu) / (sigma / (2 * np.sqrt(np.log(2)))))**2)
+    L1 = (2 / (np.pi * width)) * 1 / (1 + ((x + w - loc) / (0.5 * width))**2)
+    G1 = (2 / width) * np.sqrt(np.log(2) / np.pi) * np.exp(-((x + w - loc) / (width / (2 * np.sqrt(np.log(2)))))**2)
     V1 = yOff + a * (r * L1 + (1 - r) * G1)
 
     # second half of integral
-    L2 = (2 / (np.pi * sigma)) * 1 / (1 + ((-x + w - mu) / (0.5 * sigma))**2)
-    G2 = (2 / sigma) * np.sqrt(np.log(2) / np.pi) * np.exp(-((-x + w - mu) / (sigma / (2 * np.sqrt(np.log(2)))))**2)
+    L2 = (2 / (np.pi * width)) * 1 / (1 + ((-x + w - loc) / (0.5 * width))**2)
+    G2 = (2 / width) * np.sqrt(np.log(2) / np.pi) * np.exp(-((-x + w - loc) / (width / (2 * np.sqrt(np.log(2)))))**2)
     V2 = yOff + a * (r * L2 + (1 - r) * G2)
 
     # combining both halves for the total integral
@@ -46,7 +46,7 @@ def kk_equation(x, r, yOff, sigma, mu, a, w):
     return V
 
 
-def kk_relation(w, r, yOff, sigma, mu, a):
+def kk_relation(w, r, yOff, width, loc, a):
     '''
     Performs the integral required of the Kramers-Kronig relation using the kk_equation function
     for a given w.  Note that this integral is only evaluated for a single w.  The vectorized form
@@ -60,9 +60,9 @@ def kk_relation(w, r, yOff, sigma, mu, a):
         Ratio between the Guassian and Lorentzian functions
     yOff : float
         Y-offset of the Voigt function.
-    sigma : float
+    width : float
         The width of the Voigt function.
-    mu : float
+    loc : float
         Center of the Voigt function.
     a : float
         Area of the Voigt function.
@@ -73,11 +73,11 @@ def kk_relation(w, r, yOff, sigma, mu, a):
         Value of the integral evaluated at w.
     '''
 
-    res, err = sp.integrate.quad(kk_equation, 0, np.inf, args=(r, yOff, sigma, mu, a, w))
+    res, err = sp.integrate.quad(kk_equation, 0, np.inf, args=(r, yOff, width, loc, a, w))
     return res / np.pi
 
 
-def voigt(w, r, yOff, sigma, mu, a):
+def voigt(w, r, yOff, width, loc, a):
     '''
     Calculates a Voigt function over the range w based on the relevant properties of the distribution.
 
@@ -89,9 +89,9 @@ def voigt(w, r, yOff, sigma, mu, a):
         Ratio between the Guassian and Lorentzian functions
     yOff : float
         Y-offset of the Voigt function.
-    sigma : float
+    width : float
         The width of the Voigt function.
-    mu : float
+    loc : float
         Center of the Voigt function.
     a : float
         Area of the Voigt function.
@@ -103,10 +103,10 @@ def voigt(w, r, yOff, sigma, mu, a):
     '''
 
     # Lorentzian component
-    L = (2 / (np.pi * sigma)) * 1 / (1 + ((w - mu) / (0.5 * sigma))**2)
+    L = (2 / (np.pi * width)) * 1 / (1 + ((w - loc) / (0.5 * width))**2)
 
     # Gaussian component
-    G = (2 / sigma) * np.sqrt(np.log(2) / np.pi) * np.exp(-((w - mu) / (sigma / (2 * np.sqrt(np.log(2)))))**2)
+    G = (2 / width) * np.sqrt(np.log(2) / np.pi) * np.exp(-((w - loc) / (width / (2 * np.sqrt(np.log(2)))))**2)
 
     # Voigt body
     V = yOff + a * (r * L + (1 - r) * G)
@@ -114,7 +114,7 @@ def voigt(w, r, yOff, sigma, mu, a):
     return V
 
 
-def objective(x, w, u, v, x0):
+def objective(x, w, u, v, x0, weights, roibounds):
     '''
     The objective function used to fit supplied data.  Evaluates sum of squared differences
     between the fit and the data.
@@ -127,8 +127,11 @@ def objective(x, w, u, v, x0):
         Array of frequency data.
     u, v : ndarray
         Arrays of the real and imaginary components of the frequency response.
-    weights : list(list(float), float)
-        Range, weight pairs for intervals corresponding to each peak.
+    weights : ndarray
+        Array giving freq dependent weighting of error.  If array has zero length, weights will be
+        computed by objective function on each call.
+    roibounds : list of 2-tuples
+        bounds used for dynamic weight computation.
     fitIm : bool
         Flag to determine whether the imaginary component of the data will be fit.
     x0 : list(float)
@@ -158,16 +161,16 @@ def objective(x, w, u, v, x0):
     # iteratively add the contribution of each peak to the fits for V
     for i in range(3, len(x), 3):
         # current approximations
-        sigma = x[i]
-        mu = x[i + 1]
+        width = x[i]
+        loc = x[i + 1]
         a = x[i + 2]
 
-        V_fit = V_fit + voigt(w, r, yOff, sigma, mu, a)
+        V_fit = V_fit + voigt(w, r, yOff, width, loc, a)
 
-    roibounds = []
-    for i in range(4, len(x0), 3):
-        roibounds.append((x0[i] - 0.05, x0[i] + 0.05))
-    V_residual = np.square(np.multiply(wts(roibounds, V_data, w, 0.5), (V_data - V_fit))).sum(axis=None)
+    if len(weights) == 0:
+        V_residual = np.square(np.multiply(wts(roibounds, V_data, w), (V_data - V_fit))).sum(axis=None)
+    else:
+        V_residual = np.square(np.multiply(weights, (V_data - V_fit))).sum(axis=None)
 
     # Potentially use higher exponents for TNC than for Powell
     # V_residual = np.square(np.multiply(wts(roibounds,V_data,w,0.75),(V_data - V_fit))).sum(axis=None)
@@ -175,11 +178,12 @@ def objective(x, w, u, v, x0):
     # return the total residual
     return V_residual
 
+
 # the vectorized form can compute the integral for all w
 kk_relation_vectorized = np.vectorize(kk_relation, otypes=[np.float])
 
 
-def wts(roibounds, V_data, w, expon):
+def wts(roibounds, V_data, w, expon=0.5):
     """
     Given sequence ((LHB[0],RHB[0]),...,(LHB[n-1],RHB[n-1])) of bounds and V_data
     weights, we obtain maximums of |V_data| for each ROI (region of interest) and
@@ -200,9 +204,24 @@ def wts(roibounds, V_data, w, expon):
 
     biggest = np.amax(maxabs)
 
-    wts = np.ones(len(w))
+    defaultweight = 0.1
+    wts = np.ones(len(w)) * defaultweight
 
     for i, bound in enumerate(roibounds):
         wts[lIdx[i]:rIdx[i] + 1] = np.power(biggest / maxabs[i], expon)
 
+    n = 10
+    omega = 0.33333333
+    laplace1d(wts, n, omega)
+
     return wts
+
+
+def laplace1d(x, n, omega):
+    """
+    Given an array x, we perform 1d laplacian smoothing on the
+    values in x for n iterations and with relaxation factor
+    omega.  The end values of x are constrained to not change.
+    """
+    for i in range(0, n):
+        x[1:-1] = (1. - omega) * x[1:-1] + omega * 0.5 * (x[2:] + x[:-2])

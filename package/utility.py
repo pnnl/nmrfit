@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy as sp
 import scipy.integrate
+import peakutils
 
 
 class Peaks(list):
@@ -34,9 +35,9 @@ class Peak:
                Location: %s
                Height: %s
                Bounds: [%s, %s]
-               Sigma: %s
+               Width: %s
                Area: %s\
-               ''' % (self.loc, self.height, self.bounds[0], self.bounds[1], self.sigma, self.area)
+               ''' % (self.loc, self.height, self.bounds[0], self.bounds[1], self.width, self.area)
 
 
 class BoundsSelector:
@@ -52,11 +53,8 @@ class BoundsSelector:
         Arrays of the real and imaginary components of the frequency response.
     supress : bool, optional
         Flag to specify whether the interactive portion will be invoked.
-
-    Returns
-    -------
-    None.
     '''
+
     def __init__(self, w, u, v, supress=False):
         self.u = u
         self.v = v
@@ -65,9 +63,9 @@ class BoundsSelector:
 
         if not self.supress:
             self.fig = plt.figure()  # figsize=(9, 5), dpi=300
-            plt.plot(w, u)
-            # plt.axis([w[-1], w[0], min(u) - max(u) * 0.05, max(u) * 1.1])
-            # plt.gca().invert_xaxis()
+            plt.plot(w, u, linewidth=2)
+            plt.xlabel('Frequency')
+            plt.ylabel('Amplitude')
             self.cid = self.fig.canvas.mpl_connect('button_press_event', self)
             self.bounds = []
             plt.show()
@@ -115,26 +113,31 @@ class PeakSelector:
         Array of frequency data.
     u, v : ndarray
         Arrays of the real and imaginary components of the frequency response.
-
-    Returns
-    -------
-    None.
+    n : int
+        Number of peaks to select.
     '''
-    def __init__(self, w, u):
+
+    def __init__(self, w, u, n):
         self.u = u
         self.w = w
+        self.n = n
+
+        # peak container
+        self.peaks = Peaks()
 
         # empty list to store point information from clicks
         self.points = []
 
         # initialize plot
         self.fig = plt.figure()
-        plt.plot(w, u)
-        # plt.axis([w[-1], w[0], min(u) - max(u) * 0.05, max(u) * 1.1])
-        # plt.gca().invert_xaxis()
+        plt.plot(w, u, linewidth=2)
+        plt.xlabel('Frequency')
+        plt.ylabel('Amplitude')
 
         # start event listener
         self.cid = self.fig.canvas.mpl_connect('button_press_event', self)
+
+        self.baseline = piecewise_baseline(self.w, self.u)
 
         # display the plot
         plt.show()
@@ -148,22 +151,20 @@ class PeakSelector:
         # add x,y location of click
         self.points.append([event.xdata, event.ydata])
 
-        if len(self.points) == 2:
+        if (len(self.points) % 2 == 0) and (len(self.peaks) < self.n):
+            # add the peak
             self.parse_points()
-            plt.close()
+
+            # clear the list of points
+            self.points = []
+
+            if len(self.peaks) >= self.n:
+                plt.close()
 
     def parse_points(self):
         '''
         Called after 2 clicks on the plot.  Sorts the stored points in terms of frequency (w) to define
         low, middle, and high.  Subsequently determines approximate peak height, width, and area.
-
-        Parameters
-        ----------
-        None.
-
-        Returns
-        -------
-        Instance of Peak class
         '''
         peak = Peak()
 
@@ -175,29 +176,63 @@ class PeakSelector:
         wMax = self.points[1][0]
 
         # determine width from min and max
-        peak.sigma = (wMax - wMin) / 3.
+        # user captures +/- 3 FWHMs with clicks
+        peak.width = (wMax - wMin) / 6
 
         # determine peak height and location of peak by searching over an interval
-        peak.height, peak.loc = find_peak(self.w, self.u, wMin, wMax)
+        peak.height, peak.loc, peak.i = find_peak(self.w, self.u, wMin, wMax)
+
+        # bounds are +/- 3 widths
+        peak.bounds = [peak.loc - 3 * peak.width, peak.loc + 3 * peak.width]
+
+        peak.height = peak.height - self.baseline[peak.i]
 
         # determine indices within the peak width
-        peak.idx = np.where((self.w > wMin) & (self.w < wMax))
-
-        # store min/max bounds
-        peak.bounds = [wMin, wMax]
+        peak.idx = np.where((self.w > peak.bounds[0]) & (self.w < peak.bounds[1]))
 
         # calculate AUC over the width of the peak numerically
-        peak.area = sp.integrate.simps(self.u[peak.idx], self.w[peak.idx])
+        peak.area = sp.integrate.simps(self.u[peak.idx] - self.baseline[peak.idx], self.w[peak.idx])
 
-        self.peak = peak
+        self.peaks.append(peak)
 
-    def get_peak(self):
-        return self.peak
+    def plot(self):
+        '''
+        Plots the result of the peak selection process to indicate detected peak locations and bounds.
+        '''
+
+        plt.figure(figsize=(9, 5))
+        plt.plot(self.w, self.u, color='b', linewidth=2)
+        for p in self.peaks:
+            plt.scatter(p.loc, p.height + self.baseline[p.i], color='r')
+            plt.axvline(p.bounds[0], color='g')
+            plt.axvline(p.bounds[1], color='g')
+
+        plt.xlabel('Frequency', fontsize=16)
+        plt.ylabel('Amplitude', fontsize=16)
+        plt.show()
 
 
 class AutoPeakSelector:
-    def __init__(self, w, u):
+    '''
+    Automatic utility used to identify peaks and calculate approximations to peak height, width, and area.
+    Uses local non-maxima supression to find relative maxima (peaks) and FWHM analysis to determine an
+    approximation of width/width.
 
+    Parameters
+    ----------
+    w : ndarray
+        Array of frequency data.
+    u : ndarray
+        Array of the real component of the frequency response.
+    thresh : float
+        Threshold for minimum amplitude cutoff in peak selection.
+    window : float
+        Window size for local non-maximum supression.
+    '''
+
+    def __init__(self, w, u, thresh, window):
+        self.thresh = thresh
+        self.window = window
         f = sp.interpolate.interp1d(w, u)
 
         self.w = np.linspace(w.min(), w.max(), int(len(w) * 100))  # arbitrary upsampling
@@ -205,27 +240,36 @@ class AutoPeakSelector:
 
         self.u_smoothed = sp.signal.savgol_filter(self.u, 11, 4)
 
+        self.baseline = piecewise_baseline(self.w, self.u_smoothed)
+
         self.peaks = Peaks()
 
     def find_maxima(self):
+        '''
+        Local non-maxima supression to find peaks.
+        '''
+
         x_spacing = self.w[1] - self.w[0]
-        window = int(0.02 / x_spacing)  # arbitrary spacing (0.02)
+        window = int(self.window / x_spacing)  # arbitrary spacing (0.02)
 
-        idx = sp.signal.argrelmax(self.u_smoothed, order=window)
+        idx = sp.signal.argrelmax(self.u_smoothed, order=window)[0]
 
-        u_peaks = self.u[idx]
-        w_peaks = self.w[idx]
-
-        for y, x in zip(u_peaks, w_peaks):
+        for i in idx:
             p = Peak()
-            p.loc = x
-            p.height = y
-            self.peaks.append(p)
+            p.loc = self.w[i]
+            p.i = i
+            p.height = self.u[i] - self.baseline[i]
+            if p.height > self.thresh:
+                self.peaks.append(p)
 
-    def find_sigma(self):
+    def find_width(self):
+        '''
+        Using peak information, finds FWHM and performs a conversion to get width.
+        '''
+
         screened_peaks = Peaks()
         for p in self.peaks:
-            d = np.sign(p.height / 2. - self.u[0:-1]) - np.sign(p.height / 2. - self.u[1:])
+            d = np.sign(p.height / 2. - (self.u[0:-1] - self.baseline[0:-1])) - np.sign(p.height / 2. - (self.u[1:] - self.baseline[1:]))
             rightIdx = np.where(d < 0)[0]  # right
             leftIdx = np.where(d > 0)[0]  # left
 
@@ -233,29 +277,45 @@ class AutoPeakSelector:
             x_left = self.w[leftIdx[np.argmin(np.abs(self.w[leftIdx] - p.loc))]]
 
             if x_left < x_right:
-                p.sigma = (x_right - x_left) / 2.3548
-                p.bounds = [p.loc - (3 * p.sigma), p.loc + 3 * p.sigma]
+                # width equals FWHM
+                p.width = x_right - x_left
 
+                # bounds are +/- 3 widths
+                p.bounds = [p.loc - 3 * p.width, p.loc + 3 * p.width]
+
+                # peak indices
                 p.idx = np.where((self.w >= p.bounds[0]) & (self.w <= p.bounds[1]))
 
-                p.area = sp.integrate.simps(self.u[p.idx], self.w[p.idx])
+                # area over peak indices
+                p.area = sp.integrate.simps(self.u[p.idx] - self.baseline[p.idx], self.w[p.idx])
 
                 screened_peaks.append(p)
 
         self.peaks = screened_peaks
 
     def find_peaks(self):
-        self.find_maxima()
-        self.find_sigma()
+        '''
+        Convenience function to call both peak detection and FWHM analysis methods
+        in appropriate order.
+        '''
 
-        return self.peaks
+        self.find_maxima()
+        self.find_width()
 
     def plot(self):
-        plt.plot(self.w, self.u, color='b')
+        '''
+        Plots the result of the peak selection process to indicate detected peak locations and bounds.
+        '''
+
+        plt.figure(figsize=(9, 5))
+        plt.plot(self.w, self.u, color='b', linewidth=2)
         for p in self.peaks:
-            plt.scatter(p.loc, p.height, color='r')
+            plt.scatter(p.loc, p.height + self.baseline[p.i], color='r')
             plt.axvline(p.bounds[0], color='g')
             plt.axvline(p.bounds[1], color='g')
+
+        plt.xlabel('Frequency', fontsize=16)
+        plt.ylabel('Amplitude', fontsize=16)
 
         plt.show()
 
@@ -293,10 +353,10 @@ def find_peak(x, y, low, high):
     peakloc = peakestX[peakindex]
     peakheight = peakestY[peakindex]
 
-    return peakheight, peakloc
+    return peakheight, peakloc, peakindex
 
 
-def rnd_data(sigma, origdata):
+def rnd_data(width, origdata):
     """
     Add normally distributed noise.
 
@@ -307,7 +367,7 @@ def rnd_data(sigma, origdata):
     -------
     """
 
-    synthnoise = sigma * np.random.randn(origdata.size)
+    synthnoise = width * np.random.randn(origdata.size)
     synthdata = origdata + synthnoise
     return synthdata
 
@@ -331,3 +391,34 @@ def sample_noise(X, Y, xstart, xstop):
     noise = noiseY - baselinefit(noiseX)
 
     return np.std(noise)
+
+
+def piecewise_baseline(x, y):
+    '''
+    Calculates a piecewise baseline from the x/y data.  Splits the data into thirds and fits a baseline
+    to each section.  Used to correct for baseline offsest during initial condition selection.
+
+    Parameters
+    ----------
+    x, y : ndarray
+        x and y components of the data.
+
+    Returns
+    -------
+    baseline : ndarray
+        Array of y values representing the baseline.  Same shape as x, y.
+    '''
+
+    third = int(x.shape[0] / 3)
+
+    y1 = y[0:third]
+    y2 = y[third:2 * third]
+    y3 = y[2 * third:]
+
+    base1 = peakutils.baseline(y1, 2)
+    base2 = np.ones(y2.shape) * np.median(y2)
+    base3 = peakutils.baseline(y3, 2)
+
+    baseline = np.concatenate((base1, base2, base3))
+
+    return baseline

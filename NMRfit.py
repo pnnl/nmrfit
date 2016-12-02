@@ -30,7 +30,7 @@ class FitUtility:
     None.
     '''
 
-    def __init__(self, data, x0, method='Powell', bounds=None, options=None):
+    def __init__(self, data, x0, method='Powell', bounds=None, options=None, wtmethod='static'):
         self.result = Result()
         self.data = data
 
@@ -45,6 +45,10 @@ class FitUtility:
 
         # any additional options for the minimization step
         self.options = options
+
+        # wtmethod ('static' or 'dynamic') determines if weights are recalculated
+        self.wtmethod = wtmethod
+        # self.wtmethod = 'dynamic'
 
         # call to the fit method
         self.fit()
@@ -64,12 +68,50 @@ class FitUtility:
         None.
         '''
 
+        self.weights = np.zeros(0)
+        if self.wtmethod == 'static':  # If true, compute weights here instead of during each function call.
+            self.weights = self.compute_weights()
+
         # call to the minimization function
-        result = sp.optimize.minimize(objective, self.x0, args=(self.data.w, self.data.u, self.data.v, self.x0), method=self.method, bounds=self.bounds, options=self.options)
+        result = sp.optimize.minimize(objective, self.x0, args=(self.data.w, self.data.u, self.data.v, self.x0, self.weights, self.data.roibounds),
+                                      method=self.method, bounds=self.bounds, options=self.options)
 
         # store the fit parameters and error in the result object
         self.result.params = result.x
         self.result.error = result.fun
+
+    def compute_weights(self):
+        lIdx = np.zeros(len(self.data.peaks), dtype=np.int)
+        rIdx = np.zeros(len(self.data.peaks), dtype=np.int)
+        maxabs = np.zeros(len(self.data.peaks))
+
+        for i, p in enumerate(self.data.peaks):
+            lIdx[i] = np.argmin(np.abs(self.data.w - p.bounds[0]))
+            rIdx[i] = np.argmin(np.abs(self.data.w - p.bounds[1]))
+            if lIdx[i] > rIdx[i]:
+                temp = lIdx[i]
+                lIdx[i] = rIdx[i]
+                rIdx[i] = temp
+
+            maxabs[i] = np.abs(p.height)
+
+        biggest = np.amax(maxabs)
+
+        defaultweight = 0.1
+        weights = np.ones(len(self.data.w)) * defaultweight
+
+        expon = 0.5
+        for i in range(len(self.data.peaks)):
+            weights[lIdx[i]:rIdx[i] + 1] = np.power(biggest / maxabs[i], expon)
+
+        # transform u and v to get V for the data
+        # V_data = u * np.cos(theta) - v * np.sin(theta)
+        # weights=wts(roibounds, V_data, w)
+
+        n = 10
+        omega = 0.33333333
+        laplace1d(weights, n, omega)
+        return weights
 
     def generate_result(self, scale=10):
         '''
@@ -107,12 +149,12 @@ class FitUtility:
 
         # iteratively add the contribution of each peak to the fits for V and I
         for i in range(0, len(res), 3):
-            sigma = res[i]
-            mu = res[i + 1]
+            width = res[i]
+            loc = res[i + 1]
             a = res[i + 2]
 
-            V_fit = V_fit + voigt(w, r, yOff, sigma, mu, a)
-            I_fit = I_fit + kk_relation_vectorized(w, r, yOff, sigma, mu, a)
+            V_fit = V_fit + voigt(w, r, yOff, width, loc, a)
+            I_fit = I_fit + kk_relation_vectorized(w, r, yOff, width, loc, a)
 
         # transform the fits for V and I to get fits for u and v
         u_fit = V_fit * np.cos(theta) + I_fit * np.sin(theta)
@@ -129,7 +171,18 @@ class FitUtility:
         self.data.V = V_data
         self.data.I = I_data
 
+        # calculate area fraction
+        self.result.area_fraction = self.calculate_area_fraction()
+
         return self.result
+
+    def calculate_area_fraction(self):
+        areas = np.array([self.result.params[i] for i in range(5, len(self.result.params), 3)])
+        m = np.mean(areas)
+        peaks = areas[areas >= m].sum()
+        sats = areas[areas < m].sum()
+
+        return(sats / (peaks + sats))
 
     def summary_plot(self):
         peaks, satellites = self.data.peaks.split()
