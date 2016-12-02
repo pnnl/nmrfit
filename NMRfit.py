@@ -68,58 +68,39 @@ class FitUtility:
         None.
         '''
 
-        roibounds = []
-        for p in self.data.peaks:
-            roibounds.append((p.bounds[0], p.bounds[1]))
-
         self.weights = np.zeros(0)
         if self.wtmethod == 'static':  # If true, compute weights here instead of during each function call.
-            self.weights = self.compute_weights(self.data.w, self.data.u, self.data.v, self.data.theta)
+            self.weights = self.compute_weights()
 
         # call to the minimization function
-        result = sp.optimize.minimize(objective, self.x0, args=(self.data.w, self.data.u, self.data.v, self.x0, self.weights, roibounds), method=self.method, bounds=self.bounds, options=self.options)
+        result = sp.optimize.minimize(objective, self.x0, args=(self.data.w, self.data.u, self.data.v, self.x0, self.weights, self.roibounds), method=self.method, bounds=self.bounds, options=self.options)
 
         # store the fit parameters and error in the result object
         self.result.params = result.x
         self.result.error = result.fun
 
-    def compute_weights1(self, w, u, v, theta):
-        roibounds = []
-        for p in self.data.peaks:
-            roibounds.append((p.bounds[0], p.bounds[1]))
+    def compute_weights(self):
+        lIdx = np.zeros(len(self.data.peaks), dtype=np.int)
+        rIdx = np.zeros(len(self.data.peaks), dtype=np.int)
+        maxabs = np.zeros(len(self.data.peaks))
 
-        # transform u and v to get V for the data
-        V_data = u * np.cos(theta) - v * np.sin(theta)
-        weights = wts(roibounds, V_data, w)
-
-        n = 10
-        omega = 0.33333333
-        laplace1d(weights, n, omega)
-        return weights
-
-    def compute_weights(self, w, u, v, theta):
-        roibounds = []
-        for p in self.data.peaks:
-            roibounds.append((p.bounds[0], p.bounds[1]))
-
-        lIdx = np.zeros(len(roibounds), dtype=np.int)
-        rIdx = np.zeros(len(roibounds), dtype=np.int)
-        maxabs = np.zeros(len(roibounds))
-        for i, bound in enumerate(roibounds):
-            lIdx[i] = np.argmin(np.abs(w - bound[0]))
-            rIdx[i] = np.argmin(np.abs(w - bound[1]))
+        for i, p in enumerate(self.data.peaks):
+            lIdx[i] = np.argmin(np.abs(self.w - p.bounds[0]))
+            rIdx[i] = np.argmin(np.abs(self.w - p.bounds[1]))
             if lIdx[i] > rIdx[i]:
                 temp = lIdx[i]
                 lIdx[i] = rIdx[i]
                 rIdx[i] = temp
-            maxabs[i] = np.abs(self.data.peaks[i].height)
+
+            maxabs[i] = np.abs(p.height)
+
         biggest = np.amax(maxabs)
 
         defaultweight = 0.1
-        weights = np.ones(len(w)) * defaultweight
+        weights = np.ones(len(self.w)) * defaultweight
 
         expon = 0.5
-        for i, bound in enumerate(roibounds):
+        for i in range(len(self.data.peaks)):
             weights[lIdx[i]:rIdx[i] + 1] = np.power(biggest / maxabs[i], expon)
 
         # transform u and v to get V for the data
