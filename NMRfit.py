@@ -306,6 +306,7 @@ class FitUtility:
             print(res[i, :])
 
         print("Error:  ", self.result.error)
+        print("Area fraction:  ", self.result.area_fraction)
 
     def summary(self, plot=True):
         self.print_summary()
