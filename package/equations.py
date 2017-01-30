@@ -217,7 +217,7 @@ def wts(roibounds, V_data, w, expon=0.5):
     return wts
 
 
-def laplace1d(x, n, omega):
+def laplace1d(x, n=10, omega=0.33333333):
     """
     Given an array x, we perform 1d laplacian smoothing on the
     values in x for n iterations and with relaxation factor

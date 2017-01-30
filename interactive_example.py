@@ -19,9 +19,6 @@ peaks = data.select_peaks(method='auto', n=6, plot=True)
 # generate bounds and initial conditions
 x0, bounds = data.generate_initial_conditions()
 
-# print approximations to area
-print(data.approximate_area_fraction())
-
 # fit data
 fit = nmrft.FitUtility(data, x0, method='Powell')
 
@@ -49,18 +46,18 @@ res = fit.generate_result(scale=1)
 # # summary
 fit.summary()
 
-plt.figure(figsize=(5, 5))
-plt.plot(fit.data.w, fit.data.V, linewidth=2, alpha=0.5, color='b', label='Data')
-plt.plot(fit.result.w, fit.result.V, linewidth=2, alpha=0.5, color='r', label='Fit')
-plt.legend()
-plt.xlabel('Frequency', fontsize=16)
-plt.ylabel('Amplitude', fontsize=16)
-plt.show()
+# plt.figure(figsize=(5, 5))
+# plt.plot(fit.data.w, fit.data.V, linewidth=2, alpha=0.5, color='b', label='Data')
+# plt.plot(fit.result.w, fit.result.V, linewidth=2, alpha=0.5, color='r', label='Fit')
+# plt.legend()
+# plt.xlabel('Frequency', fontsize=16)
+# plt.ylabel('Amplitude', fontsize=16)
+# plt.show()
 
-plt.figure(figsize=(5, 5))
-plt.plot(fit.data.w, fit.data.I, linewidth=2, alpha=0.5, color='b', label='Data')
-plt.plot(fit.result.w, fit.result.I, linewidth=2, alpha=0.5, color='r', label='Fit')
-plt.legend()
-plt.xlabel('Frequency', fontsize=16)
-plt.ylabel('Amplitude', fontsize=16)
-plt.show()
+# plt.figure(figsize=(5, 5))
+# plt.plot(fit.data.w, fit.data.I, linewidth=2, alpha=0.5, color='b', label='Data')
+# plt.plot(fit.result.w, fit.result.I, linewidth=2, alpha=0.5, color='r', label='Fit')
+# plt.legend()
+# plt.xlabel('Frequency', fontsize=16)
+# plt.ylabel('Amplitude', fontsize=16)
+# plt.show()
