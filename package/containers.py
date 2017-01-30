@@ -9,17 +9,23 @@ class Result:
     '''
     Used to store results of the fit.  Similar to the Data class, but without the methods.
 
+    Attributes
+    ----------
+    w : ndarray
+        Array of frequency data.
+    u, v : ndarray
+        Arrays of the real and imaginary components of the frequency response.
+    V, I : ndarray
+        Arrays of the phase corrected real and imaginary components of the frequency response.
+    params : ndarray
+        Solution vector.
+    error : float
+        Weighted sum of squared error between the data and fit.
+
     '''
 
     def __init__(self):
-        self.params = None
-        self.error = None
-
-        self.w = None
-        self.u = None
-        self.v = None
-        self.V = None
-        self.I = None
+        pass
 
 
 class Data:
@@ -27,18 +33,40 @@ class Data:
     Stores data relevant to the NMRfit module and provides methods to interface with a number
     of utility classes.
 
-    Parameters
+    Attributes
     ----------
     w : ndarray
         Array of frequency data.
     u, v : ndarray
         Arrays of the real and imaginary components of the frequency response.
-    thetaEst : float
-        Estimate of zero order phase in radians.
+    V, I : ndarray
+        Arrays of the phase corrected real and imaginary components of the frequency response.
+    theta : float
+        Phase correction value in radians.
+    peaks : list of peak instances
+        List containing instances of Peak objects, which contain information about each peak.
+    roibounds : list of 2 tuples
+        Frequency bounds of each peak.
+    area_fraction : float
+        Area fraction of satellite peaks.
+
 
     '''
 
     def __init__(self, w, u, v, thetaEst):
+        '''
+        Constructor for the Data class.
+
+        Parameters
+        ----------
+        w : ndarray
+            Array of frequency data.
+        u, v : ndarray
+            Arrays of the real and imaginary components of the frequency response.
+        thetaEst : float
+            Estimate of zero order phase in radians.
+
+        '''
         self.w = w
         self.u = u
         self.v = v
@@ -102,8 +130,9 @@ class Data:
 
         Returns
         -------
-        peaks : list(Peak)
+        peaks : list of Peak instances
             List containing instances of Peak objects, which contain information about each peak.
+
         '''
         if method.lower() == 'manual':
             if isinstance(n, int) and n > 0:
@@ -130,6 +159,18 @@ class Data:
         return self.peaks
 
     def generate_initial_conditions(self):
+        '''
+        Uses initial theta approximation as well as initial per-peak parameters (width, location, area)
+        to construct an initial condition vector and a set of parameter bounds.
+
+        Returns
+        -------
+        x0 : list of floats
+            Initial condition vector.
+        bounds : list of 2 tuples
+            Min, max bounds for each parameter in x0.
+
+        '''
         x0 = [self.theta, 1., 0.]
         bounds = [(None, None), (0., 1.), (None, None)]
 
@@ -140,16 +181,36 @@ class Data:
         return x0, bounds
 
     def approximate_areas(self):
+        '''
+        Extracts the area attribute from each Peak instance and returns as a list.
+
+        Returns
+        -------
+        areas : list of floats
+            A list containing the peak area of each Peak instance.
+
+        '''
         areas = []
         for p in self.peaks:
             areas.append(p.area)
         return areas
 
     def approximate_area_fraction(self):
+        '''
+        Calculates the relative fraction of the satellite peaks to the total peak area.
+
+        Returns
+        -------
+        area_fraction : float
+            Area fraction of satellite peaks.
+
+        '''
         areas = np.array(self.approximate_areas())
 
         m = np.mean(areas)
         peaks = areas[areas >= m].sum()
         sats = areas[areas < m].sum()
 
-        return(sats / (peaks + sats))
+        area_fraction = sats / (peaks + sats)
+
+        return area_fraction

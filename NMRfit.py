@@ -12,19 +12,27 @@ class FitUtility:
     '''
     Interface used to perform a fit of the data.
 
-    Parameters
+    Attributes
     ----------
-    data : instance of Data class
-        Container for ndarrays relevant to the fitting process (w, u, v, V, I) of the data.
-    x0 : list(float)
-        Initial conditions for the minimizer.
-    method: string, optional
-        Determines optimization algorithm to be used for minimization.  Default is "Powell"
-    options: dict, optional
-        Used to pass additional options to the minimizer.
+
     '''
 
     def __init__(self, data, x0, method='Powell', bounds=None, options=None):
+        '''
+        FitUtility constructor.
+
+        Parameters
+        ----------
+        data : instance of Data class
+            Container for ndarrays relevant to the fitting process (w, u, v, V, I) of the data.
+        x0 : list(float)
+            Initial conditions for the minimizer.
+        method: string, optional
+            Determines optimization algorithm to be used for minimization.  Default is "Powell"
+        options: dict, optional
+            Used to pass additional options to the minimizer.
+
+        '''
         self.result = containers.Result()
         self.data = data
 
