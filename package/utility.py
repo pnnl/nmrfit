@@ -6,6 +6,11 @@ import peakutils
 
 
 class Peaks(list):
+    """
+    Extension of list object that stores a number of Peak instances.
+
+    """
+
     def average_height(self):
         h = 0.
         for p in self:
@@ -27,35 +32,64 @@ class Peaks(list):
 
 
 class Peak:
-    def __init__(self):
-        pass
+    """
+    Contains metadata for 'peaks' observed in NMR spectroscopy.
+
+    Attributes
+    ----------
+    loc : float
+        Location of the peak.
+    height : float
+        Height of the peak in terms of signal intensity at its center.
+    bounds : list of floats.
+        Upper and lower bounds of the peak.  Captures 4 FWHMs.
+    width : float
+        The width of the peak in terms of FWHM.
+    area : float
+        Approximation of area of the peak.
+
+    """
 
     def __repr__(self):
-        return '''\
+        return """\
                Location: %s
                Height: %s
                Bounds: [%s, %s]
                Width: %s
                Area: %s\
-               ''' % (self.loc, self.height, self.bounds[0], self.bounds[1], self.width, self.area)
+               """ % (self.loc, self.height, self.bounds[0], self.bounds[1], self.width, self.area)
 
 
 class BoundsSelector:
-    '''
+    """
     Interactive utility used to bound the spectroscopy data.  The user clicks twice on a plot to
     indicate the lower and upper bounds in the frequency domain.
 
-    Parameters
+    Attributes
     ----------
     w : ndarray
-        Array of frequency data.
+            Array of frequency data.
     u, v : ndarray
         Arrays of the real and imaginary components of the frequency response.
     supress : bool, optional
         Flag to specify whether the interactive portion will be invoked.
-    '''
+    bounds
+
+
+    """
 
     def __init__(self, w, u, v, supress=False):
+        """
+        Parameters
+        ----------
+        w : ndarray
+            Array of frequency data.
+        u, v : ndarray
+            Arrays of the real and imaginary components of the frequency response.
+        supress : bool, optional
+            Flag to specify whether the interactive portion will be invoked.
+
+        """
         self.u = u
         self.v = v
         self.w = w
@@ -76,7 +110,7 @@ class BoundsSelector:
             plt.close()
 
     def apply_bounds(self, low=None, high=None):
-        '''
+        """
         Applies boundaries determined interactively, or passed via low and high.
 
         Parameters
@@ -90,7 +124,8 @@ class BoundsSelector:
         -------
         w, u, v : ndarray
             Arrays containing the bounded data.
-        '''
+
+        """
         if not self.supress:
             low = min(self.bounds)
             high = max(self.bounds)
@@ -104,10 +139,10 @@ class BoundsSelector:
 
 
 class PeakSelector:
-    '''
+    """
     Interactive utility used to identify peaks and calculate approximations to peak height, width, and area.
 
-    Parameters
+    Attributes
     ----------
     w : ndarray
         Array of frequency data.
@@ -115,9 +150,28 @@ class PeakSelector:
         Arrays of the real and imaginary components of the frequency response.
     n : int
         Number of peaks to select.
-    '''
+    peaks
+    points
+    fig
+    cid
+    baseline
+
+    """
 
     def __init__(self, w, u, n):
+        """
+        PeakSelector constructor.
+
+        Parameters
+        ----------
+        w : ndarray
+            Array of frequency data.
+        u, v : ndarray
+            Arrays of the real and imaginary components of the frequency response.
+        n : int
+            Number of peaks to select.
+
+        """
         self.u = u
         self.w = w
         self.n = n
@@ -143,10 +197,11 @@ class PeakSelector:
         plt.show()
 
     def __call__(self, event):
-        '''
+        """
         Called whenever the user clicks on the plot.  Stores x and y location of the cursor.
         After 2 clicks, the plot is closed as the peak has been "defined."
-        '''
+
+        """
 
         # add x,y location of click
         self.points.append([event.xdata, event.ydata])
@@ -162,10 +217,11 @@ class PeakSelector:
                 plt.close()
 
     def parse_points(self):
-        '''
+        """
         Called after 2 clicks on the plot.  Sorts the stored points in terms of frequency (w) to define
         low, middle, and high.  Subsequently determines approximate peak height, width, and area.
-        '''
+
+        """
         peak = Peak()
 
         # sort points in frequency
@@ -196,9 +252,10 @@ class PeakSelector:
         self.peaks.append(peak)
 
     def plot(self):
-        '''
+        """
         Plots the result of the peak selection process to indicate detected peak locations and bounds.
-        '''
+
+        """
 
         plt.figure(figsize=(9, 5))
         plt.plot(self.w, self.u, color='b', linewidth=2)
@@ -213,7 +270,7 @@ class PeakSelector:
 
 
 class AutoPeakSelector:
-    '''
+    """
     Automatic utility used to identify peaks and calculate approximations to peak height, width, and area.
     Uses local non-maxima supression to find relative maxima (peaks) and FWHM analysis to determine an
     approximation of width/width.
@@ -228,7 +285,8 @@ class AutoPeakSelector:
         Threshold for minimum amplitude cutoff in peak selection.
     window : float
         Window size for local non-maximum supression.
-    '''
+
+    """
 
     def __init__(self, w, u, thresh, window):
         self.thresh = thresh
@@ -245,9 +303,10 @@ class AutoPeakSelector:
         self.peaks = Peaks()
 
     def find_maxima(self):
-        '''
+        """
         Local non-maxima supression to find peaks.
-        '''
+
+        """
 
         x_spacing = self.w[1] - self.w[0]
         window = int(self.window / x_spacing)  # arbitrary spacing (0.02)
@@ -263,9 +322,9 @@ class AutoPeakSelector:
                 self.peaks.append(p)
 
     def find_width(self):
-        '''
+        """
         Using peak information, finds FWHM and performs a conversion to get width.
-        '''
+        """
 
         screened_peaks = Peaks()
         for p in self.peaks:
@@ -294,18 +353,18 @@ class AutoPeakSelector:
         self.peaks = screened_peaks
 
     def find_peaks(self):
-        '''
+        """
         Convenience function to call both peak detection and FWHM analysis methods
         in appropriate order.
-        '''
+        """
 
         self.find_maxima()
         self.find_width()
 
     def plot(self):
-        '''
+        """
         Plots the result of the peak selection process to indicate detected peak locations and bounds.
-        '''
+        """
 
         plt.figure(figsize=(9, 5))
         plt.plot(self.w, self.u, color='b', linewidth=2)
@@ -328,16 +387,18 @@ def find_peak(x, y, low, high):
     ----------
     x, y : ndarray
         x and y components of the data being searched.
-    est : float
-        Estimated x location of the peak.
-    searchwidth : float, optional
-        Width on either side of est to search for a peak.
+    low, high : float
+        Upper and lower bounds of the search window, respectively.
+    
     Returns
     -------
     peakheight : float
         Height of the located peak.
     peakloc : float
         Location of the peak in terms of x.
+    peakindex : int
+        Index of the peak location.
+
     """
 
     # indices of frequency values around the estimate within the tolerance
@@ -362,9 +423,16 @@ def rnd_data(width, origdata):
 
     Parameters
     ----------
+    width : float
+        Magnitude of noise distribution.
+    origdata : ndarray
+        Data to which noise will be added.
 
     Returns
     -------
+    synthdata : ndarray
+        Input data plus random noise.
+
     """
 
     synthnoise = width * np.random.randn(origdata.size)
@@ -394,7 +462,7 @@ def sample_noise(X, Y, xstart, xstop):
 
 
 def piecewise_baseline(x, y):
-    '''
+    """
     Calculates a piecewise baseline from the x/y data.  Splits the data into thirds and fits a baseline
     to each section.  Used to correct for baseline offsest during initial condition selection.
 
@@ -407,7 +475,7 @@ def piecewise_baseline(x, y):
     -------
     baseline : ndarray
         Array of y values representing the baseline.  Same shape as x, y.
-    '''
+    """
 
     third = int(x.shape[0] / 3)
 
