@@ -9,13 +9,6 @@ class Result:
     '''
     Used to store results of the fit.  Similar to the Data class, but without the methods.
 
-    Parameters
-    ----------
-    None.
-
-    Returns
-    -------
-    None.
     '''
 
     def __init__(self):
@@ -43,9 +36,6 @@ class Data:
     thetaEst : float
         Estimate of zero order phase in radians.
 
-    Returns
-    -------
-    None.
     '''
 
     def __init__(self, w, u, v, thetaEst):
@@ -67,17 +57,10 @@ class Data:
         theta : float
             Phase correction in radians.
 
-        Returns
-        -------
-        None.
         '''
         # calculate V and I from u, v, and theta
-        V = self.u * np.cos(theta) - self.v * np.sin(theta)
-        I = self.u * np.sin(theta) + self.v * np.cos(theta)
-
-        # store as attributes
-        self.V = V
-        self.I = I
+        self.V = self.u * np.cos(theta) - self.v * np.sin(theta)
+        self.I = self.u * np.sin(theta) + self.v * np.cos(theta)
 
     def select_bounds(self, low=None, high=None):
         '''
@@ -91,9 +74,6 @@ class Data:
         high : float, optional
             Upper bound.
 
-        Returns
-        -------
-        None.
         '''
         if low is not None and high is not None:
             bs = BoundsSelector(self.w, self.u, self.v, supress=True)

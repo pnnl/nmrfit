@@ -132,10 +132,6 @@ def objective(x, w, u, v, x0, weights, roibounds):
         computed by objective function on each call.
     roibounds : list of 2-tuples
         bounds used for dynamic weight computation.
-    fitIm : bool
-        Flag to determine whether the imaginary component of the data will be fit.
-    x0 : list(float)
-        Initial conditions.
 
     Returns
     -------
@@ -156,7 +152,7 @@ def objective(x, w, u, v, x0, weights, roibounds):
     V_fit = np.zeros_like(V_data)
 
     # initialize container for the V residual
-    V_residual = 0
+    residual = 0
 
     # iteratively add the contribution of each peak to the fits for V
     for i in range(3, len(x), 3):
@@ -167,61 +163,22 @@ def objective(x, w, u, v, x0, weights, roibounds):
 
         V_fit = V_fit + voigt(w, r, yOff, width, loc, a)
 
-    if len(weights) == 0:
-        V_residual = np.square(np.multiply(wts(roibounds, V_data, w), (V_data - V_fit))).sum(axis=None)
-    else:
-        V_residual = np.square(np.multiply(weights, (V_data - V_fit))).sum(axis=None)
-
-    # Potentially use higher exponents for TNC than for Powell
-    # V_residual = np.square(np.multiply(wts(roibounds,V_data,w,0.75),(V_data - V_fit))).sum(axis=None)
+    residual = np.square(np.multiply(weights, (V_data - V_fit))).sum(axis=None)
 
     # return the total residual
-    return V_residual
-
-
-# the vectorized form can compute the integral for all w
-kk_relation_vectorized = np.vectorize(kk_relation, otypes=[np.float])
-
-
-def wts(roibounds, V_data, w, expon=0.5):
-    """
-    Given sequence ((LHB[0],RHB[0]),...,(LHB[n-1],RHB[n-1])) of bounds and V_data
-    weights, we obtain maximums of |V_data| for each ROI (region of interest) and
-    then choose weight 1 for largest-max-region and all non-ROI regions, whereas
-    we choose weight (largest/max[I])^expon for all non-max ROI regions.
-    """
-    lIdx = np.zeros(len(roibounds), dtype=np.int)
-    rIdx = np.zeros(len(roibounds), dtype=np.int)
-    maxabs = np.zeros(len(roibounds))
-    for i, bound in enumerate(roibounds):
-        lIdx[i] = np.argmin(np.abs(w - bound[0]))
-        rIdx[i] = np.argmin(np.abs(w - bound[1]))
-        if lIdx[i] > rIdx[i]:
-            temp = lIdx[i]
-            lIdx[i] = rIdx[i]
-            rIdx[i] = temp
-        maxabs[i] = np.amax(np.abs(V_data[lIdx[i]:rIdx[i] + 1]))
-
-    biggest = np.amax(maxabs)
-
-    defaultweight = 0.1
-    wts = np.ones(len(w)) * defaultweight
-
-    for i, bound in enumerate(roibounds):
-        wts[lIdx[i]:rIdx[i] + 1] = np.power(biggest / maxabs[i], expon)
-
-    n = 10
-    omega = 0.33333333
-    laplace1d(wts, n, omega)
-
-    return wts
+    return residual
 
 
 def laplace1d(x, n=10, omega=0.33333333):
     """
-    Given an array x, we perform 1d laplacian smoothing on the
+    Given an array x, performs 1d laplacian smoothing on the
     values in x for n iterations and with relaxation factor
     omega.  The end values of x are constrained to not change.
     """
     for i in range(0, n):
         x[1:-1] = (1. - omega) * x[1:-1] + omega * 0.5 * (x[2:] + x[:-2])
+    return x
+
+
+# the vectorized form can compute the integral for all w
+kk_relation_vectorized = np.vectorize(kk_relation, otypes=[np.float])

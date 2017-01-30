@@ -22,13 +22,9 @@ class FitUtility:
         Determines optimization algorithm to be used for minimization.  Default is "Powell"
     options: dict, optional
         Used to pass additional options to the minimizer.
-
-    Returns
-    -------
-    None.
     '''
 
-    def __init__(self, data, x0, method='Powell', bounds=None, options=None, wtmethod='static'):
+    def __init__(self, data, x0, method='Powell', bounds=None, options=None):
         self.result = containers.Result()
         self.data = data
 
@@ -44,9 +40,6 @@ class FitUtility:
         # any additional options for the minimization step
         self.options = options
 
-        # wtmethod ('static' or 'dynamic') determines if weights are recalculated
-        self.wtmethod = wtmethod
-
         # call to the fit method
         self.fit()
 
@@ -55,19 +48,9 @@ class FitUtility:
         Fit a number of Voigt functions to the input data by objective function minimization.  By default, only the real
         component of the data is used when performing the fit.  The imaginary data can be used, but at a severe performance
         penalty (often with little to no gains in goodness of fit).
-
-        Parameters
-        ----------
-        None.
-
-        Returns
-        -------
-        None.
         '''
 
-        self.weights = np.zeros(0)
-        if self.wtmethod == 'static':  # If true, compute weights here instead of during each function call.
-            self.weights = self.compute_weights()
+        self.weights = self.compute_weights()
 
         # call to the minimization function
         result = sp.optimize.minimize(equations.objective, self.x0, args=(self.data.w, self.data.u, self.data.v, self.x0, self.weights, self.data.roibounds),
@@ -77,7 +60,21 @@ class FitUtility:
         self.result.params = result.x
         self.result.error = result.fun
 
-    def compute_weights(self):
+    def compute_weights(self, expon=0.5):
+        """
+        Given sequence ((LHB[0],RHB[0]),...,(LHB[n-1],RHB[n-1])) of bounds and V_data
+        weights, we obtain maximums of |V_data| for each ROI (region of interest) and
+        then choose weight 1 for largest-max-region and all non-ROI regions, whereas
+        we choose weight (largest/max[I])^expon for all non-max ROI regions.
+
+        Parameters
+        ----------
+        roibounds : 
+
+        Returns
+        -------
+        weights : ndarray
+        """
         lIdx = np.zeros(len(self.data.peaks), dtype=np.int)
         rIdx = np.zeros(len(self.data.peaks), dtype=np.int)
         maxabs = np.zeros(len(self.data.peaks))
@@ -97,11 +94,10 @@ class FitUtility:
         defaultweight = 0.1
         weights = np.ones(len(self.data.w)) * defaultweight
 
-        expon = 0.5
         for i in range(len(self.data.peaks)):
             weights[lIdx[i]:rIdx[i] + 1] = np.power(biggest / maxabs[i], expon)
 
-        equations.laplace1d(weights)
+        weights = equations.laplace1d(weights)
         return weights
 
     def generate_result(self, scale=10):
