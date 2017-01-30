@@ -4,7 +4,7 @@ import scipy.integrate
 
 
 def kk_equation(x, r, yOff, width, loc, a, w):
-    '''
+    """
     The equation inside the integral in the Kramers-Kronig relation. Used to evaluate the V->I transform.
     This specific implementation has been arranged such that the singularity at x==w is accounted for.
 
@@ -29,7 +29,8 @@ def kk_equation(x, r, yOff, width, loc, a, w):
     -------
     V : ndarray
         Array defining the Voigt function with respect to x.
-    '''
+
+    """
 
     # first half of integral (Lorentzian, Gaussian, and Voigt, respectively)
     L1 = (2 / (np.pi * width)) * 1 / (1 + ((x + w - loc) / (0.5 * width))**2)
@@ -47,7 +48,7 @@ def kk_equation(x, r, yOff, width, loc, a, w):
 
 
 def kk_relation(w, r, yOff, width, loc, a):
-    '''
+    """
     Performs the integral required of the Kramers-Kronig relation using the kk_equation function
     for a given w.  Note that this integral is only evaluated for a single w.  The vectorized form
     (kk_relation_vectorized) may be used to calulate the Kramers-Kronig relation for all w.
@@ -71,14 +72,15 @@ def kk_relation(w, r, yOff, width, loc, a):
     -------
     res : float
         Value of the integral evaluated at w.
-    '''
+
+    """
 
     res, err = sp.integrate.quad(kk_equation, 0, np.inf, args=(r, yOff, width, loc, a, w))
     return res / np.pi
 
 
 def voigt(w, r, yOff, width, loc, a):
-    '''
+    """
     Calculates a Voigt function over the range w based on the relevant properties of the distribution.
 
     Parameters
@@ -100,7 +102,8 @@ def voigt(w, r, yOff, width, loc, a):
     -------
     V : ndarray
         Array defining the Voigt function over w.
-    '''
+
+    """
 
     # Lorentzian component
     L = (2 / (np.pi * width)) * 1 / (1 + ((w - loc) / (0.5 * width))**2)
@@ -115,7 +118,7 @@ def voigt(w, r, yOff, width, loc, a):
 
 
 def objective(x, w, u, v, x0, weights, roibounds):
-    '''
+    """
     The objective function used to fit supplied data.  Evaluates sum of squared differences
     between the fit and the data.
 
@@ -137,7 +140,8 @@ def objective(x, w, u, v, x0, weights, roibounds):
     -------
     residual : float
         The sum of squared differences between the data and fit.
-    '''
+
+    """
 
     # global parameters
     theta, r, yOff = x[:3]

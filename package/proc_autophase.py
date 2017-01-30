@@ -14,7 +14,8 @@ import scipy.optimize
 
 def ps(data, p0=0.0, p1=0.0, inv=False):
     """
-    Linear phase correction
+    Linear phase correction.
+    
     Parameters
     ----------
     data : ndarray
@@ -24,11 +25,13 @@ def ps(data, p0=0.0, p1=0.0, inv=False):
     p1 : float
         First order phase in degrees.
     inv : bool, optional
-        True for inverse phase correction
+        True for inverse phase correction.
+    
     Returns
     -------
     ndata : ndarray
         Phased NMR data.
+
     """
     pi = np.pi
     p0 = p0 * pi / 180.  # convert to radians
@@ -43,22 +46,25 @@ def ps(data, p0=0.0, p1=0.0, inv=False):
 
 def autops(data, fn, p0=0.0, p1=0.0):
     """
-    Automatic linear phase correction
+    Automatic linear phase correction.
+    
     Parameters
     ----------
     data : ndarray
         Array of NMR data.
     fn : str or function
         Algorithm to use for phase scoring. Built in functions can be
-        specified by one of the following strings: "acme", "peak_minima"
+        specified by one of the following strings: "acme", "peak_minima".
     p0 : float
         Initial zero order phase in degrees.
     p1 : float
         Initial first order phase in degrees.
+    
     Returns
     -------
     ndata : ndarray
         Phased NMR data.
+
     """
     if not callable(fn):
         fn = {
@@ -76,22 +82,25 @@ def autops(data, fn, p0=0.0, p1=0.0):
 
 def approximate_phase(data, fn, p0=0.0, p1=0.0):
     """
-    Automatic linear phase correction
+    Automatic linear phase correction.
+
     Parameters
     ----------
     data : ndarray
         Array of NMR data.
     fn : str or function
         Algorithm to use for phase scoring. Built in functions can be
-        specified by one of the following strings: "acme", "peak_minima"
+        specified by one of the following strings: "acme", "peak_minima".
     p0 : float
         Initial zero order phase in degrees.
     p1 : float
         Initial first order phase in degrees.
+
     Returns
     -------
     ndata : ndarray
         Phased NMR data.
+
     """
     if not callable(fn):
         fn = {
@@ -109,17 +118,20 @@ def approximate_phase(data, fn, p0=0.0, p1=0.0):
 def _ps_acme_score(ph, data):
     """
     Phase correction using ACME algorithm by Chen Li et al.
-    Journal of Magnetic Resonance 158 (2002) 164-168
+    Journal of Magnetic Resonance 158 (2002) 164-168.
+    
     Parameters
     ----------
     pd : tuple
-        Current p0 and p1 values
+        Current p0 and p1 values.
     data : ndarray
         Array of NMR data.
+
     Returns
     -------
     score : float
-        Value of the objective function (phase score)
+        Value of the objective function (phase score).
+
     """
     stepsize = 1
 
@@ -157,16 +169,19 @@ def _ps_peak_minima_score(ph, data):
     This is a naive approach but is quick and often achieves reasonable
     results.  The optimisation is performed by finding the highest peak in the
     spectra (e.g. TMSP) and then attempting to reduce minima surrounding it.
+    
     Parameters
     ----------
     pd : tuple
-        Current p0 and p1 values
+        Current p0 and p1 values.
     data : ndarray
         Array of NMR data.
+
     Returns
     -------
     score : float
-        Value of the objective function (phase score)
+        Value of the objective function (phase score).
+
     """
 
     phc0, phc1 = ph
@@ -188,23 +203,28 @@ def manual_ps(data):
     transformed dataset. If the dataset has more than 1 dimensions, the first
     trace will be picked up for phase correction.  Clicking the 'Set Phase'
     button will print the current linear phase parameters to the console.
+    
     .. note:: Needs matplotlib with and interactive backend.
+    
     Parameters
     ----------
     data : ndarray
         Array of NMR data.
+
     Returns
     -------
     p0, p1 : float
         Linear phase correction parameters. Zero and first order phase
         corrections in degrees calculated from pc0, pc1 and pivot displayed
         in the interactive window.
+
     Examples
     --------
     >>> import nmrglue as ng
     >>> p0, p1 = ng.process.proc_autophase.manual_ps(data)
     >>> # do manual phase correction and close window
     >>> phased_data = ng.proc_base.ps(data, p0=p0, p1=p1)
+
     """
 
     from matplotlib.widgets import Slider, Button
