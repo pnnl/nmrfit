@@ -167,7 +167,7 @@ class Data:
         -------
         x0 : list of floats
             Initial condition vector.
-        bounds : list of 2 tuples
+        bounds : list of 2-tuples
             Min, max bounds for each parameter in x0.
 
         '''

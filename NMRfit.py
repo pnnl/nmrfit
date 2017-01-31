@@ -14,6 +14,21 @@ class FitUtility:
 
     Attributes
     ----------
+    data : instance of Data class
+        Container for ndarrays relevant to the fitting process (w, u, v, V, I) of the data.
+    result : instance of Result class
+        Container for ndarrays (w, u, v, V, I) of the fit result.
+    x0 : list of floats
+        Initial conditions for the minimizer.
+    method: string
+        Determines optimization algorithm to be used for minimization.  Default is "Powell".
+    bounds : list of 2-tuples
+        Min, max bounds for each parameter in x0.
+    options : dict
+        Additional options for the minimizer.
+    weights : ndarray
+        Array giving frequency-dependent weighting of error.
+    
 
     '''
 
@@ -28,7 +43,9 @@ class FitUtility:
         x0 : list(float)
             Initial conditions for the minimizer.
         method: string, optional
-            Determines optimization algorithm to be used for minimization.  Default is "Powell"
+            Determines optimization algorithm to be used for minimization.  Default is "Powell".
+        bounds : list of 2-tuples
+            Min, max bounds for each parameter in x0.
         options: dict, optional
             Used to pass additional options to the minimizer.
 
