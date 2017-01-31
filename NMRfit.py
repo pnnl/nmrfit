@@ -8,8 +8,9 @@ from package import proc_autophase
 from package import equations
 from package import containers
 
+
 class FitUtility:
-    '''
+    """
     Interface used to perform a fit of the data.
 
     Attributes
@@ -28,19 +29,18 @@ class FitUtility:
         Additional options for the minimizer.
     weights : ndarray
         Array giving frequency-dependent weighting of error.
-    
 
-    '''
+    """
 
     def __init__(self, data, x0, method='Powell', bounds=None, options=None):
-        '''
+        """
         FitUtility constructor.
 
         Parameters
         ----------
         data : instance of Data class
             Container for ndarrays relevant to the fitting process (w, u, v, V, I) of the data.
-        x0 : list(float)
+        x0 : list of floats
             Initial conditions for the minimizer.
         method: string, optional
             Determines optimization algorithm to be used for minimization.  Default is "Powell".
@@ -49,7 +49,7 @@ class FitUtility:
         options: dict, optional
             Used to pass additional options to the minimizer.
 
-        '''
+        """
         self.result = containers.Result()
         self.data = data
 
@@ -69,12 +69,12 @@ class FitUtility:
         self.fit()
 
     def fit(self):
-        '''
+        """
         Fit a number of Voigt functions to the input data by objective function minimization.  By default, only the real
         component of the data is used when performing the fit.  The imaginary data can be used, but at a severe performance
         penalty (often with little to no gains in goodness of fit).
-        '''
 
+        """
         self.weights = self.compute_weights()
 
         # call to the minimization function
@@ -94,11 +94,12 @@ class FitUtility:
 
         Parameters
         ----------
-        roibounds : 
+        expon : 
 
         Returns
         -------
         weights : ndarray
+
         """
         lIdx = np.zeros(len(self.data.peaks), dtype=np.int)
         rIdx = np.zeros(len(self.data.peaks), dtype=np.int)
@@ -126,7 +127,7 @@ class FitUtility:
         return weights
 
     def generate_result(self, scale=10):
-        '''
+        """
         Uses the output of the fit method to generate results.
 
         Parameters
@@ -137,8 +138,9 @@ class FitUtility:
         Returns
         -------
         result : instance of Result class
-            Container for ndarrays relevant to the fitting process (w, u, v, V, I) of the fit.
-        '''
+            Container for ndarrays (w, u, v, V, I) of the fit result.
+
+        """
 
         if scale == 1.0:
             # just use w vector as is
@@ -189,14 +191,30 @@ class FitUtility:
         return self.result
 
     def calculate_area_fraction(self):
+        """
+        Calculates the relative fraction of the satellite peaks to the total peak area from the fit.
+
+        Returns
+        -------
+        area_fraction : float
+            Area fraction of satellite peaks.
+
+        """
         areas = np.array([self.result.params[i] for i in range(5, len(self.result.params), 3)])
         m = np.mean(areas)
         peaks = areas[areas >= m].sum()
         sats = areas[areas < m].sum()
 
-        return(sats / (peaks + sats))
+        area_fraction = (sats / (peaks + sats))
+
+        return area_fraction
 
     def summary_plot(self):
+        """
+        Generates a summary plot of the calculated fit alongside the input data.
+
+        """
+
         peaks, satellites = self.data.peaks.split()
 
         peakBounds = []
@@ -287,6 +305,10 @@ class FitUtility:
         plt.show()
 
     def print_summary(self):
+        """
+        Generates and prints a summary of the fitting process.
+
+        """
         x0 = np.array(self.x0).reshape((-1, 3))
         x0_globals = x0[0, :]
         x0 = x0[1:, :]
@@ -321,6 +343,15 @@ class FitUtility:
         print("Area fraction:  ", self.result.area_fraction)
 
     def summary(self, plot=True):
+        """
+        Convenience function to print a summary as well as display summary plots.
+
+        Parameters
+        ----------
+        plot : bool, optional
+            Signals whether a plot of the resulting fit will be generated.
+
+        """
         self.print_summary()
         if plot is True:
             self.summary_plot()
@@ -337,12 +368,8 @@ def varian_process(fidfile, procfile):
 
     Returns
     -------
-    w : ndarray
-        Array of frequency data.
-    u, v : ndarray
-        Arrays of the real and imaginary components of the frequency response.
-    p0 : float
-        Zero order phase in radians.
+    result : instance of Data class
+        Container for ndarrays relevant to the fitting process (w, u, v, V, I) of the data.
     """
 
     dic, data = ng.varian.read_fid(fidfile)
@@ -366,4 +393,5 @@ def varian_process(fidfile, procfile):
     u = data[0, :].real
     v = data[0, :].imag
 
-    return containers.Data(w[::-1], u[::-1], v[::-1], p0)
+    result = containers.Data(w[::-1], u[::-1], v[::-1], p0)
+    return result
