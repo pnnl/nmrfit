@@ -73,8 +73,8 @@ class BoundsSelector:
         Arrays of the real and imaginary components of the frequency response.
     supress : bool, optional
         Flag to specify whether the interactive portion will be invoked.
-    bounds
-
+    bounds : list of floats of length 2
+        Upper and lower bound of the region of interest.
 
     """
 
@@ -150,7 +150,7 @@ class PeakSelector:
         Arrays of the real and imaginary components of the frequency response.
     n : int
         Number of peaks to select.
-    peaks
+    peaks : instance of Peaks object
     points
     fig
     cid
@@ -200,6 +200,11 @@ class PeakSelector:
         """
         Called whenever the user clicks on the plot.  Stores x and y location of the cursor.
         After 2 clicks, the plot is closed as the peak has been "defined."
+
+        Parameters
+        ----------
+        event : ???
+            I don't really know.
 
         """
 
@@ -307,7 +312,6 @@ class AutoPeakSelector:
         Local non-maxima supression to find peaks.
 
         """
-
         x_spacing = self.w[1] - self.w[0]
         window = int(self.window / x_spacing)  # arbitrary spacing (0.02)
 
@@ -324,8 +328,8 @@ class AutoPeakSelector:
     def find_width(self):
         """
         Using peak information, finds FWHM and performs a conversion to get width.
-        """
 
+        """
         screened_peaks = Peaks()
         for p in self.peaks:
             d = np.sign(p.height / 2. - (self.u[0:-1] - self.baseline[0:-1])) - np.sign(p.height / 2. - (self.u[1:] - self.baseline[1:]))
@@ -356,16 +360,16 @@ class AutoPeakSelector:
         """
         Convenience function to call both peak detection and FWHM analysis methods
         in appropriate order.
-        """
 
+        """
         self.find_maxima()
         self.find_width()
 
     def plot(self):
         """
         Plots the result of the peak selection process to indicate detected peak locations and bounds.
-        """
 
+        """
         plt.figure(figsize=(9, 5))
         plt.plot(self.w, self.u, color='b', linewidth=2)
         for p in self.peaks:
@@ -389,7 +393,7 @@ def find_peak(x, y, low, high):
         x and y components of the data being searched.
     low, high : float
         Upper and lower bounds of the search window, respectively.
-    
+
     Returns
     -------
     peakheight : float
@@ -400,7 +404,6 @@ def find_peak(x, y, low, high):
         Index of the peak location.
 
     """
-
     # indices of frequency values around the estimate within the tolerance
     idx = np.where((x <= high) & (x >= low))
 
@@ -434,7 +437,6 @@ def rnd_data(width, origdata):
         Input data plus random noise.
 
     """
-
     synthnoise = width * np.random.randn(origdata.size)
     synthdata = origdata + synthnoise
     return synthdata
@@ -449,8 +451,8 @@ def sample_noise(X, Y, xstart, xstop):
 
     Returns
     -------
-    """
 
+    """
     noiseY = Y[np.where((X <= xstop) & (X >= xstart))]
     noiseX = X[np.where((X <= xstop) & (X >= xstart))]
 
@@ -475,8 +477,8 @@ def piecewise_baseline(x, y):
     -------
     baseline : ndarray
         Array of y values representing the baseline.  Same shape as x, y.
-    """
 
+    """
     third = int(x.shape[0] / 3)
 
     y1 = y[0:third]

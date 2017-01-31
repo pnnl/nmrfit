@@ -31,7 +31,6 @@ def kk_equation(x, r, yOff, width, loc, a, w):
         Array defining the Voigt function with respect to x.
 
     """
-
     # first half of integral (Lorentzian, Gaussian, and Voigt, respectively)
     L1 = (2 / (np.pi * width)) * 1 / (1 + ((x + w - loc) / (0.5 * width))**2)
     G1 = (2 / width) * np.sqrt(np.log(2) / np.pi) * np.exp(-((x + w - loc) / (width / (2 * np.sqrt(np.log(2)))))**2)
@@ -74,7 +73,6 @@ def kk_relation(w, r, yOff, width, loc, a):
         Value of the integral evaluated at w.
 
     """
-
     res, err = sp.integrate.quad(kk_equation, 0, np.inf, args=(r, yOff, width, loc, a, w))
     return res / np.pi
 
@@ -104,7 +102,6 @@ def voigt(w, r, yOff, width, loc, a):
         Array defining the Voigt function over w.
 
     """
-
     # Lorentzian component
     L = (2 / (np.pi * width)) * 1 / (1 + ((w - loc) / (0.5 * width))**2)
 
@@ -124,7 +121,7 @@ def objective(x, w, u, v, x0, weights, roibounds):
 
     Parameters
     ----------
-    x : list(float)
+    x : list of floats
         Parameter vector.
     w : ndarray
         Array of frequency data.
@@ -141,7 +138,6 @@ def objective(x, w, u, v, x0, weights, roibounds):
         The sum of squared differences between the data and fit.
 
     """
-
     # global parameters
     theta, r, yOff = x[:3]
 
@@ -174,9 +170,24 @@ def objective(x, w, u, v, x0, weights, roibounds):
 
 def laplace1d(x, n=10, omega=0.33333333):
     """
-    Given an array x, performs 1d laplacian smoothing on the
-    values in x for n iterations and with relaxation factor
-    omega.  The end values of x are constrained to not change.
+    Given an array x, performs 1D laplacian smoothing on the values in x.
+
+    .. note:: The end values of x are constrained to not change.
+
+    Parameters
+    ----------
+    x : ndarray
+        Array of 1D values.
+    n : int, optional
+        Number of smoothing iterations.
+    omega : float, optional
+        Relaxation factor.
+
+    Returns
+    -------
+    x : ndarray
+        Smoothed 1D array.
+
     """
     for i in range(0, n):
         x[1:-1] = (1. - omega) * x[1:-1] + omega * 0.5 * (x[2:] + x[:-2])

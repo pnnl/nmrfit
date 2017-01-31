@@ -15,7 +15,7 @@ import scipy.optimize
 def ps(data, p0=0.0, p1=0.0, inv=False):
     """
     Linear phase correction.
-    
+
     Parameters
     ----------
     data : ndarray
@@ -26,7 +26,7 @@ def ps(data, p0=0.0, p1=0.0, inv=False):
         First order phase in degrees.
     inv : bool, optional
         True for inverse phase correction.
-    
+
     Returns
     -------
     ndata : ndarray
@@ -47,7 +47,7 @@ def ps(data, p0=0.0, p1=0.0, inv=False):
 def autops(data, fn, p0=0.0, p1=0.0):
     """
     Automatic linear phase correction.
-    
+
     Parameters
     ----------
     data : ndarray
@@ -55,11 +55,11 @@ def autops(data, fn, p0=0.0, p1=0.0):
     fn : str or function
         Algorithm to use for phase scoring. Built in functions can be
         specified by one of the following strings: "acme", "peak_minima".
-    p0 : float
+    p0 : float, optional
         Initial zero order phase in degrees.
-    p1 : float
+    p1 : float, optional
         Initial first order phase in degrees.
-    
+
     Returns
     -------
     ndata : ndarray
@@ -91,9 +91,9 @@ def approximate_phase(data, fn, p0=0.0, p1=0.0):
     fn : str or function
         Algorithm to use for phase scoring. Built in functions can be
         specified by one of the following strings: "acme", "peak_minima".
-    p0 : float
+    p0 : float, optional
         Initial zero order phase in degrees.
-    p1 : float
+    p1 : float, optional
         Initial first order phase in degrees.
 
     Returns
@@ -119,10 +119,10 @@ def _ps_acme_score(ph, data):
     """
     Phase correction using ACME algorithm by Chen Li et al.
     Journal of Magnetic Resonance 158 (2002) 164-168.
-    
+
     Parameters
     ----------
-    pd : tuple
+    ph : tuple
         Current p0 and p1 values.
     data : ndarray
         Array of NMR data.
@@ -169,10 +169,10 @@ def _ps_peak_minima_score(ph, data):
     This is a naive approach but is quick and often achieves reasonable
     results.  The optimisation is performed by finding the highest peak in the
     spectra (e.g. TMSP) and then attempting to reduce minima surrounding it.
-    
+
     Parameters
     ----------
-    pd : tuple
+    ph : tuple
         Current p0 and p1 values.
     data : ndarray
         Array of NMR data.
@@ -203,9 +203,9 @@ def manual_ps(data):
     transformed dataset. If the dataset has more than 1 dimensions, the first
     trace will be picked up for phase correction.  Clicking the 'Set Phase'
     button will print the current linear phase parameters to the console.
-    
+
     .. note:: Needs matplotlib with and interactive backend.
-    
+
     Parameters
     ----------
     data : ndarray
@@ -226,7 +226,6 @@ def manual_ps(data):
     >>> phased_data = ng.proc_base.ps(data, p0=p0, p1=p1)
 
     """
-
     from matplotlib.widgets import Slider, Button
     import matplotlib.pyplot as plt
 
@@ -258,11 +257,11 @@ def manual_ps(data):
         pivot = spiv.val
         interactive.set_ydata((data * np.exp(
             1.0j * (pc0 + (pc1 * np.arange(-pivot, -pivot + data.size) /
-                    data.size))).astype(data.dtype)).real)
+                           data.size))).astype(data.dtype)).real)
         plt.draw()
 
     def setphase(val):
-        p0 = spc0.val-spc1.val*spiv.val/data.size
+        p0 = spc0.val - spc1.val * spiv.val / data.size
         p1 = spc1.val
         print(p0, p1)
 
@@ -273,6 +272,6 @@ def manual_ps(data):
 
     plt.show(block=True)
 
-    p0 = spc0.val-spc1.val*spiv.val/data.size
+    p0 = spc0.val - spc1.val * spiv.val / data.size
     p1 = spc1.val
     return p0, p1
