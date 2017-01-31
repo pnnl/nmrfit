@@ -24,13 +24,6 @@ class Result:
 
     """
 
-    def __init__(self):
-        """
-        Constructor for the Result class. Does nothing.
-
-        """
-        pass
-
 
 class Data:
     """
