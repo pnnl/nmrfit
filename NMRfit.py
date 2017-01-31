@@ -16,7 +16,7 @@ class FitUtility:
     Attributes
     ----------
     data : instance of Data class
-        Container for ndarrays relevant to the fitting process (w, u, v, V, I) of the data.
+        Container for ndarrays relevant to the fitting process (w, u, v, V, I).
     result : instance of Result class
         Container for ndarrays (w, u, v, V, I) of the fit result.
     x0 : list of floats
@@ -39,14 +39,14 @@ class FitUtility:
         Parameters
         ----------
         data : instance of Data class
-            Container for ndarrays relevant to the fitting process (w, u, v, V, I) of the data.
+            Container for ndarrays relevant to the fitting process (w, u, v, V, I).
         x0 : list of floats
             Initial conditions for the minimizer.
-        method: string, optional
+        method : string, optional
             Determines optimization algorithm to be used for minimization.  Default is "Powell".
         bounds : list of 2-tuples
             Min, max bounds for each parameter in x0.
-        options: dict, optional
+        options : dict, optional
             Used to pass additional options to the minimizer.
 
         """
@@ -87,18 +87,17 @@ class FitUtility:
 
     def compute_weights(self, expon=0.5):
         """
-        Given sequence ((LHB[0],RHB[0]),...,(LHB[n-1],RHB[n-1])) of bounds and V_data
-        weights, we obtain maximums of |V_data| for each ROI (region of interest) and
-        then choose weight 1 for largest-max-region and all non-ROI regions, whereas
-        we choose weight (largest/max[I])^expon for all non-max ROI regions.
+        Smoothly weights each peak based on its height relative to the largest peak.
 
         Parameters
         ----------
-        expon : 
+        expon : float
+            Raise relative weighting to this power.
 
         Returns
         -------
         weights : ndarray
+            Array giving frequency-dependent weighting of error.
 
         """
         lIdx = np.zeros(len(self.data.peaks), dtype=np.int)
@@ -369,7 +368,8 @@ def varian_process(fidfile, procfile):
     Returns
     -------
     result : instance of Data class
-        Container for ndarrays relevant to the fitting process (w, u, v, V, I) of the data.
+        Container for ndarrays relevant to the fitting process (w, u, v, V, I).
+
     """
 
     dic, data = ng.varian.read_fid(fidfile)
