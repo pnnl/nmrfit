@@ -46,7 +46,6 @@ for exp in experiments:
     else:
         print('Powell fit error...')
         row.extend(['NA' for i in range(len(c) - len(row))])
-    print(len(row))
     l.append(row)
 
     plt.close()
@@ -72,7 +71,6 @@ for exp in experiments:
         print('TNC fit error...')
         row.extend(['NA' for i in range(len(c) - len(row))])
 
-    print(len(row))
     l.append(row)
 
     plt.close()
