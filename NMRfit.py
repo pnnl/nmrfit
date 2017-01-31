@@ -237,6 +237,14 @@ class FitUtility:
         set2Range = [min(set2Bounds), max(set2Bounds)]
 
         # set up figures
+
+        # plt.figure(figsize=(5, 5))
+        # plt.plot(fit.data.w, fit.data.V, linewidth=2, alpha=0.5, color='b', label='Data')
+        # plt.plot(fit.result.w, fit.result.V, linewidth=2, alpha=0.5, color='r', label='Fit')
+        # plt.legend()
+        # plt.xlabel('Frequency', fontsize=16)
+        # plt.ylabel('Amplitude', fontsize=16)
+        # plt.show()
         # real
         fig_re = plt.figure(1)
         ax1_re = plt.subplot(211)
@@ -245,25 +253,25 @@ class FitUtility:
         ax4_re = plt.subplot(236)
 
         # plot everything
-        ax1_re.plot(self.data.w, self.data.V)
-        ax1_re.plot(self.result.w, self.result.V)
+        ax1_re.plot(self.data.w, self.data.V, linewidth=2, alpha=0.5, color='b', label='Data')
+        ax1_re.plot(self.result.w, self.result.V, linewidth=2, alpha=0.5, color='r', label='Fit')
         ax1_re.autoscale_view()
 
         # plot left sats
-        ax2_re.plot(self.data.w, self.data.V)
-        ax2_re.plot(self.result.w, self.result.V)
+        ax2_re.plot(self.data.w, self.data.V, linewidth=2, alpha=0.5, color='b')
+        ax2_re.plot(self.result.w, self.result.V, linewidth=2, alpha=0.5, color='r')
         ax2_re.autoscale_view()
         ax2_re.set_xlim(set1Range)
 
         # plot main peaks
-        ax3_re.plot(self.data.w, self.data.V)
-        ax3_re.plot(self.result.w, self.result.V)
+        ax3_re.plot(self.data.w, self.data.V, linewidth=2, alpha=0.5, color='b')
+        ax3_re.plot(self.result.w, self.result.V, linewidth=2, alpha=0.5, color='r')
         ax3_re.autoscale_view()
         ax3_re.set_xlim(peakRange)
 
         # plot right satellites
-        ax4_re.plot(self.data.w, self.data.V)
-        ax4_re.plot(self.result.w, self.result.V)
+        ax4_re.plot(self.data.w, self.data.V, linewidth=2, alpha=0.5, color='b')
+        ax4_re.plot(self.result.w, self.result.V, linewidth=2, alpha=0.5, color='r')
         ax4_re.autoscale_view()
         ax4_re.set_xlim(set2Range)
 
@@ -275,29 +283,32 @@ class FitUtility:
         ax4_im = plt.subplot(236)
 
         # plot everything
-        ax1_im.plot(self.data.w, self.data.I)
-        ax1_im.plot(self.result.w, self.result.I)
+        ax1_im.plot(self.data.w, self.data.I, linewidth=2, alpha=0.5, color='b', label='Data')
+        ax1_im.plot(self.result.w, self.result.I, linewidth=2, alpha=0.5, color='r', label='Fit')
         ax1_im.autoscale_view(tight=True)
 
         # plot left sats
-        ax2_im.plot(self.data.w, self.data.I)
-        ax2_im.plot(self.result.w, self.result.I)
+        ax2_im.plot(self.data.w, self.data.I, linewidth=2, alpha=0.5, color='b')
+        ax2_im.plot(self.result.w, self.result.I, linewidth=2, alpha=0.5, color='r')
         ax2_im.autoscale_view(tight=True)
         ax2_im.set_xlim(set1Range)
 
         # plot main peaks
-        ax3_im.plot(self.data.w, self.data.I)
-        ax3_im.plot(self.result.w, self.result.I)
+        ax3_im.plot(self.data.w, self.data.I, linewidth=2, alpha=0.5, color='b')
+        ax3_im.plot(self.result.w, self.result.I, linewidth=2, alpha=0.5, color='r')
         ax3_im.autoscale_view(tight=True)
         ax3_im.set_xlim(peakRange)
 
         # plot right satellites
-        ax4_im.plot(self.data.w, self.data.I)
-        ax4_im.plot(self.result.w, self.result.I)
+        ax4_im.plot(self.data.w, self.data.I, linewidth=2, alpha=0.5, color='b')
+        ax4_im.plot(self.result.w, self.result.I, linewidth=2, alpha=0.5, color='r')
         ax4_im.autoscale_view(tight=True)
         ax4_im.set_xlim(set2Range)
 
         # display
+        plt.legend()
+        plt.xlabel('Frequency', fontsize=16)
+        plt.ylabel('Amplitude', fontsize=16)
         plt.tight_layout()
         plt.show()
 
