@@ -140,7 +140,6 @@ class FitUtility:
             Container for ndarrays (w, u, v, V, I) of the fit result.
 
         """
-
         if scale == 1.0:
             # just use w vector as is
             w = self.data.w
@@ -213,7 +212,6 @@ class FitUtility:
         Generates a summary plot of the calculated fit alongside the input data.
 
         """
-
         peaks, satellites = self.data.peaks.split()
 
         peakBounds = []
@@ -371,7 +369,6 @@ def varian_process(fidfile, procfile):
         Container for ndarrays relevant to the fitting process (w, u, v, V, I).
 
     """
-
     dic, data = ng.varian.read_fid(fidfile)
     procs = ng.varian.read_procpar(procfile)
 

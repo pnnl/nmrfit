@@ -12,12 +12,30 @@ class Peaks(list):
     """
 
     def average_height(self):
+        """
+        Calculate average height of all peaks stored.
+
+        Returns
+        -------
+        average : float
+            Average height of peaks.
+
+        """
         h = 0.
         for p in self:
             h += abs(p.height)
         return h / len(self)
 
     def split(self):
+        """
+        Split peaks into two sublists (peaks, satellites) based on relative heights.
+
+        Returns
+        -------
+        peaks, sats : Peak instances
+            Peak lists containing peaks and satellites, respectively.
+
+        """
         h = self.average_height()
         sats = Peaks()
         peaks = Peaks()
@@ -51,6 +69,15 @@ class Peak:
     """
 
     def __repr__(self):
+        """
+        Overrides __repr__ to print peak-relevant information.
+
+        Returns
+        -------
+        repr : string
+            Formatted string to display peak information.
+
+        """
         return """\
                Location: %s
                Height: %s
@@ -75,11 +102,15 @@ class BoundsSelector:
         Flag to specify whether the interactive portion will be invoked.
     bounds : list of floats of length 2
         Upper and lower bound of the region of interest.
+    fig : PyPlot figure
+    cid : figure canvas socket
 
     """
 
     def __init__(self, w, u, v, supress=False):
         """
+        Constructor for BoundsSelector class.
+
         Parameters
         ----------
         w : ndarray
@@ -105,6 +136,15 @@ class BoundsSelector:
             plt.show()
 
     def __call__(self, event):
+        """
+        Called on mouse click events to capture location.
+
+        Parameters
+        ----------
+        event : mouse click event
+            Contains mouse click information (e.g., x, y location)
+
+        """
         self.bounds.append(event.xdata)
         if len(self.bounds) == 2:
             plt.close()
@@ -151,10 +191,12 @@ class PeakSelector:
     n : int
         Number of peaks to select.
     peaks : instance of Peaks object
-    points
-    fig
-    cid
-    baseline
+    points : list of lists
+        List containing x, y points for each mouse click.
+    fig : PyPlot figure
+    cid : figure canvas socket
+    baseline : ndarray
+        Array that defines a piecewise polynomial baseline of the data.
 
     """
 
@@ -203,11 +245,10 @@ class PeakSelector:
 
         Parameters
         ----------
-        event : ???
-            I don't really know.
+        event : mouse click event
+            Contains mouse click information (e.g., x, y location)
 
         """
-
         # add x,y location of click
         self.points.append([event.xdata, event.ydata])
 
@@ -261,7 +302,6 @@ class PeakSelector:
         Plots the result of the peak selection process to indicate detected peak locations and bounds.
 
         """
-
         plt.figure(figsize=(9, 5))
         plt.plot(self.w, self.u, color='b', linewidth=2)
         for p in self.peaks:
@@ -280,7 +320,7 @@ class AutoPeakSelector:
     Uses local non-maxima supression to find relative maxima (peaks) and FWHM analysis to determine an
     approximation of width/width.
 
-    Parameters
+    Attributes
     ----------
     w : ndarray
         Array of frequency data.
@@ -290,10 +330,30 @@ class AutoPeakSelector:
         Threshold for minimum amplitude cutoff in peak selection.
     window : float
         Window size for local non-maximum supression.
+    peaks : instance of Peaks object
+    u_smoothed : ndarray
+        Smoothed version of u.
+    baseline : ndarray
+        Array that defines a piecewise polynomial baseline of the data.
 
     """
 
     def __init__(self, w, u, thresh, window):
+        """
+        AutoPeakSelector constructor.
+
+        Parameters
+        ----------
+        w : ndarray
+            Array of frequency data.
+        u : ndarray
+            Array of the real component of the frequency response.
+        thresh : float
+            Threshold for minimum amplitude cutoff in peak selection.
+        window : float
+            Window size for local non-maximum supression.
+
+        """
         self.thresh = thresh
         self.window = window
         f = sp.interpolate.interp1d(w, u)
@@ -448,9 +508,15 @@ def sample_noise(X, Y, xstart, xstop):
 
     Parameters
     ----------
+    X, Y : ndarray
+        Arrays containing the x and y components of a signal, respectively.
+    xstart, xstop: float
+        Start and stop points that define the sample range in terms of X.
 
     Returns
     -------
+    noise : float
+        Magnitude of the noise associated with the sampled signal.
 
     """
     noiseY = Y[np.where((X <= xstop) & (X >= xstart))]

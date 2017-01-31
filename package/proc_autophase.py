@@ -183,7 +183,6 @@ def _ps_peak_minima_score(ph, data):
         Value of the objective function (phase score).
 
     """
-
     phc0, phc1 = ph
 
     s0 = ps(data, p0=phc0, p1=phc1)
