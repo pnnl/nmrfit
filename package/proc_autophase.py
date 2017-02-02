@@ -12,6 +12,34 @@ import numpy as np
 import scipy.optimize
 
 
+def ps2(u, v, p0=0.0, p1=0.0, inv=False):
+    """
+    Linear phase correction
+    Parameters
+    ----------
+    data : ndarray
+        Array of NMR data.
+    p0 : float
+        Zero order phase in degrees.
+    p1 : float
+        First order phase in degrees.
+    inv : bool, optional
+        True for inverse phase correction
+    Returns
+    -------
+    ndata : ndarray
+        Phased NMR data.
+    """
+    data = u + 1j * v
+    size = data.shape[-1]
+    apod = np.exp(1.0j * (p0 + (p1 * np.arange(size) / size))
+                  ).astype(data.dtype)
+    if inv:
+        apod = 1 / apod
+    data = apod * data
+    return data.real, data.imag
+
+
 def ps(data, p0=0.0, p1=0.0, inv=False):
     """
     Linear phase correction.
