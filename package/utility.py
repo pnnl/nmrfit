@@ -529,7 +529,7 @@ def sample_noise(X, Y, xstart, xstop):
     return np.std(noise)
 
 
-def piecewise_baseline(x, y):
+def piecewise_baseline(x, y, plot=True):
     """
     Calculates a piecewise baseline from the x/y data.  Splits the data into thirds and fits a baseline
     to each section.  Used to correct for baseline offsest during initial condition selection.
@@ -552,9 +552,20 @@ def piecewise_baseline(x, y):
     y3 = y[2 * third:]
 
     base1 = peakutils.baseline(y1, 2)
-    base2 = np.ones(y2.shape) * np.median(y2)
+    # base2 = np.ones(y2.shape) * np.median(y2)
+    
     base3 = peakutils.baseline(y3, 2)
 
+    base2 = np.linspace(base1[-1], base3[0], y2.size)
+
     baseline = np.concatenate((base1, base2, base3))
+
+    if plot is True:
+        plt.close()
+        plt.plot(x, y)
+        plt.plot(x, baseline)
+        # plt.plot(x, y - baseline)
+        plt.show()
+        plt.close()
 
     return baseline
