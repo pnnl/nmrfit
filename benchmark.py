@@ -42,33 +42,10 @@ def run_fit(exp, method='auto'):
     data.select_peaks(method=method, n=6, plot=False, thresh=0.002)
 
     # generate bounds and initial conditions
-    x0, bounds = data.generate_initial_conditions()
+    lb, ub = data.generate_initial_conditions()
 
     # fit data
-    fit = nmrft.FitUtility(data, x0, method='Powell')
-
-    # generate result
-    res = fit.generate_result(scale=1)
-
-    # row = [ID, sample, 'Powell', res.error, res.area_fraction]
-    # if len(row) + len(res.params) == len(c):
-    #     row.extend(res.params)
-    # else:
-    #     print('Powell fit error...')
-    #     row.extend(['NA' for i in range(len(c) - len(row))])
-
-    # plt.close()
-    # plt.plot(fit.data.w, fit.data.V, linewidth=2, alpha=0.5)
-    # plt.plot(fit.result.w, fit.result.V, linewidth=2, alpha=0.5)
-    # plt.xlabel('Frequency')
-    # plt.ylabel('Amplitude')
-    # plt.savefig('./results/%s_powell.png' % ID)
-
-    # Now we will pass global results onto TNC
-    x0[1:3] = res.params[1:3]
-
-    # fit data
-    fit = nmrft.FitUtility(data, x0, method='TNC', bounds=bounds, options={'maxCGit': 1000, 'maxiter': 1000})
+    fit = nmrft.FitUtility(data, lb, ub)
 
     # generate result
     res = fit.generate_result(scale=1)
@@ -80,35 +57,15 @@ def run_fit(exp, method='auto'):
         print('TNC fit error...')
         row.extend(['NA' for i in range(len(c) - len(row))])
 
-    # plt.close()
-    # plt.plot(fit.data.w, fit.data.V, linewidth=2, alpha=0.5)
-    # plt.plot(fit.result.w, fit.result.V, linewidth=2, alpha=0.5)
-    # plt.xlabel('Frequency')
-    # plt.ylabel('Amplitude')
-    # plt.savefig('./results/%s_tnc.png' % ID, bbox_inches='tight')
-    # plt.close()
-
     return row
 
 
 if __name__ == '__main__':
-
-    # auto = pd.read_csv('./results/auto_cases.csv')['id'].values
-    # manual = pd.read_csv('./results/problematic.csv')['id'].values
-
     # input directory
     inDir = "./data/blindedData/"
     experiments = glob.glob(os.path.join(inDir, '*.fid'))
 
     l = []
-    # for fn in auto:
-    #     exp = os.path.join(inDir, fn)
-    #     l.append(run_fit(exp, method='auto'))
-
-    # for fn in manual:
-    #     exp = os.path.join(inDir, fn)
-    #     l.append(run_fit(exp, method='auto'))
-
     for exp in experiments:
         l.append(run_fit(exp, method='manual'))
 
@@ -120,4 +77,4 @@ if __name__ == '__main__':
 
     # build dataframe
     df = pd.DataFrame(l, columns=c)
-    df.to_csv('./results/results_manual.csv', index=False)
+    df.to_csv('./results/results_pso.csv', index=False)

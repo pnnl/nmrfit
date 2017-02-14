@@ -168,8 +168,6 @@ class Data:
         lower = [-np.pi, 0.0, -0.1]
 
         for p in self.peaks:
-            x0.extend([p.width, p.loc, p.area])
-            bounds.extend([(p.width * 0.1, p.width * 10.), (p.bounds[0], p.bounds[1]), (p.area * 0.1, p.area * 10.)])
             lower.extend([p.width * 0.1, p.bounds[0], p.area * 0.1])
             upper.extend([p.width * 10, p.bounds[1], p.area * 10])
 
