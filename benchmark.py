@@ -8,7 +8,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 
-def run_fit(exp, method='auto'):
+def run_fit(exp, method='auto', plot=True):
     ID = os.path.basename(exp)
     sample = ID.split('_')[1]
     trial = ID.split('_')[-2]
@@ -50,7 +50,7 @@ def run_fit(exp, method='auto'):
     # generate result
     fit.calculate_area_fraction()
 
-    fit.generate_result()
+    
 
     row = [ID, sample, 'PSO', fit.result.error, fit.result.area_fraction]
     if len(row) + len(fit.result.params) == len(c):
@@ -58,6 +58,16 @@ def run_fit(exp, method='auto'):
     else:
         print('TNC fit error...')
         row.extend(['NA' for i in range(len(c) - len(row))])
+
+    if plot is True:
+        fit.generate_result()
+        plt.close()
+        plt.plot(fit.data.w, fit.data.V, linewidth=2, alpha=0.5, color='blue', label='Data')
+        plt.plot(fit.result.w, fit.result.V, linewidth=2, alpha=0.5, color='red', label='fit')
+        plt.xlabel('Frequency')
+        plt.ylabel('Amplitude')
+        plt.savefig('./results/%s_pso.png' % ID, bbox_inches='tight')
+        plt.close()
 
     return row
 
