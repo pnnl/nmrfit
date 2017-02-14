@@ -50,6 +50,8 @@ def run_fit(exp, method='auto'):
     # generate result
     fit.calculate_area_fraction()
 
+    fit.generate_result()
+
     row = [ID, sample, 'PSO', fit.result.error, fit.result.area_fraction]
     if len(row) + len(fit.result.params) == len(c):
         row.extend(fit.result.params)
