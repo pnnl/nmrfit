@@ -50,8 +50,6 @@ def run_fit(exp, method='auto', plot=True):
     # generate result
     fit.calculate_area_fraction()
 
-    
-
     row = [ID, sample, 'PSO', fit.result.error, fit.result.area_fraction]
     if len(row) + len(fit.result.params) == len(c):
         row.extend(fit.result.params)
@@ -60,13 +58,14 @@ def run_fit(exp, method='auto', plot=True):
         row.extend(['NA' for i in range(len(c) - len(row))])
 
     if plot is True:
-        fit.generate_result()
+        fit.generate_result(scale=1)
         plt.close()
         plt.plot(fit.data.w, fit.data.V, linewidth=2, alpha=0.5, color='blue', label='Data')
         plt.plot(fit.result.w, fit.result.V, linewidth=2, alpha=0.5, color='red', label='fit')
         plt.xlabel('Frequency')
         plt.ylabel('Amplitude')
-        plt.savefig('./results/%s_pso.png' % ID, bbox_inches='tight')
+        plt.legend('upper right')
+        plt.savefig('./results/%s_pso.png' % ID, bbox_inches='tight', dpi=200)
         plt.close()
 
     return row
