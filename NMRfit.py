@@ -3,6 +3,7 @@ import scipy as sp
 import scipy.optimize
 import nmrglue as ng
 import matplotlib.pyplot as plt
+import pyswarm
 
 from package import proc_autophase
 from package import equations
@@ -32,7 +33,7 @@ class FitUtility:
 
     """
 
-    def __init__(self, data, x0, method='Powell', bounds=None, options=None):
+    def __init__(self, data, lower, upper, options=None):
         """
         FitUtility constructor.
 
@@ -40,12 +41,8 @@ class FitUtility:
         ----------
         data : instance of Data class
             Container for ndarrays relevant to the fitting process (w, u, v, V, I).
-        x0 : list of floats
-            Initial conditions for the minimizer.
-        method : string, optional
-            Determines optimization algorithm to be used for minimization.  Default is "Powell".
-        bounds : list of 2-tuples
-            Min, max bounds for each parameter in x0.
+        lower, upper : list of floats
+            Min, max bounds for each parameter in the optimization.
         options : dict, optional
             Used to pass additional options to the minimizer.
 
@@ -53,14 +50,9 @@ class FitUtility:
         self.result = containers.Result()
         self.data = data
 
-        # initial condition vector
-        self.x0 = x0
-
-        # method used in the minimization step
-        self.method = method
-
         # bounds
-        self.bounds = bounds
+        self.lower = lower
+        self.upper = upper
 
         # any additional options for the minimization step
         self.options = options
@@ -78,12 +70,11 @@ class FitUtility:
         self.weights = self.compute_weights()
 
         # call to the minimization function
-        result = sp.optimize.minimize(equations.objective, self.x0, args=(self.data.w, self.data.u, self.data.v, self.weights),
-                                      method=self.method, bounds=self.bounds, options=self.options)
+        xopt, fopt = pyswarm.pso(equations.objective, self.lower, self.upper, args=(self.data.w, self.data.u, self.data.v, self.weights), **self.options)
 
         # store the fit parameters and error in the result object
-        self.result.params = result.x
-        self.result.error = result.fun
+        self.result.params = xopt
+        self.result.func = fopt
 
     def compute_weights(self, expon=0.5):
         """

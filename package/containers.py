@@ -164,14 +164,16 @@ class Data:
             Min, max bounds for each parameter in x0.
 
         """
-        x0 = [self.theta, 1., 0.]
-        bounds = [(None, None), (0., 1.), (None, None)]
+        upper = [np.pi, 1.0, 0.1]
+        lower = [-np.pi, 0.0, -0.1]
 
         for p in self.peaks:
             x0.extend([p.width, p.loc, p.area])
             bounds.extend([(p.width * 0.1, p.width * 10.), (p.bounds[0], p.bounds[1]), (p.area * 0.1, p.area * 10.)])
+            lower.extend([p.width * 0.1, p.bounds[0], p.area * 0.1])
+            upper.extend([p.width * 10, p.bounds[1], p.area * 10])
 
-        return x0, bounds
+        return lower, upper
 
     def approximate_areas(self):
         """
