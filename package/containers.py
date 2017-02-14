@@ -154,22 +154,20 @@ class Data:
     def generate_initial_conditions(self):
         """
         Uses initial theta approximation as well as initial per-peak parameters (width, location, area)
-        to construct an initial condition vector and a set of parameter bounds.
+        to construct a set of parameter bounds.
 
         Returns
         -------
-        x0 : list of floats
-            Initial condition vector.
-        bounds : list of 2-tuples
-            Min, max bounds for each parameter in x0.
+        lower, upper : list of 2-tuples
+            Min, max bounds for each parameter in optimization.
 
         """
-        upper = [np.pi, 1.0, 0.1]
-        lower = [-np.pi, 0.0, -0.1]
+        upper = [np.pi, 1.0, 0.01]
+        lower = [-np.pi, 0.0, -0.01]
 
         for p in self.peaks:
-            lower.extend([p.width * 0.1, p.bounds[0], p.area * 0.1])
-            upper.extend([p.width * 10, p.bounds[1], p.area * 10])
+            lower.extend([p.width * 0.8, p.loc - 0.1 * (p.loc - p.bounds[0]), p.area * 0.8])
+            upper.extend([p.width * 1.2, p.loc - 0.1 * (p.loc - p.bounds[1]), p.area * 1.2])
 
         return lower, upper
 

@@ -70,11 +70,16 @@ class FitUtility:
         self.weights = self.compute_weights()
 
         # call to the minimization function
-        xopt, fopt = pyswarm.pso(equations.objective, self.lower, self.upper, args=(self.data.w, self.data.u, self.data.v, self.weights), **self.options)
+        xopt, fopt = pyswarm.pso(equations.objective, self.lower, self.upper, args=(self.data.w, self.data.u, self.data.v, self.weights),
+                                 swarmsize=204,
+                                 maxiter=2000,
+                                 omega=-0.2134,
+                                 phip=-0.3344,
+                                 phig=2.3259)
 
         # store the fit parameters and error in the result object
         self.result.params = xopt
-        self.result.func = fopt
+        self.result.error = fopt
 
     def compute_weights(self, expon=0.5):
         """
@@ -125,11 +130,6 @@ class FitUtility:
         scale : float, optional
             Upsample the resolution by this factor when calculating the fits.
 
-        Returns
-        -------
-        result : instance of Result class
-            Container for ndarrays (w, u, v, V, I) of the fit result.
-
         """
         if scale == 1.0:
             # just use w vector as is
@@ -174,19 +174,9 @@ class FitUtility:
         self.data.V = V_data
         self.data.I = I_data
 
-        # calculate area fraction
-        self.result.area_fraction = self.calculate_area_fraction()
-
-        return self.result
-
     def calculate_area_fraction(self):
         """
         Calculates the relative fraction of the satellite peaks to the total peak area from the fit.
-
-        Returns
-        -------
-        area_fraction : float
-            Area fraction of satellite peaks.
 
         """
         areas = np.array([self.result.params[i] for i in range(5, len(self.result.params), 3)])
@@ -196,7 +186,8 @@ class FitUtility:
 
         area_fraction = (sats / (peaks + sats))
 
-        return area_fraction
+        # calculate area fraction
+        self.result.area_fraction = area_fraction
 
     def summary_plot(self):
         """
@@ -308,26 +299,9 @@ class FitUtility:
         Generates and prints a summary of the fitting process.
 
         """
-        x0 = np.array(self.x0).reshape((-1, 3))
-        x0_globals = x0[0, :]
-        x0 = x0[1:, :]
         res = np.array(self.result.params).reshape((-1, 3))
         res_globals = res[0, :]
         res = res[1:, :]
-
-        idx = x0[:, 1].argsort()[::-1]
-        x0 = x0[idx]
-        res = res[idx]
-
-        # print summary
-        print()
-        print('SEED PARAMETER VALUES:')
-        print('----------------------')
-        print('Global parameters')
-        print(x0_globals)
-        print('Peak parameters')
-        for i in range(x0.shape[0]):
-            print(x0[i, :])
 
         print()
         print('CONVERGED PARAMETER VALUES:')

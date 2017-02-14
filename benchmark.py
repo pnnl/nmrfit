@@ -48,11 +48,11 @@ def run_fit(exp, method='auto'):
     fit = nmrft.FitUtility(data, lb, ub)
 
     # generate result
-    res = fit.generate_result(scale=1)
+    fit.calculate_area_fraction()
 
-    row = [ID, sample, 'TNC', res.error, res.area_fraction]
-    if len(row) + len(res.params) == len(c):
-        row.extend(res.params)
+    row = [ID, sample, 'PSO', fit.result.error, fit.result.area_fraction]
+    if len(row) + len(fit.result.params) == len(c):
+        row.extend(fit.result.params)
     else:
         print('TNC fit error...')
         row.extend(['NA' for i in range(len(c) - len(row))])
@@ -67,7 +67,7 @@ if __name__ == '__main__':
 
     l = []
     for exp in experiments:
-        l.append(run_fit(exp, method='manual'))
+        l.append(run_fit(exp, method='auto'))
 
     # construct column labels
     c = ['id', 'sample', 'method', 'error', 'fraction',

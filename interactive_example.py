@@ -5,13 +5,13 @@ import numpy as np
 
 
 # input directory
-inDir = "./Data/blindedData/dc_4a_cdcl3_kilimanjaro_25c_1d_1H_1_043016.fid"
+inDir = "./data/blindedData/dc_4d_cdcl3_kilimanjaro_25c_1d_1H_2_050116.fid"
 
 # read in data
 data = nmrft.varian_process(os.path.join(inDir, 'fid'), os.path.join(inDir, 'procpar'))
 
 # bound the data
-data.select_bounds(low=3.23, high=3.6)
+data.select_bounds(low=3.25, high=3.6)
 
 # select peaks and satellites
 peaks = data.select_peaks(method='auto', n=6, plot=True)
@@ -23,7 +23,8 @@ lb, ub = data.generate_initial_conditions()
 fit = nmrft.FitUtility(data, lb, ub)
 
 # generate result
-res = fit.generate_result(scale=1)
+fit.calculate_area_fraction()
+fit.generate_result(scale=1)
 
 # # summary
 fit.summary()
