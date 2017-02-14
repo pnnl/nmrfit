@@ -114,7 +114,7 @@ def voigt(w, r, yOff, width, loc, a):
     return V
 
 
-def objective(x, w, u, v, x0, weights, roibounds):
+def objective(x, w, u, v, weights):
     """
     The objective function used to fit supplied data.  Evaluates sum of squared differences
     between the fit and the data.
@@ -129,8 +129,6 @@ def objective(x, w, u, v, x0, weights, roibounds):
         Arrays of the real and imaginary components of the frequency response.
     weights : ndarray
         Array giving frequency-dependent weighting of error.
-    roibounds : list of 2-tuples
-        Bounds used for dynamic weight computation.
 
     Returns
     -------
@@ -140,9 +138,6 @@ def objective(x, w, u, v, x0, weights, roibounds):
     """
     # global parameters
     theta, r, yOff = x[:3]
-
-    # initial global parameters
-    theta0, r0, yOff0 = x0[:3]
 
     # transform u and v to get V for the data
     V_data = u * np.cos(theta) - v * np.sin(theta)

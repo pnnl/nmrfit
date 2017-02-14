@@ -78,7 +78,7 @@ class FitUtility:
         self.weights = self.compute_weights()
 
         # call to the minimization function
-        result = sp.optimize.minimize(equations.objective, self.x0, args=(self.data.w, self.data.u, self.data.v, self.x0, self.weights, self.data.roibounds),
+        result = sp.optimize.minimize(equations.objective, self.x0, args=(self.data.w, self.data.u, self.data.v, self.weights),
                                       method=self.method, bounds=self.bounds, options=self.options)
 
         # store the fit parameters and error in the result object
