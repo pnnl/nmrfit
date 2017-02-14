@@ -97,7 +97,7 @@ if __name__ == '__main__':
     # manual = pd.read_csv('./results/problematic.csv')['id'].values
 
     # input directory
-    inDir = "./Data/blindedData/"
+    inDir = "./data/blindedData/"
     experiments = glob.glob(os.path.join(inDir, '*.fid'))
 
     l = []
@@ -110,7 +110,7 @@ if __name__ == '__main__':
     #     l.append(run_fit(exp, method='auto'))
 
     for exp in experiments:
-        l.append(run_fit(exp, method='auto'))
+        l.append(run_fit(exp, method='manual'))
 
     # construct column labels
     c = ['id', 'sample', 'method', 'error', 'fraction',
@@ -120,4 +120,4 @@ if __name__ == '__main__':
 
     # build dataframe
     df = pd.DataFrame(l, columns=c)
-    df.to_csv('./results/results.csv', index=False)
+    df.to_csv('./results/results_manual.csv', index=False)
