@@ -64,7 +64,7 @@ def run_fit(exp, method='auto', plot=True):
         plt.plot(fit.result.w, fit.result.V, linewidth=2, alpha=0.5, color='red', label='fit')
         plt.xlabel('Frequency')
         plt.ylabel('Amplitude')
-        plt.legend('upper right')
+        plt.legend(loc='upper right')
         plt.savefig('./results/%s_pso.png' % ID, bbox_inches='tight', dpi=200)
         plt.close()
 
@@ -88,4 +88,4 @@ if __name__ == '__main__':
 
     # build dataframe
     df = pd.DataFrame(l, columns=c)
-    df.to_csv('./results/results_pso.csv', index=False)
+    df.to_csv('./results/results_pso2.csv', index=False)
