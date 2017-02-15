@@ -165,6 +165,9 @@ class Data:
         upper = [np.pi, 1.0, 0.01]
         lower = [-np.pi, 0.0, -0.01]
 
+        # upper = [self.theta + np.pi / 6, 1.0, 0.01]
+        # lower = [self.theta - np.pi / 6, 0.0, -0.01]
+
         for p in self.peaks:
             lower.extend([p.width * 0.5, p.loc - 0.1 * (p.loc - p.bounds[0]), p.area * 0.5])
             upper.extend([p.width * 1.5, p.loc - 0.1 * (p.loc - p.bounds[1]), p.area * 1.5])
