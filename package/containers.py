@@ -84,6 +84,20 @@ class Data:
         # calculate V and I from u, v, and theta
         self.V, self.I = ps2(self.u, self.v, p0, p1)
 
+    def brute_phase(self, step=np.pi / 360):
+        bestTheta = 0
+        bestError = np.inf
+        for theta in np.arange(-np.pi, np.pi, step):
+            self.V, self.I = ps2(self.u, self.v, theta, 0)
+            error = (self.V[0] - self.V[-1])**2
+            if error < bestError:
+                bestError = error
+                bestTheta = theta
+
+        self.V, self.I = ps2(self.u, self.v, bestTheta, 0)
+        self.p0 = bestTheta
+        return bestTheta
+
     def select_bounds(self, low=None, high=None):
         """
         Method to interface with the utility class BoundsSelector.  If low and high are supplied, the interactive
@@ -104,7 +118,7 @@ class Data:
             bs = BoundsSelector(self.w, self.u, self.v)
             self.w, self.u, self.v = bs.apply_bounds()
 
-        self.shift_phase(self.p0, self.p1)
+        # self.shift_phase(self.p0, self.p1)
 
     def select_peaks(self, method='auto', n=None, thresh=0.0, window=0.02, plot=False):
         """
@@ -166,8 +180,8 @@ class Data:
         upper = [np.pi, 1.0, 0.01]
         lower = [-np.pi, 0.0, -0.01]
 
-        # upper = [self.theta + np.pi / 6, 1.0, 0.01]
-        # lower = [self.theta - np.pi / 6, 0.0, -0.01]
+        # upper = [self.p0 + 0.01, 1.0, 0.01]
+        # lower = [self.p0 - 0.01, 0.0, -0.01]
 
         for p in self.peaks:
             lower.extend([p.width * 0.5, p.loc - 0.1 * (p.loc - p.bounds[0]), p.area * 0.5])
