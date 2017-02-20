@@ -17,26 +17,28 @@ def run_fit(exp, method='auto', plot=True):
 
     c = ['id', 'sample', 'method', 'error', 'fraction',
          'theta', 'GLratio', 'yoff']
-    for i in range(1, 7):
+    for i in range(1, 4):
         c.extend(['s' + str(i), 'loc' + str(i), 'a' + str(i)])
 
     # read in data
     data = nmrft.varian_process(os.path.join(exp, 'fid'), os.path.join(exp, 'procpar'))
 
     # bound the data
-    if sample == '4b':
-        if int(trial) in [3, 4, 5]:
-            data.select_bounds(low=3.2, high=3.6)
-        else:
-            data.select_bounds(low=3.25, high=3.6)
-    elif sample == '4d':
-        if end == '072316':
-            data.select_bounds(low=3.23, high=3.6)
-        else:
-            data.select_bounds(low=3.25, high=3.6)
-    else:
+    # if sample == '4b':
+    #     if int(trial) in [3, 4, 5]:
+    #         data.select_bounds(low=3.2, high=3.6)
+    #     else:
+    #         data.select_bounds(low=3.25, high=3.6)
+    # elif sample == '4d':
+    #     if end == '072316':
+    #         data.select_bounds(low=3.23, high=3.6)
+    #     else:
+    #         data.select_bounds(low=3.25, high=3.6)
+    # else:
 
-        data.select_bounds(low=3.2, high=3.6)
+    #     data.select_bounds(low=3.2, high=3.6)
+
+    data.select_bounds(low=3.2, high=3.8)
 
     # select peaks and satellites
     data.select_peaks(method=method, n=6, plot=False, thresh=0.002)
@@ -73,19 +75,19 @@ def run_fit(exp, method='auto', plot=True):
 
 if __name__ == '__main__':
     # input directory
-    inDir = "./data/blindedData/"
+    inDir = "./data/toluene/"
     experiments = glob.glob(os.path.join(inDir, '*.fid'))
 
     l = []
     for exp in experiments:
-        l.append(run_fit(exp, method='auto'))
+        l.append(run_fit(exp, method='auto', plot=True))
 
     # construct column labels
     c = ['id', 'sample', 'method', 'error', 'fraction',
          'theta', 'GLratio', 'yoff']
-    for i in range(1, 7):
+    for i in range(1, 4):
         c.extend(['s' + str(i), 'loc' + str(i), 'a' + str(i)])
 
     # build dataframe
     df = pd.DataFrame(l, columns=c)
-    df.to_csv('./results/results_pso2.csv', index=False)
+    df.to_csv('./results/toluene_results_pso.csv', index=False)

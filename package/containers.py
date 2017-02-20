@@ -3,6 +3,7 @@ from .utility import AutoPeakSelector
 from .utility import PeakSelector
 from .utility import BoundsSelector
 from .utility import Peaks
+from .proc_autophase import ps2
 
 
 class Result:
@@ -49,7 +50,7 @@ class Data:
 
     """
 
-    def __init__(self, w, u, v, thetaEst):
+    def __init__(self, w, u, v, p0, p1):
         """
         Constructor for the Data class.
 
@@ -59,29 +60,29 @@ class Data:
             Array of frequency data.
         u, v : ndarray
             Arrays of the real and imaginary components of the frequency response.
-        thetaEst : float
-            Estimate of zero order phase in radians.
+        p0, p1 : float
+            Estimate of zeroth and first order phase in radians.
 
         """
         self.w = w
         self.u = u
         self.v = v
 
-        self.theta = thetaEst
+        self.p0 = p0
+        self.p1 = p1
 
-    def shift_phase(self, theta):
+    def shift_phase(self, p0, p1):
         """
         Phase shift u and v by theta to generate V and I.
 
         Parameters
         ----------
-        theta : float
+        p0,, p1 : float
             Phase correction in radians.
 
         """
         # calculate V and I from u, v, and theta
-        self.V = self.u * np.cos(theta) - self.v * np.sin(theta)
-        self.I = self.u * np.sin(theta) + self.v * np.cos(theta)
+        self.V, self.I = ps2(self.u, self.v, p0, p1)
 
     def select_bounds(self, low=None, high=None):
         """
@@ -103,7 +104,7 @@ class Data:
             bs = BoundsSelector(self.w, self.u, self.v)
             self.w, self.u, self.v = bs.apply_bounds()
 
-        self.shift_phase(self.theta)
+        self.shift_phase(self.p0, self.p1)
 
     def select_peaks(self, method='auto', n=None, thresh=0.0, window=0.02, plot=False):
         """

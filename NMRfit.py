@@ -362,9 +362,10 @@ def varian_process(fidfile, procfile):
 
     # phase correct then manually offset for testing
     p0, p1 = proc_autophase.approximate_phase(data, 'acme')  # auto phase correct
+    # p0, p1 = proc_autophase.manual_ps(data)
 
     u = data[0, :].real
     v = data[0, :].imag
 
-    result = containers.Data(w[::-1], u[::-1], v[::-1], p0)
+    result = containers.Data(w[::-1], u[::-1], v[::-1], p0, p1)
     return result
