@@ -33,7 +33,7 @@ class FitUtility:
 
     """
 
-    def __init__(self, data, lower, upper, options=None):
+    def __init__(self, data, lower, upper, fitIm=False, options=None):
         """
         FitUtility constructor.
 
@@ -43,6 +43,8 @@ class FitUtility:
             Container for ndarrays relevant to the fitting process (w, u, v, V, I).
         lower, upper : list of floats
             Min, max bounds for each parameter in the optimization.
+        fitIm : bool
+            Specify whether the imaginary part of the spectrum will be fit. Computationally expensive.
         options : dict, optional
             Used to pass additional options to the minimizer.
 
@@ -53,6 +55,9 @@ class FitUtility:
         # bounds
         self.lower = lower
         self.upper = upper
+
+        # whether to fit imaginary
+        self.fitIm = fitIm
 
         # any additional options for the minimization step
         self.options = options
@@ -70,7 +75,7 @@ class FitUtility:
         self.weights = self._compute_weights()
 
         # call to the minimization function
-        xopt, fopt = pyswarm.pso(equations.objective, self.lower, self.upper, args=(self.data.w, self.data.u, self.data.v, self.weights),
+        xopt, fopt = pyswarm.pso(equations.objective, self.lower, self.upper, args=(self.data.w, self.data.u, self.data.v, self.weights, self.fitIm),
                                  swarmsize=204,
                                  maxiter=2000,
                                  omega=-0.2134,

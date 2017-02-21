@@ -146,7 +146,7 @@ def voigt(w, r, yOff, width, loc, a):
     return V
 
 
-def objective(x, w, u, v, weights):
+def objective(x, w, u, v, weights, fitIm=False):
     """
     The objective function used to fit supplied data.  Evaluates sum of squared differences
     between the fit and the data.
@@ -161,6 +161,8 @@ def objective(x, w, u, v, weights):
         Arrays of the real and imaginary components of the frequency response.
     weights : ndarray
         Array giving frequency-dependent weighting of error.
+    fitIm : bool, optional
+        Specify whether the imaginary part of the spectrum will be fit.
 
     Returns
     -------
@@ -175,12 +177,12 @@ def objective(x, w, u, v, weights):
 
     # transform u and v to get V for the data
     V_data = u * np.cos(theta) - v * np.sin(theta)
-
-    # initialize array for the fit of V
     V_fit = np.zeros_like(V_data)
 
-    # initialize container for the V residual
-    residual = 0
+    # optionally, also for I
+    if fitIm is True:
+        I_data = u * np.sin(theta) + v * np.cos(theta)
+        I_fit = np.zeros_like(I_data)
 
     # iteratively add the contribution of each peak to the fits for V
     for i in range(3, len(x), 3):
@@ -189,9 +191,22 @@ def objective(x, w, u, v, weights):
         loc = x[i + 1]
         a = x[i + 2]
 
+        # calculate fit for V
         V_fit = V_fit + voigt(w, r, yOff, width, loc, a)
 
+        # optionally calculate for I (costly)
+        if fitIm is True:
+            I_fit = kk_relation_parallel(w, r, yOff, width, loc, a)
+
+    # real component residual
     residual = np.square(np.multiply(weights, (V_data - V_fit))).sum(axis=None)
+
+    # optionally add imaginary residual
+    if fitIm is True:
+        residual += np.square(np.multiply(weights, (I_data - I_fit))).sum(axis=None)
+
+        # divide by two to ensure equal magnitude error
+        residual /= 2.0
 
     # return the total residual
     return residual
