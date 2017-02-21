@@ -158,7 +158,7 @@ class FitUtility:
             a = res[i + 2]
 
             V_fit = V_fit + equations.voigt(w, r, yOff, width, loc, a)
-            I_fit = I_fit + equations.kk_relation_vectorized(w, r, yOff, width, loc, a)
+            I_fit = I_fit + equations.kk_relation_parallel(w, r, yOff, width, loc, a)
 
         # transform the fits for V and I to get fits for u and v
         u_fit = V_fit * np.cos(theta) + I_fit * np.sin(theta)

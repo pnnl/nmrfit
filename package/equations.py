@@ -1,6 +1,8 @@
 import numpy as np
 import scipy as sp
 import scipy.integrate
+import multiprocessing as mp
+from functools import partial
 
 
 def kk_equation(x, r, yOff, width, loc, a, w):
@@ -75,6 +77,36 @@ def kk_relation(w, r, yOff, width, loc, a):
     """
     res, err = sp.integrate.quad(kk_equation, 0, np.inf, args=(r, yOff, width, loc, a, w))
     return res / np.pi
+
+
+def kk_relation_parallel(w, r, yOff, width, loc, a):
+    """
+    Performs the integral required of the Kramers-Kronig relation using the kk_equation function
+    for an array w in parallel.
+
+    Parameters
+    ----------
+    w : ndarray
+        Frequncy values for which the integral is calculated
+    r : float
+        Ratio between the Guassian and Lorentzian functions
+    yOff : float
+        Y-offset of the Voigt function.
+    width : float
+        The width of the Voigt function.
+    loc : float
+        Center of the Voigt function.
+    a : float
+        Area of the Voigt function.
+
+    Returns
+    -------
+    res : ndarray
+        Values of the integral evaluated at each w.
+
+    """
+    p = mp.Pool(mp.cpu_count() - 1)
+    return np.array(p.map(partial(kk_relation, r=r, yOff=yOff, width=width, loc=loc, a=a), w))
 
 
 def voigt(w, r, yOff, width, loc, a):

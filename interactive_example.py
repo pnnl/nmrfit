@@ -16,7 +16,7 @@ data.select_bounds(low=3.30, high=3.7)
 data.shift_phase(method='brute')
 
 # select peaks and satellites
-peaks = data.select_peaks(method='auto', thresh=0.005, piecewise_baseline=False, plot=True)
+peaks = data.select_peaks(method='auto', thresh=0.005, piecewise_baseline=False, plot=False)
 
 # generate bounds and initial conditions
 lb, ub = data.generate_initial_conditions()
@@ -25,7 +25,7 @@ lb, ub = data.generate_initial_conditions()
 fit = nmrft.FitUtility(data, lb, ub)
 
 # generate result
-fit.generate_result(scale=10)
+fit.generate_result(scale=1)
 
 # summary
-fit.summary()
+# fit.summary()
