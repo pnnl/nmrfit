@@ -93,6 +93,8 @@ class Data:
             self.V, self.I = ps2(self.u, self.v, self.p0, self.p1)
         elif method.lower() == 'brute':
             self._brute_phase(step=step)
+        else:
+            raise ValueError("Method must be 'auto', 'brute', or 'manual'.")
 
     def _brute_phase(self, step=np.pi / 360):
         bestTheta = 0
