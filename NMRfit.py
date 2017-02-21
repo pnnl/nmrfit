@@ -229,9 +229,9 @@ class FitUtility:
         ax4_re = plt.subplot(236)
 
         # plot everything
-        ax1_re.plot(self.data.w, self.data.V, linewidth=2, alpha=0.5, color='b', label='Data')
-        ax1_re.plot(self.result.w, self.result.V, linewidth=2, alpha=0.5, color='r', label='Fit')
-        ax1_re.autoscale_view()
+        ax1_re.plot(self.data.w, self.data.V, linewidth=2, alpha=0.5, color='b', label='Area Fraction: %03f' % self.result.area_fraction)
+        ax1_re.plot(self.result.w, self.result.V, linewidth=2, alpha=0.5, color='r', label='Error: %03f' % self.result.error)
+        ax1_re.legend(loc='upper right')
 
         # plot left sats
         ax2_re.plot(self.data.w, self.data.V, linewidth=2, alpha=0.5, color='b')

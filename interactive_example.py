@@ -26,7 +26,7 @@ fit = nmrft.FitUtility(data, lb, ub)
 
 # generate result
 fit.calculate_area_fraction()
-fit.generate_result(scale=5)
+fit.generate_result(scale=1)
 
 # summary
 fit.summary()

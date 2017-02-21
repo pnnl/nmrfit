@@ -136,7 +136,7 @@ def objective(x, w, u, v, weights):
         The sum of squared differences between the data and fit.
 
     """
-    weights = np.ones_like(weights)
+    # weights = np.ones_like(weights)
 
     # global parameters
     theta, r, yOff = x[:3]
