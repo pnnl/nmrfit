@@ -200,7 +200,7 @@ class PeakSelector:
 
     """
 
-    def __init__(self, w, u, n):
+    def __init__(self, w, u, n, baseline=True):
         """
         PeakSelector constructor.
 
@@ -212,6 +212,8 @@ class PeakSelector:
             Arrays of the real and imaginary components of the frequency response.
         n : int
             Number of peaks to select.
+        baseline : bool, optional
+            Specify whether baseline correction is performed.
 
         """
         self.u = u
@@ -233,7 +235,10 @@ class PeakSelector:
         # start event listener
         self.cid = self.fig.canvas.mpl_connect('button_press_event', self)
 
-        self.baseline = piecewise_baseline(self.w, self.u)
+        if baseline is True:
+            self.baseline = piecewise_baseline(self.w, self.u)
+        else:
+            self.baseline = np.zeros_like(self.u)
 
         # display the plot
         plt.show()
@@ -338,7 +343,7 @@ class AutoPeakSelector:
 
     """
 
-    def __init__(self, w, u, thresh, window):
+    def __init__(self, w, u, thresh, window, baseline=True):
         """
         AutoPeakSelector constructor.
 
@@ -352,6 +357,8 @@ class AutoPeakSelector:
             Threshold for minimum amplitude cutoff in peak selection.
         window : float
             Window size for local non-maximum supression.
+        baseline : bool, optional
+            Specify whether baseline correction is performed.
 
         """
         self.thresh = thresh
@@ -363,7 +370,10 @@ class AutoPeakSelector:
 
         self.u_smoothed = sp.signal.savgol_filter(self.u, 11, 4)
 
-        self.baseline = piecewise_baseline(self.w, self.u_smoothed)
+        if baseline is True:
+            self.baseline = piecewise_baseline(self.w, self.u_smoothed)
+        else:
+            self.baseline = np.zeros_like(self.u_smoothed)
 
         self.peaks = Peaks()
 
