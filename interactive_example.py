@@ -13,10 +13,10 @@ data = nmrft.varian_process(os.path.join(inDir, 'fid'), os.path.join(inDir, 'pro
 # bound the data
 data.select_bounds(low=3.30, high=3.7)
 
-data.shift_phase(method='auto')
+data.shift_phase(method='brute')
 
 # select peaks and satellites
-peaks = data.select_peaks(method='auto', n=3, plot=False)
+peaks = data.select_peaks(method='auto', thresh=0.005, piecewise_baseline=False, plot=True)
 
 # generate bounds and initial conditions
 lb, ub = data.generate_initial_conditions()

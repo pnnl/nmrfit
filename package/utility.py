@@ -200,7 +200,7 @@ class PeakSelector:
 
     """
 
-    def __init__(self, w, u, n, baseline=True):
+    def __init__(self, w, u, n, piecewise_baseline=True):
         """
         PeakSelector constructor.
 
@@ -212,7 +212,7 @@ class PeakSelector:
             Arrays of the real and imaginary components of the frequency response.
         n : int
             Number of peaks to select.
-        baseline : bool, optional
+        piecewise_baseline : bool, optional
             Specify whether baseline correction is performed.
 
         """
@@ -235,10 +235,10 @@ class PeakSelector:
         # start event listener
         self.cid = self.fig.canvas.mpl_connect('button_press_event', self)
 
-        if baseline is True:
+        if piecewise_baseline is True:
             self.baseline = piecewise_baseline(self.w, self.u)
         else:
-            self.baseline = np.zeros_like(self.u)
+            self.baseline = peakutils.baseline(self.u, 0)
 
         # display the plot
         plt.show()
@@ -343,7 +343,7 @@ class AutoPeakSelector:
 
     """
 
-    def __init__(self, w, u, thresh, window, baseline=True):
+    def __init__(self, w, u, thresh, window, piecewise_baseline=True):
         """
         AutoPeakSelector constructor.
 
@@ -357,7 +357,7 @@ class AutoPeakSelector:
             Threshold for minimum amplitude cutoff in peak selection.
         window : float
             Window size for local non-maximum supression.
-        baseline : bool, optional
+        piecewise_baseline : bool, optional
             Specify whether baseline correction is performed.
 
         """
@@ -370,10 +370,10 @@ class AutoPeakSelector:
 
         self.u_smoothed = sp.signal.savgol_filter(self.u, 11, 4)
 
-        if baseline is True:
+        if piecewise_baseline is True:
             self.baseline = piecewise_baseline(self.w, self.u_smoothed)
         else:
-            self.baseline = np.zeros_like(self.u_smoothed)
+            self.baseline = peakutils.baseline(self.u_smoothed, 0)
 
         self.peaks = Peaks()
 
@@ -397,7 +397,7 @@ class AutoPeakSelector:
 
     def find_width(self):
         """
-        Using peak information, finds FWHM and performs a conversion to get width.
+        Using peak information, finds FWHM.
 
         """
         screened_peaks = Peaks()
