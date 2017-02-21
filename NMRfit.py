@@ -67,7 +67,7 @@ class FitUtility:
         penalty (often with little to no gains in goodness of fit).
 
         """
-        self.weights = self.compute_weights()
+        self.weights = self._compute_weights()
 
         # call to the minimization function
         xopt, fopt = pyswarm.pso(equations.objective, self.lower, self.upper, args=(self.data.w, self.data.u, self.data.v, self.weights),
@@ -80,8 +80,9 @@ class FitUtility:
         # store the fit parameters and error in the result object
         self.result.params = xopt
         self.result.error = fopt
+        self.result.area_fraction = self._calculate_area_fraction()
 
-    def compute_weights(self, expon=0.5):
+    def _compute_weights(self, expon=0.5):
         """
         Smoothly weights each peak based on its height relative to the largest peak.
 
@@ -174,7 +175,7 @@ class FitUtility:
         self.data.V = V_data
         self.data.I = I_data
 
-    def calculate_area_fraction(self):
+    def _calculate_area_fraction(self):
         """
         Calculates the relative fraction of the satellite peaks to the total peak area from the fit.
 
@@ -187,7 +188,7 @@ class FitUtility:
         area_fraction = (sats / (peaks + sats))
 
         # calculate area fraction
-        self.result.area_fraction = area_fraction
+        return area_fraction
 
     def summary_plot(self):
         """

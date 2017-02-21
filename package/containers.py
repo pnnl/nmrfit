@@ -68,23 +68,33 @@ class Data:
         self.u = u
         self.v = v
 
+        self.V = self.u[:]
+        self.I = self.v[:]
+
         self.p0 = p0
         self.p1 = p1
 
-    def shift_phase(self, p0, p1):
+    def shift_phase(self, method='auto', p0=0.0, p1=0.0, step=np.pi / 360):
         """
         Phase shift u and v by theta to generate V and I.
 
         Parameters
         ----------
-        p0,, p1 : float
-            Phase correction in radians.
+        method : string, optional
+            Valid selections include 'auto', 'brute', and 'manual'.
+        p0, p1 : float, optional
+            Zeroth and first order phase correction in radians.
 
         """
         # calculate V and I from u, v, and theta
-        self.V, self.I = ps2(self.u, self.v, p0, p1)
+        if method.lower() == 'manual':
+            self.V, self.I = ps2(self.u, self.v, p0, p1)
+        elif method.lower() == 'auto':
+            self.V, self.I = ps2(self.u, self.v, self.p0, self.p1)
+        elif method.lower() == 'brute':
+            self._brute_phase(step=step)
 
-    def brute_phase(self, step=np.pi / 360):
+    def _brute_phase(self, step=np.pi / 360):
         bestTheta = 0
         bestError = np.inf
         for theta in np.arange(-np.pi, np.pi, step):
@@ -95,8 +105,6 @@ class Data:
                 bestTheta = theta
 
         self.V, self.I = ps2(self.u, self.v, bestTheta, 0)
-        self.p0 = bestTheta
-        return bestTheta
 
     def select_bounds(self, low=None, high=None):
         """
@@ -117,8 +125,6 @@ class Data:
         else:
             bs = BoundsSelector(self.w, self.u, self.v)
             self.w, self.u, self.v = bs.apply_bounds()
-
-        # self.shift_phase(self.p0, self.p1)
 
     def select_peaks(self, method='auto', n=None, thresh=0.0, window=0.02, plot=False):
         """

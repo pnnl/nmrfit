@@ -13,7 +13,7 @@ data = nmrft.varian_process(os.path.join(inDir, 'fid'), os.path.join(inDir, 'pro
 # bound the data
 data.select_bounds(low=3.30, high=3.7)
 
-theta = data.brute_phase()
+data.shift_phase(method='auto')
 
 # select peaks and satellites
 peaks = data.select_peaks(method='auto', n=3, plot=False)
@@ -25,7 +25,6 @@ lb, ub = data.generate_initial_conditions()
 fit = nmrft.FitUtility(data, lb, ub)
 
 # generate result
-fit.calculate_area_fraction()
 fit.generate_result(scale=10)
 
 # summary

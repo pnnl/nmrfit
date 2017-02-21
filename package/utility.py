@@ -553,7 +553,7 @@ def piecewise_baseline(x, y, plot=False):
 
     base1 = peakutils.baseline(y1, 2)
     # base2 = np.ones(y2.shape) * np.median(y2)
-    
+
     base3 = peakutils.baseline(y3, 2)
 
     base2 = np.linspace(base1[-1], base3[0], y2.size)
