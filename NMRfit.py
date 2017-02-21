@@ -1,9 +1,8 @@
 import numpy as np
-import scipy as sp
-import scipy.optimize
 import nmrglue as ng
 import matplotlib.pyplot as plt
 import pyswarm
+import multiprocessing as mp
 
 from package import proc_autophase
 from package import equations
@@ -80,7 +79,8 @@ class FitUtility:
                                  maxiter=2000,
                                  omega=-0.2134,
                                  phip=-0.3344,
-                                 phig=2.3259)
+                                 phig=2.3259,
+                                 processes=1)
 
         # store the fit parameters and error in the result object
         self.result.params = xopt

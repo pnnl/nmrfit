@@ -105,13 +105,16 @@ def kk_relation_parallel(w, r, yOff, width, loc, a):
         Values of the integral evaluated at each w.
 
     """
-    p = mp.Pool(mp.cpu_count() - 1)
-    return np.array(p.map(partial(kk_relation, r=r, yOff=yOff, width=width, loc=loc, a=a), w))
+
+    pool = mp.Pool(mp.cpu_count() - 1)
+    res = np.array(pool.map(partial(kk_relation, r=r, yOff=yOff, width=width, loc=loc, a=a), w))
+    pool.join()
+    return res
 
 
 def voigt(w, r, yOff, width, loc, a):
     """
-    Calculates a Voigt function over the range w based on the relevant properties of the distribution.
+    Calculates a Voigt function over w based on the relevant properties of the distribution.
 
     Parameters
     ----------
