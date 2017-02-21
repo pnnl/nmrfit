@@ -199,7 +199,7 @@ def objective(x, w, u, v, weights, fitIm=False):
 
         # optionally calculate for I (costly)
         if fitIm is True:
-            I_fit = kk_relation_parallel(w, r, yOff, width, loc, a)
+            I_fit = kk_relation_vectorized(w, r, yOff, width, loc, a)
 
     # real component residual
     residual = np.square(np.multiply(weights, (V_data - V_fit))).sum(axis=None)

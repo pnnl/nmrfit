@@ -80,7 +80,7 @@ class FitUtility:
                                  omega=-0.2134,
                                  phip=-0.3344,
                                  phig=2.3259,
-                                 processes=1)
+                                 processes=mp.cpu_count() - 1)
 
         # store the fit parameters and error in the result object
         self.result.params = xopt
