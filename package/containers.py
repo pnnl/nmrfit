@@ -3,6 +3,8 @@ from .utility import AutoPeakSelector
 from .utility import PeakSelector
 from .utility import BoundsSelector
 from .utility import Peaks
+from .proc_autophase import ps2
+import matplotlib.pyplot as plt
 
 
 class Result:
@@ -49,7 +51,7 @@ class Data:
 
     """
 
-    def __init__(self, w, u, v, thetaEst):
+    def __init__(self, w, u, v, p0, p1):
         """
         Constructor for the Data class.
 
@@ -59,29 +61,61 @@ class Data:
             Array of frequency data.
         u, v : ndarray
             Arrays of the real and imaginary components of the frequency response.
-        thetaEst : float
-            Estimate of zero order phase in radians.
+        p0, p1 : float
+            Estimate of zeroth and first order phase in radians.
 
         """
         self.w = w
         self.u = u
         self.v = v
 
-        self.theta = thetaEst
+        self.V = self.u[:]
+        self.I = self.v[:]
 
-    def shift_phase(self, theta):
+        self.p0 = p0
+        self.p1 = p1
+
+    def shift_phase(self, method='auto', p0=0.0, p1=0.0, step=np.pi / 360, plot=False):
         """
         Phase shift u and v by theta to generate V and I.
 
         Parameters
         ----------
-        theta : float
-            Phase correction in radians.
+        method : string, optional
+            Valid selections include 'auto', 'brute', and 'manual'.
+        p0, p1 : float, optional
+            Zeroth and first order phase correction in radians.
+        plot : bool, optional
+            Specify whether a plot of the peak selection is shown.
 
         """
         # calculate V and I from u, v, and theta
-        self.V = self.u * np.cos(theta) - self.v * np.sin(theta)
-        self.I = self.u * np.sin(theta) + self.v * np.cos(theta)
+        if method.lower() == 'manual':
+            self.V, self.I = ps2(self.u, self.v, p0, p1)
+        elif method.lower() == 'auto':
+            self.V, self.I = ps2(self.u, self.v, self.p0, self.p1)
+        elif method.lower() == 'brute':
+            self._brute_phase(step=step)
+        else:
+            raise ValueError("Method must be 'auto', 'brute', or 'manual'.")
+
+        if plot is True:
+            plt.close()
+            plt.plot(self.w, self.V)
+            plt.show()
+
+    def _brute_phase(self, step=np.pi / 360):
+        bestTheta = 0
+        bestError = np.inf
+        for theta in np.arange(-np.pi, np.pi, step):
+            self.V, self.I = ps2(self.u, self.v, theta, 0)
+            error = (self.V[0] - self.V[-1])**2
+            if error < bestError:
+                bestError = error
+                bestTheta = theta
+
+        self.p0 = bestTheta
+        self.V, self.I = ps2(self.u, self.v, bestTheta, 0)
 
     def select_bounds(self, low=None, high=None):
         """
@@ -103,9 +137,7 @@ class Data:
             bs = BoundsSelector(self.w, self.u, self.v)
             self.w, self.u, self.v = bs.apply_bounds()
 
-        self.shift_phase(self.theta)
-
-    def select_peaks(self, method='auto', n=None, thresh=0.0, window=0.02, plot=False):
+    def select_peaks(self, method='auto', n=None, thresh=0.0, window=0.02, piecewise_baseline=True, plot=False):
         """
         Method to interface with the utility class PeakSelector.  Will open an interactive utility used to select
         peaks n times.
@@ -120,6 +152,10 @@ class Data:
             Threshold for peak detection. Only used if 'auto' is selected.
         window : float, optional
             Window for local non-maximum supression. Only used if 'auto' is selected.
+        piecewise_baseline : bool, optional
+            Specify whether baseline correction is performed.
+        plot : bool, optional
+            Specify whether a plot of the peak selection is shown.
 
         Returns
         -------
@@ -129,12 +165,12 @@ class Data:
         """
         if method.lower() == 'manual':
             if isinstance(n, int) and n > 0:
-                ps = PeakSelector(self.w, self.V, n)
+                ps = PeakSelector(self.w, self.V, n, piecewise_baseline)
             else:
                 raise ValueError("Number of peaks must be specified when using 'manual' flag")
 
         elif method.lower() == 'auto':
-            ps = AutoPeakSelector(self.w, self.V, thresh, window)
+            ps = AutoPeakSelector(self.w, self.V, thresh, window, piecewise_baseline)
             ps.find_peaks()
 
         else:
@@ -154,24 +190,25 @@ class Data:
     def generate_initial_conditions(self):
         """
         Uses initial theta approximation as well as initial per-peak parameters (width, location, area)
-        to construct an initial condition vector and a set of parameter bounds.
+        to construct a set of parameter bounds.
 
         Returns
         -------
-        x0 : list of floats
-            Initial condition vector.
-        bounds : list of 2-tuples
-            Min, max bounds for each parameter in x0.
+        lower, upper : list of 2-tuples
+            Min, max bounds for each parameter in optimization.
 
         """
-        x0 = [self.theta, 1., 0.]
-        bounds = [(None, None), (0., 1.), (None, None)]
+        # upper = [np.pi, 1.0, 0.01]
+        # lower = [-np.pi, 0.0, -0.01]
+
+        upper = [self.p0 + 0.01, 1.0, 0.01]
+        lower = [self.p0 - 0.01, 0.0, -0.01]
 
         for p in self.peaks:
-            x0.extend([p.width, p.loc, p.area])
-            bounds.extend([(p.width * 0.1, p.width * 10.), (p.bounds[0], p.bounds[1]), (p.area * 0.1, p.area * 10.)])
+            lower.extend([p.width * 0.5, p.loc - 0.1 * (p.loc - p.bounds[0]), p.area * 0.5])
+            upper.extend([p.width * 1.5, p.loc - 0.1 * (p.loc - p.bounds[1]), p.area * 1.5])
 
-        return x0, bounds
+        return lower, upper
 
     def approximate_areas(self):
         """

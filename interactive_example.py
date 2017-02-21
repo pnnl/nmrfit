@@ -5,42 +5,27 @@ import numpy as np
 
 
 # input directory
-inDir = "./Data/blindedData/dc_4a_cdcl3_kilimanjaro_25c_1d_1H_1_043016.fid"
+inDir = "./data/toluene/toluene2_cdcl3_long2_070115.fid"
 
 # read in data
 data = nmrft.varian_process(os.path.join(inDir, 'fid'), os.path.join(inDir, 'procpar'))
 
 # bound the data
-data.select_bounds(low=3.23, high=3.6)
+data.select_bounds(low=3.30, high=3.7)
+
+data.shift_phase(method='brute')
 
 # select peaks and satellites
-peaks = data.select_peaks(method='auto', n=6, plot=True)
+peaks = data.select_peaks(method='auto', thresh=0.005, piecewise_baseline=False, plot=True)
 
 # generate bounds and initial conditions
-x0, bounds = data.generate_initial_conditions()
+lb, ub = data.generate_initial_conditions()
 
 # fit data
-fit = nmrft.FitUtility(data, x0, method='Powell')
+fit = nmrft.FitUtility(data, lb, ub)
 
 # generate result
-res = fit.generate_result(scale=1)
+fit.generate_result(scale=10)
 
 # summary
-fit.summary()
-
-# print(fit.calculate_area_fraction())
-
-print('\nMoving on to TNC fit:\n')
-
-# Now we will pass global results onto TNC
-x0[:3] = res.params[:3]
-
-# fit data
-fit = nmrft.FitUtility(data, x0, method='TNC', bounds=bounds, options=None)
-# fit = nmrft.FitUtility(data, x0, method='TNC', bounds=bounds, options={'maxCGit': 1000, 'maxiter': 1000})
-
-# generate result
-res = fit.generate_result(scale=1)
-
-# # summary
 fit.summary()

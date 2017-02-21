@@ -200,7 +200,7 @@ class PeakSelector:
 
     """
 
-    def __init__(self, w, u, n):
+    def __init__(self, w, u, n, piecewise_baseline=True):
         """
         PeakSelector constructor.
 
@@ -212,6 +212,8 @@ class PeakSelector:
             Arrays of the real and imaginary components of the frequency response.
         n : int
             Number of peaks to select.
+        piecewise_baseline : bool, optional
+            Specify whether baseline correction is performed.
 
         """
         self.u = u
@@ -233,7 +235,10 @@ class PeakSelector:
         # start event listener
         self.cid = self.fig.canvas.mpl_connect('button_press_event', self)
 
-        self.baseline = piecewise_baseline(self.w, self.u)
+        if piecewise_baseline is True:
+            self.baseline = piecewise_baseline(self.w, self.u)
+        else:
+            self.baseline = peakutils.baseline(self.u, 0)
 
         # display the plot
         plt.show()
@@ -338,7 +343,7 @@ class AutoPeakSelector:
 
     """
 
-    def __init__(self, w, u, thresh, window):
+    def __init__(self, w, u, thresh, window, piecewise_baseline=True):
         """
         AutoPeakSelector constructor.
 
@@ -352,6 +357,8 @@ class AutoPeakSelector:
             Threshold for minimum amplitude cutoff in peak selection.
         window : float
             Window size for local non-maximum supression.
+        piecewise_baseline : bool, optional
+            Specify whether baseline correction is performed.
 
         """
         self.thresh = thresh
@@ -363,7 +370,10 @@ class AutoPeakSelector:
 
         self.u_smoothed = sp.signal.savgol_filter(self.u, 11, 4)
 
-        self.baseline = piecewise_baseline(self.w, self.u_smoothed)
+        if piecewise_baseline is True:
+            self.baseline = piecewise_baseline(self.w, self.u_smoothed)
+        else:
+            self.baseline = peakutils.baseline(self.u_smoothed, 0)
 
         self.peaks = Peaks()
 
@@ -387,7 +397,7 @@ class AutoPeakSelector:
 
     def find_width(self):
         """
-        Using peak information, finds FWHM and performs a conversion to get width.
+        Using peak information, finds FWHM.
 
         """
         screened_peaks = Peaks()
@@ -553,7 +563,7 @@ def piecewise_baseline(x, y, plot=False):
 
     base1 = peakutils.baseline(y1, 2)
     # base2 = np.ones(y2.shape) * np.median(y2)
-    
+
     base3 = peakutils.baseline(y3, 2)
 
     base2 = np.linspace(base1[-1], base3[0], y2.size)

@@ -3,6 +3,7 @@ import scipy as sp
 import scipy.optimize
 import nmrglue as ng
 import matplotlib.pyplot as plt
+import pyswarm
 
 from package import proc_autophase
 from package import equations
@@ -32,7 +33,7 @@ class FitUtility:
 
     """
 
-    def __init__(self, data, x0, method='Powell', bounds=None, options=None):
+    def __init__(self, data, lower, upper, options=None):
         """
         FitUtility constructor.
 
@@ -40,12 +41,8 @@ class FitUtility:
         ----------
         data : instance of Data class
             Container for ndarrays relevant to the fitting process (w, u, v, V, I).
-        x0 : list of floats
-            Initial conditions for the minimizer.
-        method : string, optional
-            Determines optimization algorithm to be used for minimization.  Default is "Powell".
-        bounds : list of 2-tuples
-            Min, max bounds for each parameter in x0.
+        lower, upper : list of floats
+            Min, max bounds for each parameter in the optimization.
         options : dict, optional
             Used to pass additional options to the minimizer.
 
@@ -53,14 +50,9 @@ class FitUtility:
         self.result = containers.Result()
         self.data = data
 
-        # initial condition vector
-        self.x0 = x0
-
-        # method used in the minimization step
-        self.method = method
-
         # bounds
-        self.bounds = bounds
+        self.lower = lower
+        self.upper = upper
 
         # any additional options for the minimization step
         self.options = options
@@ -75,17 +67,22 @@ class FitUtility:
         penalty (often with little to no gains in goodness of fit).
 
         """
-        self.weights = self.compute_weights()
+        self.weights = self._compute_weights()
 
         # call to the minimization function
-        result = sp.optimize.minimize(equations.objective, self.x0, args=(self.data.w, self.data.u, self.data.v, self.weights),
-                                      method=self.method, bounds=self.bounds, options=self.options)
+        xopt, fopt = pyswarm.pso(equations.objective, self.lower, self.upper, args=(self.data.w, self.data.u, self.data.v, self.weights),
+                                 swarmsize=204,
+                                 maxiter=2000,
+                                 omega=-0.2134,
+                                 phip=-0.3344,
+                                 phig=2.3259)
 
         # store the fit parameters and error in the result object
-        self.result.params = result.x
-        self.result.error = result.fun
+        self.result.params = xopt
+        self.result.error = fopt
+        self.result.area_fraction = self._calculate_area_fraction()
 
-    def compute_weights(self, expon=0.5):
+    def _compute_weights(self, expon=0.5):
         """
         Smoothly weights each peak based on its height relative to the largest peak.
 
@@ -134,11 +131,6 @@ class FitUtility:
         scale : float, optional
             Upsample the resolution by this factor when calculating the fits.
 
-        Returns
-        -------
-        result : instance of Result class
-            Container for ndarrays (w, u, v, V, I) of the fit result.
-
         """
         if scale == 1.0:
             # just use w vector as is
@@ -183,19 +175,9 @@ class FitUtility:
         self.data.V = V_data
         self.data.I = I_data
 
-        # calculate area fraction
-        self.result.area_fraction = self.calculate_area_fraction()
-
-        return self.result
-
-    def calculate_area_fraction(self):
+    def _calculate_area_fraction(self):
         """
         Calculates the relative fraction of the satellite peaks to the total peak area from the fit.
-
-        Returns
-        -------
-        area_fraction : float
-            Area fraction of satellite peaks.
 
         """
         areas = np.array([self.result.params[i] for i in range(5, len(self.result.params), 3)])
@@ -205,6 +187,7 @@ class FitUtility:
 
         area_fraction = (sats / (peaks + sats))
 
+        # calculate area fraction
         return area_fraction
 
     def summary_plot(self):
@@ -220,12 +203,14 @@ class FitUtility:
             peakBounds.append(low)
             peakBounds.append(high)
 
-        peakRange = [min(peakBounds), max(peakBounds)]
+        peakRange = [min(peakBounds) - 0.005, max(peakBounds) + 0.005]
 
         set1Bounds = []
         set2Bounds = []
+        satHeights = []
         for s in satellites:
             low, high = s.bounds
+            satHeights.append(s.height)
             if high < peakRange[0]:
                 set1Bounds.append(low)
                 set1Bounds.append(high)
@@ -233,46 +218,37 @@ class FitUtility:
                 set2Bounds.append(low)
                 set2Bounds.append(high)
 
-        set1Range = [min(set1Bounds), max(set1Bounds)]
-        set2Range = [min(set2Bounds), max(set2Bounds)]
+        set1Range = [min(set1Bounds) - 0.02, max(set1Bounds) + 0.02]
+        set2Range = [min(set2Bounds) - 0.02, max(set2Bounds) + 0.02]
+        ht = max(satHeights)
 
         # set up figures
-
-        # plt.figure(figsize=(5, 5))
-        # plt.plot(fit.data.w, fit.data.V, linewidth=2, alpha=0.5, color='b', label='Data')
-        # plt.plot(fit.result.w, fit.result.V, linewidth=2, alpha=0.5, color='r', label='Fit')
-        # plt.legend()
-        # plt.xlabel('Frequency', fontsize=16)
-        # plt.ylabel('Amplitude', fontsize=16)
-        # plt.show()
-        # real
-        fig_re = plt.figure(1)
+        fig_re = plt.figure(1, figsize=(16, 12))
         ax1_re = plt.subplot(211)
         ax2_re = plt.subplot(234)
         ax3_re = plt.subplot(235)
         ax4_re = plt.subplot(236)
 
         # plot everything
-        ax1_re.plot(self.data.w, self.data.V, linewidth=2, alpha=0.5, color='b', label='Data')
-        ax1_re.plot(self.result.w, self.result.V, linewidth=2, alpha=0.5, color='r', label='Fit')
-        ax1_re.autoscale_view()
+        ax1_re.plot(self.result.w, self.result.V, linewidth=2, alpha=0.5, color='r', label='Area Fraction: %03f' % self.result.area_fraction)
+        ax1_re.plot(self.data.w, self.data.V, linewidth=2, alpha=0.5, color='b', label='Error: %03f' % self.result.error)
+        ax1_re.legend(loc='upper right')
 
         # plot left sats
         ax2_re.plot(self.data.w, self.data.V, linewidth=2, alpha=0.5, color='b')
         ax2_re.plot(self.result.w, self.result.V, linewidth=2, alpha=0.5, color='r')
-        ax2_re.autoscale_view()
+        ax2_re.set_ylim((0, ht * 1.5))
         ax2_re.set_xlim(set1Range)
 
         # plot main peaks
         ax3_re.plot(self.data.w, self.data.V, linewidth=2, alpha=0.5, color='b')
         ax3_re.plot(self.result.w, self.result.V, linewidth=2, alpha=0.5, color='r')
-        ax3_re.autoscale_view()
         ax3_re.set_xlim(peakRange)
 
         # plot right satellites
         ax4_re.plot(self.data.w, self.data.V, linewidth=2, alpha=0.5, color='b')
         ax4_re.plot(self.result.w, self.result.V, linewidth=2, alpha=0.5, color='r')
-        ax4_re.autoscale_view()
+        ax4_re.set_ylim((0, ht * 1.5))
         ax4_re.set_xlim(set2Range)
 
         # imag
@@ -285,31 +261,24 @@ class FitUtility:
         # plot everything
         ax1_im.plot(self.data.w, self.data.I, linewidth=2, alpha=0.5, color='b', label='Data')
         ax1_im.plot(self.result.w, self.result.I, linewidth=2, alpha=0.5, color='r', label='Fit')
-        ax1_im.autoscale_view(tight=True)
 
         # plot left sats
         ax2_im.plot(self.data.w, self.data.I, linewidth=2, alpha=0.5, color='b')
         ax2_im.plot(self.result.w, self.result.I, linewidth=2, alpha=0.5, color='r')
-        ax2_im.autoscale_view(tight=True)
         ax2_im.set_xlim(set1Range)
 
         # plot main peaks
         ax3_im.plot(self.data.w, self.data.I, linewidth=2, alpha=0.5, color='b')
         ax3_im.plot(self.result.w, self.result.I, linewidth=2, alpha=0.5, color='r')
-        ax3_im.autoscale_view(tight=True)
         ax3_im.set_xlim(peakRange)
 
         # plot right satellites
         ax4_im.plot(self.data.w, self.data.I, linewidth=2, alpha=0.5, color='b')
         ax4_im.plot(self.result.w, self.result.I, linewidth=2, alpha=0.5, color='r')
-        ax4_im.autoscale_view(tight=True)
         ax4_im.set_xlim(set2Range)
 
         # display
-        plt.legend()
-        plt.xlabel('Frequency', fontsize=16)
-        plt.ylabel('Amplitude', fontsize=16)
-        plt.tight_layout()
+        fig_re.tight_layout()
         plt.show()
 
     def print_summary(self):
@@ -317,26 +286,9 @@ class FitUtility:
         Generates and prints a summary of the fitting process.
 
         """
-        x0 = np.array(self.x0).reshape((-1, 3))
-        x0_globals = x0[0, :]
-        x0 = x0[1:, :]
         res = np.array(self.result.params).reshape((-1, 3))
         res_globals = res[0, :]
         res = res[1:, :]
-
-        idx = x0[:, 1].argsort()[::-1]
-        x0 = x0[idx]
-        res = res[idx]
-
-        # print summary
-        print()
-        print('SEED PARAMETER VALUES:')
-        print('----------------------')
-        print('Global parameters')
-        print(x0_globals)
-        print('Peak parameters')
-        for i in range(x0.shape[0]):
-            print(x0[i, :])
 
         print()
         print('CONVERGED PARAMETER VALUES:')
@@ -397,9 +349,10 @@ def varian_process(fidfile, procfile):
 
     # phase correct then manually offset for testing
     p0, p1 = proc_autophase.approximate_phase(data, 'acme')  # auto phase correct
+    # p0, p1 = proc_autophase.manual_ps(data)
 
     u = data[0, :].real
     v = data[0, :].imag
 
-    result = containers.Data(w[::-1], u[::-1], v[::-1], p0)
+    result = containers.Data(w[::-1], u[::-1], v[::-1], p0, p1)
     return result
