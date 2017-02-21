@@ -202,7 +202,7 @@ class FitUtility:
             peakBounds.append(low)
             peakBounds.append(high)
 
-        peakRange = [min(peakBounds), max(peakBounds)]
+        peakRange = [min(peakBounds) - 0.005, max(peakBounds) + 0.005]
 
         set1Bounds = []
         set2Bounds = []
@@ -217,20 +217,20 @@ class FitUtility:
                 set2Bounds.append(low)
                 set2Bounds.append(high)
 
-        set1Range = [min(set1Bounds), max(set1Bounds)]
-        set2Range = [min(set2Bounds), max(set2Bounds)]
+        set1Range = [min(set1Bounds) - 0.02, max(set1Bounds) + 0.02]
+        set2Range = [min(set2Bounds) - 0.02, max(set2Bounds) + 0.02]
         ht = max(satHeights)
 
         # set up figures
-        fig_re = plt.figure(1)
+        fig_re = plt.figure(1, figsize=(16, 12))
         ax1_re = plt.subplot(211)
         ax2_re = plt.subplot(234)
         ax3_re = plt.subplot(235)
         ax4_re = plt.subplot(236)
 
         # plot everything
-        ax1_re.plot(self.data.w, self.data.V, linewidth=2, alpha=0.5, color='b', label='Area Fraction: %03f' % self.result.area_fraction)
-        ax1_re.plot(self.result.w, self.result.V, linewidth=2, alpha=0.5, color='r', label='Error: %03f' % self.result.error)
+        ax1_re.plot(self.result.w, self.result.V, linewidth=2, alpha=0.5, color='r', label='Area Fraction: %03f' % self.result.area_fraction)
+        ax1_re.plot(self.data.w, self.data.V, linewidth=2, alpha=0.5, color='b', label='Error: %03f' % self.result.error)
         ax1_re.legend(loc='upper right')
 
         # plot left sats
@@ -277,7 +277,7 @@ class FitUtility:
         ax4_im.set_xlim(set2Range)
 
         # display
-        plt.tight_layout()
+        fig_re.tight_layout()
         plt.show()
 
     def print_summary(self):
