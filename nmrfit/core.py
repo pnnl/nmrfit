@@ -350,12 +350,12 @@ def load(fidfile, procfile):
 
     w = np.linspace(rangeppm - offsetppm, -offsetppm, data.size)
 
-    data = ng.proc_base.fft(data)               # Fourier transform
+    # Fourier transform
+    data = ng.proc_base.fft(data)
     data = data / np.max(data)
 
-    # phase correct then manually offset for testing
-    p0, p1 = proc_autophase.approximate_phase(data, 'acme')  # auto phase correct
-    # p0, p1 = proc_autophase.manual_ps(data)
+    # phase correct
+    p0, p1 = proc_autophase.approximate_phase(data, 'acme')
 
     u = data[0, :].real
     v = data[0, :].imag
