@@ -1,7 +1,7 @@
 ======
 nmrfit
 ======
-nmrfit reads the output from an NMR spectroscopy experiment and, through a number of intuitive API calls, produces a least-squares fit of the data using Voigt-body approximations such that relative isotope abundance can be easily calculated.
+nmrfit reads the output from an NMR spectroscopy experiment and, through a number of intuitive API calls, produces a least-squares fit of  Voigt-function approximations via particle swarm optimization ([PySwarm](https://github.com/tisimst/pyswarm)). Fitted peaks can then be used to perform quantitative NMR analysis, including isotope ratio approximation.
 
 Installation
 ------------
@@ -31,7 +31,7 @@ data.select_bounds(low=3.23, high=3.60)
 data.shift_phase(method='auto')
 ```
 
-In order to seed the optimization method, approximate initial conditions must be extracted from the data.  This is achieved by determining the total number of peaks, finding each peak's center, width, and area, and then using this information to construct initial-condition and weight vectors.  The user may perform this manually--clicking twice per peak to define peak bounds, whereafter peak attributes are calculated--or automatically--wherein a peak-detection algorithm is run--through the method select_peaks().  In either case, the plot flag may be enabled to visualize the results of the peak selection process.  Note that in the manual case, a flag specifiying the number of peaks must be passed.
+In order to seed the optimization method, approximate initial parameters must be extracted from the data.  This is achieved by determining the total number of peaks, finding each peak's center, width, and area, and then using this information to construct solution bounds and weight vectors.  The user may perform this manually--clicking twice per peak to define peak bounds, whereafter peak attributes are calculated--or automatically--wherein a peak-detection algorithm is run--through the method select_peaks().  In either case, the plot flag may be enabled to visualize the results of the peak selection process.  Note that in the manual case, a flag specifiying the number of peaks must be passed.
 
 ```python
 # select peaks automatically
@@ -41,7 +41,7 @@ peaks = data.select_peaks(method='auto', plot=True)
 peaks = data.select_peaks(method='manual', n=6, plot=True)
 ```
 
-The generate_solution_bounds() method is then used to create upper and lower bounds for the fit by least-squares minimization.  Each set of bounds (lower, upper) contains 3 global parameters (phase, theta; Gaussian-Lorentzian ratio, r; and y-offset, dy) and 3 parameters per peak (width;  center, mu; and area, a).  These values are used to construct area-parameterized Voigt-body approximations for each peak [2009 paper].  
+The generate_solution_bounds() method is then used to create upper and lower bounds for the fit by least-squares minimization.  Each set of bounds (lower, upper) contains 3 global parameters (phase shift, Gaussian-Lorentzian ratio, and y-offset) and 3 parameters per peak (width, center, and area).  These values are used to construct area-parameterized Voigt-body approximations for each peak.  
 
 ```python
 # generate the solution bounds
