@@ -22,10 +22,10 @@ peaks = data.select_peaks(method='auto', thresh=0.005, piecewise_baseline=False,
 lb, ub = data.generate_initial_conditions()
 
 # fit data
-fit = nmrft.FitUtility(data, lb, ub, fitIm=True)
+fit = nmrft.FitUtility(data, lb, ub, fitIm=False)
 
 # generate result
 fit.generate_result(scale=10)
 
 # summary
-# fit.summary()
+fit.summary()
