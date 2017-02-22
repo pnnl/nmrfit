@@ -1,7 +1,5 @@
 import NMRfit as nmrft
 import os
-import matplotlib.pyplot as plt
-import numpy as np
 
 
 # input directory

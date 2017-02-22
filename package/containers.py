@@ -23,6 +23,8 @@ class Result:
         Solution vector.
     error : float
         Weighted sum of squared error between the data and fit.
+    area_fraction : float
+        Area fraction of satellite peaks.
 
     """
 
@@ -40,8 +42,8 @@ class Data:
         Arrays of the real and imaginary components of the frequency response.
     V, I : ndarray
         Arrays of the phase corrected real and imaginary components of the frequency response.
-    theta : float
-        Phase correction value in radians.
+    p0, p1 : float
+        Estimate of zeroth and first order phase in radians.
     peaks : list of peak instances
         List containing instances of Peak objects, which contain information about each peak.
     roibounds : list of 2 tuples
@@ -156,11 +158,6 @@ class Data:
             Specify whether baseline correction is performed.
         plot : bool, optional
             Specify whether a plot of the peak selection is shown.
-
-        Returns
-        -------
-        peaks : list of Peak instances
-            List containing instances of Peak objects, which contain information about each peak.
 
         """
         if method.lower() == 'manual':

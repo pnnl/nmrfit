@@ -323,6 +323,8 @@ class FitUtility:
 
 def load(fidfile, procfile):
     """
+    Loads NMR spectra data from relevant input files.
+
     Parameters
     ----------
     fidfile : string

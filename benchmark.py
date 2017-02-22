@@ -44,7 +44,7 @@ def run_fit(exp, method='auto', plot=True):
     data.select_peaks(method=method, n=6, plot=False, thresh=0.002)
 
     # generate bounds and initial conditions
-    lb, ub = data.generate_initial_conditions()
+    lb, ub = data.generate_solution_bounds()
 
     # fit data
     fit = nmrft.FitUtility(data, lb, ub)
