@@ -19,20 +19,20 @@ class FitUtility:
         Container for ndarrays relevant to the fitting process (w, u, v, V, I).
     result : instance of Result class
         Container for ndarrays (w, u, v, V, I) of the fit result.
-    x0 : list of floats
-        Initial conditions for the minimizer.
-    method: string
-        Determines optimization algorithm to be used for minimization.  Default is "Powell".
-    bounds : list of 2-tuples
-        Min, max bounds for each parameter in x0.
-    options : dict
-        Additional options for the minimizer.
+    lower, upper : list of floats
+            Min, max bounds for each parameter in the optimization.
+    expon : float
+        Raise relative weighting to this power.
+    fitIm : bool
+        Specify whether the imaginary part of the spectrum will be fit. Computationally expensive.
+    options : dict, optional
+        Used to pass additional options to the minimizer.
     weights : ndarray
         Array giving frequency-dependent weighting of error.
 
     """
 
-    def __init__(self, data, lower, upper, fitIm=False, options=None):
+    def __init__(self, data, lower, upper, expon=0.5, fitIm=False, options=None):
         """
         FitUtility constructor.
 
@@ -42,6 +42,8 @@ class FitUtility:
             Container for ndarrays relevant to the fitting process (w, u, v, V, I).
         lower, upper : list of floats
             Min, max bounds for each parameter in the optimization.
+        expon : float
+            Raise relative weighting to this power.
         fitIm : bool
             Specify whether the imaginary part of the spectrum will be fit. Computationally expensive.
         options : dict, optional
@@ -57,6 +59,8 @@ class FitUtility:
 
         # whether to fit imaginary
         self.fitIm = fitIm
+
+        self.expon = expon
 
         # any additional options for the minimization step
         self.options = options
@@ -87,14 +91,9 @@ class FitUtility:
         self.result.error = fopt
         self.result.area_fraction = self._calculate_area_fraction()
 
-    def _compute_weights(self, expon=0.5):
+    def _compute_weights(self):
         """
         Smoothly weights each peak based on its height relative to the largest peak.
-
-        Parameters
-        ----------
-        expon : float
-            Raise relative weighting to this power.
 
         Returns
         -------
@@ -122,7 +121,7 @@ class FitUtility:
         weights = np.ones(len(self.data.w)) * defaultweight
 
         for i in range(len(self.data.peaks)):
-            weights[lIdx[i]:rIdx[i] + 1] = np.power(biggest / maxabs[i], expon)
+            weights[lIdx[i]:rIdx[i] + 1] = np.power(biggest / maxabs[i], self.expon)
 
         weights = equations.laplace1d(weights)
         return weights
@@ -195,7 +194,7 @@ class FitUtility:
         # calculate area fraction
         return area_fraction
 
-    def summary_plot(self):
+    def _summary_plot(self):
         """
         Generates a summary plot of the calculated fit alongside the input data.
 
@@ -286,7 +285,7 @@ class FitUtility:
         fig_re.tight_layout()
         plt.show()
 
-    def print_summary(self):
+    def _print_summary(self):
         """
         Generates and prints a summary of the fitting process.
 
@@ -317,12 +316,12 @@ class FitUtility:
             Signals whether a plot of the resulting fit will be generated.
 
         """
-        self.print_summary()
+        self._print_summary()
         if plot is True:
-            self.summary_plot()
+            self._summary_plot()
 
 
-def varian_process(fidfile, procfile):
+def load(fidfile, procfile):
     """
     Parameters
     ----------

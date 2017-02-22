@@ -21,7 +21,7 @@ def run_fit(exp, method='auto', plot=True):
         c.extend(['s' + str(i), 'loc' + str(i), 'a' + str(i)])
 
     # read in data
-    data = nmrft.varian_process(os.path.join(exp, 'fid'), os.path.join(exp, 'procpar'))
+    data = nmrft.load(os.path.join(exp, 'fid'), os.path.join(exp, 'procpar'))
 
     # bound the data
     # if sample == '4b':
