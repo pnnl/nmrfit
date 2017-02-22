@@ -9,7 +9,7 @@ with open('LICENSE') as f:
 
 setup(
     name='nmrfit',
-    version='0.1.0',
+    version='0.1',
     description='Quantitative NMR package.',
     long_description=readme,
     author='Sean Colby',
