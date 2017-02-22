@@ -3,7 +3,7 @@ nmrfit
 ======
 nmrfit reads the output from an NMR spectroscopy experiment and, through a number of intuitive API calls, produces a least-squares fit of the data using Voigt-body approximations such that relative isotope abundance can be easily calculated.
 
-.. contents::
+.. ::
 
 Installation
 ------------
