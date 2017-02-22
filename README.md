@@ -10,7 +10,7 @@ To read input data, nmrfit relies on the [nmrglue](https://www.nmrglue.com/ "nmr
 
 ```python
 # import the module
-import NMRfit as nmrfit
+import nmrfit
 
 # read in data
 nmrfit.load('fid', 'propcar')
