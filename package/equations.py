@@ -107,9 +107,7 @@ def kk_relation_parallel(w, r, yOff, width, loc, a):
     """
 
     pool = mp.Pool(mp.cpu_count() - 1)
-    res = np.array(pool.map(partial(kk_relation, r=r, yOff=yOff, width=width, loc=loc, a=a), w))
-    pool.join()
-    return res
+    return np.array(pool.map(partial(kk_relation, r=r, yOff=yOff, width=width, loc=loc, a=a), w))
 
 
 def voigt(w, r, yOff, width, loc, a):
