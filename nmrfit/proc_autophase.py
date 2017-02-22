@@ -7,6 +7,7 @@ import scipy.optimize
 def ps2(u, v, p0=0.0, p1=0.0, inv=False):
     """
     Linear phase correction
+    
     Parameters
     ----------
     data : ndarray
@@ -17,6 +18,7 @@ def ps2(u, v, p0=0.0, p1=0.0, inv=False):
         First order phase in degrees.
     inv : bool, optional
         True for inverse phase correction
+
     Returns
     -------
     ndata : ndarray
