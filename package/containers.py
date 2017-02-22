@@ -23,6 +23,8 @@ class Result:
         Solution vector.
     error : float
         Weighted sum of squared error between the data and fit.
+    area_fraction : float
+        Area fraction of satellite peaks.
 
     """
 
@@ -40,8 +42,8 @@ class Data:
         Arrays of the real and imaginary components of the frequency response.
     V, I : ndarray
         Arrays of the phase corrected real and imaginary components of the frequency response.
-    theta : float
-        Phase correction value in radians.
+    p0, p1 : float
+        Estimate of zeroth and first order phase in radians.
     peaks : list of peak instances
         List containing instances of Peak objects, which contain information about each peak.
     roibounds : list of 2 tuples
@@ -157,11 +159,6 @@ class Data:
         plot : bool, optional
             Specify whether a plot of the peak selection is shown.
 
-        Returns
-        -------
-        peaks : list of Peak instances
-            List containing instances of Peak objects, which contain information about each peak.
-
         """
         if method.lower() == 'manual':
             if isinstance(n, int) and n > 0:
@@ -185,12 +182,15 @@ class Data:
         for p in self.peaks:
             self.roibounds.append(p.bounds)
 
-        return self.peaks
-
-    def generate_initial_conditions(self):
+    def generate_solution_bounds(self, force_theta=False):
         """
         Uses initial theta approximation as well as initial per-peak parameters (width, location, area)
         to construct a set of parameter bounds.
+
+        Parameters
+        ----------
+        force_theta : bool, optional
+            Flag to use initial phase approximation for theta.
 
         Returns
         -------
@@ -198,11 +198,12 @@ class Data:
             Min, max bounds for each parameter in optimization.
 
         """
-        # upper = [np.pi, 1.0, 0.01]
-        # lower = [-np.pi, 0.0, -0.01]
-
-        upper = [self.p0 + 0.01, 1.0, 0.01]
-        lower = [self.p0 - 0.01, 0.0, -0.01]
+        if force_theta is True:
+            upper = [self.p0 + 0.01, 1.0, 0.01]
+            lower = [self.p0 - 0.01, 0.0, -0.01]
+        else:
+            upper = [np.pi, 1.0, 0.01]
+            lower = [-np.pi, 0.0, -0.01]
 
         for p in self.peaks:
             lower.extend([p.width * 0.5, p.loc - 0.1 * (p.loc - p.bounds[0]), p.area * 0.5])

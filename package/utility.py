@@ -335,6 +335,8 @@ class AutoPeakSelector:
         Threshold for minimum amplitude cutoff in peak selection.
     window : float
         Window size for local non-maximum supression.
+    piecewise_baseline : bool, optional
+            Specify whether baseline correction is performed.
     peaks : instance of Peaks object
     u_smoothed : ndarray
         Smoothed version of u.

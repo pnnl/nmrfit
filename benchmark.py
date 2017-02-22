@@ -21,7 +21,7 @@ def run_fit(exp, method='auto', plot=True):
         c.extend(['s' + str(i), 'loc' + str(i), 'a' + str(i)])
 
     # read in data
-    data = nmrft.varian_process(os.path.join(exp, 'fid'), os.path.join(exp, 'procpar'))
+    data = nmrft.load(os.path.join(exp, 'fid'), os.path.join(exp, 'procpar'))
 
     # bound the data
     # if sample == '4b':
@@ -44,7 +44,7 @@ def run_fit(exp, method='auto', plot=True):
     data.select_peaks(method=method, n=6, plot=False, thresh=0.002)
 
     # generate bounds and initial conditions
-    lb, ub = data.generate_initial_conditions()
+    lb, ub = data.generate_solution_bounds()
 
     # fit data
     fit = nmrft.FitUtility(data, lb, ub)
