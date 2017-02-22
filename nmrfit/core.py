@@ -4,9 +4,9 @@ import matplotlib.pyplot as plt
 import pyswarm
 import multiprocessing as mp
 
-import proc_autophase
-import equations
-import containers
+from . import proc_autophase
+from . import equations
+from . import containers
 
 
 class FitUtility:
@@ -255,31 +255,31 @@ class FitUtility:
         ax4_re.set_ylim((0, ht * 1.5))
         ax4_re.set_xlim(set2Range)
 
-        # imag
-        fig_im = plt.figure(2)
-        ax1_im = plt.subplot(211)
-        ax2_im = plt.subplot(234)
-        ax3_im = plt.subplot(235)
-        ax4_im = plt.subplot(236)
+        # # imag
+        # fig_im = plt.figure(2)
+        # ax1_im = plt.subplot(211)
+        # ax2_im = plt.subplot(234)
+        # ax3_im = plt.subplot(235)
+        # ax4_im = plt.subplot(236)
 
-        # plot everything
-        ax1_im.plot(self.data.w, self.data.I, linewidth=2, alpha=0.5, color='b', label='Data')
-        ax1_im.plot(self.result.w, self.result.I, linewidth=2, alpha=0.5, color='r', label='Fit')
+        # # plot everything
+        # ax1_im.plot(self.data.w, self.data.I, linewidth=2, alpha=0.5, color='b', label='Data')
+        # ax1_im.plot(self.result.w, self.result.I, linewidth=2, alpha=0.5, color='r', label='Fit')
 
-        # plot left sats
-        ax2_im.plot(self.data.w, self.data.I, linewidth=2, alpha=0.5, color='b')
-        ax2_im.plot(self.result.w, self.result.I, linewidth=2, alpha=0.5, color='r')
-        ax2_im.set_xlim(set1Range)
+        # # plot left sats
+        # ax2_im.plot(self.data.w, self.data.I, linewidth=2, alpha=0.5, color='b')
+        # ax2_im.plot(self.result.w, self.result.I, linewidth=2, alpha=0.5, color='r')
+        # ax2_im.set_xlim(set1Range)
 
-        # plot main peaks
-        ax3_im.plot(self.data.w, self.data.I, linewidth=2, alpha=0.5, color='b')
-        ax3_im.plot(self.result.w, self.result.I, linewidth=2, alpha=0.5, color='r')
-        ax3_im.set_xlim(peakRange)
+        # # plot main peaks
+        # ax3_im.plot(self.data.w, self.data.I, linewidth=2, alpha=0.5, color='b')
+        # ax3_im.plot(self.result.w, self.result.I, linewidth=2, alpha=0.5, color='r')
+        # ax3_im.set_xlim(peakRange)
 
-        # plot right satellites
-        ax4_im.plot(self.data.w, self.data.I, linewidth=2, alpha=0.5, color='b')
-        ax4_im.plot(self.result.w, self.result.I, linewidth=2, alpha=0.5, color='r')
-        ax4_im.set_xlim(set2Range)
+        # # plot right satellites
+        # ax4_im.plot(self.data.w, self.data.I, linewidth=2, alpha=0.5, color='b')
+        # ax4_im.plot(self.result.w, self.result.I, linewidth=2, alpha=0.5, color='r')
+        # ax4_im.set_xlim(set2Range)
 
         # display
         fig_re.tight_layout()

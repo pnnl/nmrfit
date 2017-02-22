@@ -21,7 +21,7 @@ In many cases, the signal of interest comprises only a subsection of the capture
 # bound the data interactively
 data.select_bounds()
 
-# alternatively, pass the bound
+# alternatively, pass the bounds
 data.select_bounds(low=3.23, high=3.60)
 
 # phase correction
@@ -35,7 +35,7 @@ In order to seed the optimization method, approximate initial conditions must be
 peaks = data.select_peaks(method='auto', plot=True)
 
 # select peaks manually
-peaks = data.select_peaks(method='manual', n=6, plot=True
+peaks = data.select_peaks(method='manual', n=6, plot=True)
 ```
 
 The generate_solution_bounds() method is then used to create upper and lower bounds for the fit by least-squares minimization.  Each set of bounds (lower, upper) contains 3 global parameters (phase, theta; Gaussian-Lorentzian ratio, r; and y-offset, dy) and 3 parameters per peak (width;  center, mu; and area, a).  These values are used to construct area-parameterized Voigt-body approximations for each peak [2009 paper].  
