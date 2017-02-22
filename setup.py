@@ -16,7 +16,7 @@ setup(
     author_email='sean.colby@pnnl.gov',
     url='https://github.com/smcolby/nmrfit',
     license=license,
-    packages=find_packages(exclude=('data', 'docs')),
+    packages=find_packages(exclude=('examples', 'docs')),
     dependency_links=[
         "git+https://github.com/tisimst/pyswarm#egg=pyswarm"
     ]

@@ -32,7 +32,7 @@ class FitUtility:
 
     """
 
-    def __init__(self, data, lower, upper, expon=0.5, fit_im=False, options=None):
+    def __init__(self, data, lower, upper, expon=0.5, fit_im=False, options={}):
         """
         FitUtility constructor.
 
@@ -79,12 +79,12 @@ class FitUtility:
 
         # call to the minimization function
         xopt, fopt = pyswarm.pso(equations.objective, self.lower, self.upper, args=(self.data.w, self.data.u, self.data.v, self.weights, self.fit_im),
-                                 swarmsize=204,
-                                 maxiter=2000,
-                                 omega=-0.2134,
-                                 phip=-0.3344,
-                                 phig=2.3259,
-                                 processes=mp.cpu_count() - 1)
+                                 swarmsize=self.options.get('swarmsize', 204),
+                                 maxiter=self.options.get('maxiter', 2000),
+                                 omega=self.options.get('omega', -0.2134),
+                                 phip=self.options.get('phip', -0.3344),
+                                 phig=self.options.get('phig', 2.3259),
+                                 processes=self.options.get('processes', mp.cpu_count() - 1))
 
         # store the fit parameters and error in the result object
         self.result.params = xopt
