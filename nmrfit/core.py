@@ -23,7 +23,7 @@ class FitUtility:
             Min, max bounds for each parameter in the optimization.
     expon : float
         Raise relative weighting to this power.
-    fitIm : bool
+    fit_im : bool
         Specify whether the imaginary part of the spectrum will be fit. Computationally expensive.
     options : dict, optional
         Used to pass additional options to the minimizer.
@@ -32,7 +32,7 @@ class FitUtility:
 
     """
 
-    def __init__(self, data, lower, upper, expon=0.5, fitIm=False, options=None):
+    def __init__(self, data, lower, upper, expon=0.5, fit_im=False, options=None):
         """
         FitUtility constructor.
 
@@ -44,7 +44,7 @@ class FitUtility:
             Min, max bounds for each parameter in the optimization.
         expon : float
             Raise relative weighting to this power.
-        fitIm : bool
+        fit_im : bool
             Specify whether the imaginary part of the spectrum will be fit. Computationally expensive.
         options : dict, optional
             Used to pass additional options to the minimizer.
@@ -58,7 +58,7 @@ class FitUtility:
         self.upper = upper
 
         # whether to fit imaginary
-        self.fitIm = fitIm
+        self.fit_im = fit_im
 
         self.expon = expon
 
@@ -78,7 +78,7 @@ class FitUtility:
         self.weights = self._compute_weights()
 
         # call to the minimization function
-        xopt, fopt = pyswarm.pso(equations.objective, self.lower, self.upper, args=(self.data.w, self.data.u, self.data.v, self.weights, self.fitIm),
+        xopt, fopt = pyswarm.pso(equations.objective, self.lower, self.upper, args=(self.data.w, self.data.u, self.data.v, self.weights, self.fit_im),
                                  swarmsize=204,
                                  maxiter=2000,
                                  omega=-0.2134,
@@ -148,7 +148,7 @@ class FitUtility:
         I_fit = np.zeros_like(w)
 
         # extract global params from result object
-        theta, r, yOff = self.result.params[:3]
+        theta, r, yoff = self.result.params[:3]
         res = self.result.params[3:]
 
         # transform u and v to get V and I for the data
@@ -161,8 +161,8 @@ class FitUtility:
             loc = res[i + 1]
             a = res[i + 2]
 
-            V_fit = V_fit + equations.voigt(w, r, yOff, width, loc, a)
-            I_fit = I_fit + equations.kk_relation_parallel(w, r, yOff, width, loc, a)
+            V_fit = V_fit + equations.voigt(w, r, yoff, width, loc, a)
+            I_fit = I_fit + equations.kk_relation_parallel(w, r, yoff, width, loc, a)
 
         # transform the fits for V and I to get fits for u and v
         u_fit = V_fit * np.cos(theta) + I_fit * np.sin(theta)

@@ -5,7 +5,7 @@ import multiprocessing as mp
 from functools import partial
 
 
-def kk_equation(x, r, yOff, width, loc, a, w):
+def kk_equation(x, r, yoff, width, loc, a, w):
     """
     The equation inside the integral in the Kramers-Kronig relation. Used to evaluate the V->I transform.
     This specific implementation has been arranged such that the singularity at x==w is accounted for.
@@ -16,7 +16,7 @@ def kk_equation(x, r, yOff, width, loc, a, w):
         Variable the integral will be evaluated over.
     r : float
         Ratio between the Guassian and Lorentzian functions
-    yOff : float
+    yoff : float
         Y-offset of the Voigt function.
     width : float
         The width of the Voigt function.
@@ -36,19 +36,19 @@ def kk_equation(x, r, yOff, width, loc, a, w):
     # first half of integral (Lorentzian, Gaussian, and Voigt, respectively)
     L1 = (2 / (np.pi * width)) * 1 / (1 + ((x + w - loc) / (0.5 * width))**2)
     G1 = (2 / width) * np.sqrt(np.log(2) / np.pi) * np.exp(-((x + w - loc) / (width / (2 * np.sqrt(np.log(2)))))**2)
-    V1 = yOff + a * (r * L1 + (1 - r) * G1)
+    V1 = yoff + a * (r * L1 + (1 - r) * G1)
 
     # second half of integral
     L2 = (2 / (np.pi * width)) * 1 / (1 + ((-x + w - loc) / (0.5 * width))**2)
     G2 = (2 / width) * np.sqrt(np.log(2) / np.pi) * np.exp(-((-x + w - loc) / (width / (2 * np.sqrt(np.log(2)))))**2)
-    V2 = yOff + a * (r * L2 + (1 - r) * G2)
+    V2 = yoff + a * (r * L2 + (1 - r) * G2)
 
     # combining both halves for the total integral
     V = 1 / x * (V2 - V1)
     return V
 
 
-def kk_relation(w, r, yOff, width, loc, a):
+def kk_relation(w, r, yoff, width, loc, a):
     """
     Performs the integral required of the Kramers-Kronig relation using the kk_equation function
     for a given w.  Note that this integral is only evaluated for a single w.  The vectorized form
@@ -60,7 +60,7 @@ def kk_relation(w, r, yOff, width, loc, a):
         Frequncy value for which the integral is calculated
     r : float
         Ratio between the Guassian and Lorentzian functions
-    yOff : float
+    yoff : float
         Y-offset of the Voigt function.
     width : float
         The width of the Voigt function.
@@ -75,11 +75,11 @@ def kk_relation(w, r, yOff, width, loc, a):
         Value of the integral evaluated at w.
 
     """
-    res, err = sp.integrate.quad(kk_equation, 0, np.inf, args=(r, yOff, width, loc, a, w))
+    res, err = sp.integrate.quad(kk_equation, 0, np.inf, args=(r, yoff, width, loc, a, w))
     return res / np.pi
 
 
-def kk_relation_parallel(w, r, yOff, width, loc, a):
+def kk_relation_parallel(w, r, yoff, width, loc, a):
     """
     Performs the integral required of the Kramers-Kronig relation using the kk_equation function
     for an array w in parallel.
@@ -90,7 +90,7 @@ def kk_relation_parallel(w, r, yOff, width, loc, a):
         Frequncy values for which the integral is calculated
     r : float
         Ratio between the Guassian and Lorentzian functions
-    yOff : float
+    yoff : float
         Y-offset of the Voigt function.
     width : float
         The width of the Voigt function.
@@ -107,10 +107,10 @@ def kk_relation_parallel(w, r, yOff, width, loc, a):
     """
 
     pool = mp.Pool(mp.cpu_count() - 1)
-    return np.array(pool.map(partial(kk_relation, r=r, yOff=yOff, width=width, loc=loc, a=a), w))
+    return np.array(pool.map(partial(kk_relation, r=r, yoff=yoff, width=width, loc=loc, a=a), w))
 
 
-def voigt(w, r, yOff, width, loc, a):
+def voigt(w, r, yoff, width, loc, a):
     """
     Calculates a Voigt function over w based on the relevant properties of the distribution.
 
@@ -120,7 +120,7 @@ def voigt(w, r, yOff, width, loc, a):
         Array over which the Voigt function will be evaluated.
     r : float
         Ratio between the Guassian and Lorentzian functions
-    yOff : float
+    yoff : float
         Y-offset of the Voigt function.
     width : float
         The width of the Voigt function.
@@ -142,12 +142,12 @@ def voigt(w, r, yOff, width, loc, a):
     G = (2 / width) * np.sqrt(np.log(2) / np.pi) * np.exp(-((w - loc) / (width / (2 * np.sqrt(np.log(2)))))**2)
 
     # Voigt body
-    V = yOff + a * (r * L + (1 - r) * G)
+    V = yoff + a * (r * L + (1 - r) * G)
 
     return V
 
 
-def objective(x, w, u, v, weights, fitIm=False):
+def objective(x, w, u, v, weights, fit_im=False):
     """
     The objective function used to fit supplied data.  Evaluates sum of squared differences
     between the fit and the data.
@@ -174,14 +174,14 @@ def objective(x, w, u, v, weights, fitIm=False):
     # weights = np.ones_like(weights)
 
     # global parameters
-    theta, r, yOff = x[:3]
+    theta, r, yoff = x[:3]
 
     # transform u and v to get V for the data
     V_data = u * np.cos(theta) - v * np.sin(theta)
     V_fit = np.zeros_like(V_data)
 
     # optionally, also for I
-    if fitIm is True:
+    if fit_im is True:
         I_data = u * np.sin(theta) + v * np.cos(theta)
         I_fit = np.zeros_like(I_data)
 
@@ -193,17 +193,17 @@ def objective(x, w, u, v, weights, fitIm=False):
         a = x[i + 2]
 
         # calculate fit for V
-        V_fit = V_fit + voigt(w, r, yOff, width, loc, a)
+        V_fit = V_fit + voigt(w, r, yoff, width, loc, a)
 
         # optionally calculate for I (costly)
-        if fitIm is True:
-            I_fit = kk_relation_vectorized(w, r, yOff, width, loc, a)
+        if fit_im is True:
+            I_fit = kk_relation_vectorized(w, r, yoff, width, loc, a)
 
     # real component residual
     residual = np.square(np.multiply(weights, (V_data - V_fit))).sum(axis=None)
 
     # optionally add imaginary residual
-    if fitIm is True:
+    if fit_im is True:
         residual += np.square(np.multiply(weights, (I_data - I_fit))).sum(axis=None)
 
         # divide by two to ensure equal magnitude error
