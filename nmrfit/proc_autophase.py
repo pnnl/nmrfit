@@ -6,7 +6,7 @@ import scipy.optimize
 
 def ps2(u, v, p0=0.0, p1=0.0, inv=False):
     """
-    Linear phase correction
+    Linear phase correction.
     
     Parameters
     ----------
@@ -17,7 +17,7 @@ def ps2(u, v, p0=0.0, p1=0.0, inv=False):
     p1 : float
         First order phase in degrees.
     inv : bool, optional
-        True for inverse phase correction
+        True for inverse phase correction.
 
     Returns
     -------

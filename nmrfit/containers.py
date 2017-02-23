@@ -2,7 +2,6 @@ import numpy as np
 from .utility import AutoPeakSelector
 from .utility import PeakSelector
 from .utility import BoundsSelector
-from .utility import Peaks
 from .proc_autophase import ps2
 import matplotlib.pyplot as plt
 
@@ -87,6 +86,8 @@ class Data:
             Valid selections include 'auto', 'brute', and 'manual'.
         p0, p1 : float, optional
             Zeroth and first order phase correction in radians.
+        step : float, optional
+            Step size for brute force phase correction.
         plot : bool, optional
             Specify whether a plot of the peak selection is shown.
 
@@ -111,18 +112,15 @@ class Data:
 
     def _brute_phase(self, step=np.pi / 360):
         p0_best = 0
-        p1_best = 0
         bestError = np.inf
         for p0 in np.arange(-np.pi, np.pi, step):
-            for p1 in np.arange(-np.pi, np.pi, step):
-                self.V, self.I = ps2(self.u, self.v, p0, p1)
-                error = (self.V[0] - self.V[-1])**2
-                if error < bestError:
-                    bestError = error
-                    p0_best = p0
-                    p1_best = p1
+            self.V, self.I = ps2(self.u, self.v, p0, 0.0)
+            error = (self.V[0] - self.V[-1])**2
+            if error < bestError and np.max(self.V) > abs(np.min(self.V)):
+                bestError = error
+                p0_best = p0
 
-        return p0_best, p1_best
+        return p0_best, 0.0
 
     def select_bounds(self, low=None, high=None):
         """
@@ -144,7 +142,7 @@ class Data:
             bs = BoundsSelector(self.w, self.u, self.v)
             self.w, self.u, self.v = bs.apply_bounds()
 
-    def select_peaks(self, method='auto', n=None, thresh=0.0, window=0.02, piecewise_baseline=True, plot=False):
+    def select_peaks(self, method='auto', n=None, thresh=0.0, window=0.02, piecewise_baseline=False, plot=False):
         """
         Method to interface with the utility class PeakSelector.  Will open an interactive utility used to select
         peaks n times.

@@ -200,7 +200,7 @@ class PeakSelector:
 
     """
 
-    def __init__(self, w, u, n, piecewise_baseline=True):
+    def __init__(self, w, u, n, piecewise_baseline=False):
         """
         PeakSelector constructor.
 
@@ -236,7 +236,7 @@ class PeakSelector:
         self.cid = self.fig.canvas.mpl_connect('button_press_event', self)
 
         if piecewise_baseline is True:
-            self.baseline = piecewise_baseline(self.w, self.u)
+            self.baseline = _piecewise_baseline(self.w, self.u)
         else:
             self.baseline = peakutils.baseline(self.u, 0)
 
@@ -345,7 +345,7 @@ class AutoPeakSelector:
 
     """
 
-    def __init__(self, w, u, thresh, window, piecewise_baseline=True):
+    def __init__(self, w, u, thresh, window, piecewise_baseline=False):
         """
         AutoPeakSelector constructor.
 
@@ -373,7 +373,7 @@ class AutoPeakSelector:
         self.u_smoothed = sp.signal.savgol_filter(self.u, 11, 4)
 
         if piecewise_baseline is True:
-            self.baseline = piecewise_baseline(self.w, self.u_smoothed)
+            self.baseline = _piecewise_baseline(self.w, self.u_smoothed)
         else:
             self.baseline = peakutils.baseline(self.u_smoothed, 0)
 
@@ -541,7 +541,7 @@ def sample_noise(X, Y, xstart, xstop):
     return np.std(noise)
 
 
-def piecewise_baseline(x, y, plot=False):
+def _piecewise_baseline(x, y, plot=False):
     """
     Calculates a piecewise baseline from the x/y data.  Splits the data into thirds and fits a baseline
     to each section.  Used to correct for baseline offsest during initial condition selection.

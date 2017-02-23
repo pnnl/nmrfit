@@ -151,9 +151,8 @@ class FitUtility:
         theta, r, yoff = self.result.params[:3]
         res = self.result.params[3:]
 
-        # transform u and v to get V and I for the data
-        V_data = self.data.u * np.cos(theta) - self.data.v * np.sin(theta)
-        I_data = self.data.u * np.sin(theta) + self.data.v * np.cos(theta)
+        # phase shift data by fit theta
+        self.data.shift_phase(method='manual', p0=theta, p1=0)
 
         # iteratively add the contribution of each peak to the fits for V and I
         for i in range(0, len(res), 3):
@@ -165,8 +164,9 @@ class FitUtility:
             I_fit = I_fit + equations.kk_relation_parallel(w, r, yoff, width, loc, a)
 
         # transform the fits for V and I to get fits for u and v
-        u_fit = V_fit * np.cos(theta) + I_fit * np.sin(theta)
-        v_fit = -V_fit * np.sin(theta) + I_fit * np.cos(theta)
+        u_fit, v_fit = proc_autophase.ps2(V_fit, I_fit, inv=True, p0=theta, p1=0.0)
+        # u_fit = V_fit * np.cos(theta) + I_fit * np.sin(theta)
+        # v_fit = -V_fit * np.sin(theta) + I_fit * np.cos(theta)
 
         # populate the result object
         self.result.u = u_fit
@@ -174,10 +174,6 @@ class FitUtility:
         self.result.V = V_fit
         self.result.I = I_fit
         self.result.w = w
-
-        # update the data object
-        self.data.V = V_data
-        self.data.I = I_data
 
     def _calculate_area_fraction(self):
         """
