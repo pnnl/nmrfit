@@ -93,13 +93,17 @@ class Data:
         """
         # calculate V and I from u, v, and theta
         if method.lower() == 'manual':
-            self.V, self.I = ps2(self.u, self.v, p0, p1)
+            self.p0 = p0
+            self.p1 = p1
         elif method.lower() == 'auto':
-            self.V, self.I = ps2(self.u, self.v, self.p0, self.p1)
+            pass
         elif method.lower() == 'brute':
-            self._brute_phase(step=step)
+            self.p0 = self._brute_phase(step=step)
+            self.p1 = 0
         else:
             raise ValueError("Method must be 'auto', 'brute', or 'manual'.")
+
+        self.V, self.I = ps2(self.u, self.v, self.p0, self.p1)
 
         if plot is True:
             plt.close()
@@ -116,8 +120,7 @@ class Data:
                 bestError = error
                 bestTheta = theta
 
-        self.p0 = bestTheta
-        self.V, self.I = ps2(self.u, self.v, bestTheta, 0)
+        return bestTheta
 
     def select_bounds(self, low=None, high=None):
         """
