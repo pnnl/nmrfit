@@ -115,12 +115,12 @@ class Data:
         bestError = np.inf
         for p0 in np.arange(-np.pi, np.pi, step):
             for p1 in np.arange(-np.pi, np.pi, step):
-            self.V, self.I = ps2(self.u, self.v, p0, p1)
-            error = (self.V[0] - self.V[-1])**2
-            if error < bestError:
-                bestError = error
-                p0_best = p0
-                p1_best = p1
+                self.V, self.I = ps2(self.u, self.v, p0, p1)
+                error = (self.V[0] - self.V[-1])**2
+                if error < bestError:
+                    bestError = error
+                    p0_best = p0
+                    p1_best = p1
 
         return p0_best, p1_best
 
