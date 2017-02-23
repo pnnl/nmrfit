@@ -148,11 +148,11 @@ class FitUtility:
         I_fit = np.zeros_like(w)
 
         # extract global params from result object
-        theta, r, yoff = self.result.params[:3]
-        res = self.result.params[3:]
+        p0, p1, r, yoff = self.result.params[:4]
+        res = self.result.params[4:]
 
         # phase shift data by fit theta
-        self.data.shift_phase(method='manual', p0=theta, p1=0)
+        self.data.shift_phase(method='manual', p0=p0, p1=p1)
 
         # iteratively add the contribution of each peak to the fits for V and I
         for i in range(0, len(res), 3):
@@ -164,7 +164,7 @@ class FitUtility:
             I_fit = I_fit + equations.kk_relation_parallel(w, r, yoff, width, loc, a)
 
         # transform the fits for V and I to get fits for u and v
-        u_fit, v_fit = proc_autophase.ps2(V_fit, I_fit, inv=True, p0=theta, p1=0.0)
+        u_fit, v_fit = proc_autophase.ps2(V_fit, I_fit, inv=True, p0=p0, p1=p1)
         # u_fit = V_fit * np.cos(theta) + I_fit * np.sin(theta)
         # v_fit = -V_fit * np.sin(theta) + I_fit * np.cos(theta)
 
@@ -180,7 +180,7 @@ class FitUtility:
         Calculates the relative fraction of the satellite peaks to the total peak area from the fit.
 
         """
-        areas = np.array([self.result.params[i] for i in range(5, len(self.result.params), 3)])
+        areas = np.array([self.result.params[i] for i in range(6, len(self.result.params), 3)])
         m = np.mean(areas)
         peaks = areas[areas >= m].sum()
         sats = areas[areas < m].sum()
@@ -286,9 +286,9 @@ class FitUtility:
         Generates and prints a summary of the fitting process.
 
         """
-        res = np.array(self.result.params).reshape((-1, 3))
-        res_globals = res[0, :]
-        res = res[1:, :]
+        res = np.array(self.result.params)
+        res_globals = res[:4]
+        res = res[4:].reshape((-1, 3))
 
         print()
         print('CONVERGED PARAMETER VALUES:')

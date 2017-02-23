@@ -185,15 +185,17 @@ class Data:
         for p in self.peaks:
             self.roibounds.append(p.bounds)
 
-    def generate_solution_bounds(self, force_theta=False):
+    def generate_solution_bounds(self, force_p0=False, force_p1=False):
         """
         Uses initial theta approximation as well as initial per-peak parameters (width, location, area)
         to construct a set of parameter bounds.
 
         Parameters
         ----------
-        force_theta : bool, optional
-            Flag to use initial phase approximation for theta.
+        force_p0 : bool, optional
+            Flag to use initial phase approximation for zeroth-order phase.
+        force_p1 : bool, optional
+            Flag to use initial phase approximation for first-order phase.
 
         Returns
         -------
@@ -201,15 +203,28 @@ class Data:
             Min, max bounds for each parameter in optimization.
 
         """
-        if force_theta is True:
-            upper = [self.p0 + 0.01, 1.0, 0.01]
-            lower = [self.p0 - 0.01, 0.0, -0.01]
+        lower = []
+        upper = []
+        if force_p0 is True:
+            upper.append(self.p0 + 0.001)
+            lower.append(self.p0 - 0.001)
         else:
-            upper = [np.pi, 1.0, 0.01]
-            lower = [-np.pi, 0.0, -0.01]
+            upper.append(np.pi)
+            lower.append(-np.pi)
+
+        if force_p1 is True:
+            upper.append(self.p1 + 0.001)
+            lower.append(self.p1 - 0.001)
+        else:
+            upper.append(np.pi)
+            lower.append(-np.pi)
+
+        upper.extend([1.0, 0.01])
+        lower.extend([0.0, -0.01])
 
         for p in self.peaks:
-            lower.extend([p.width * 0.5, p.loc - 0.1 * (p.loc - p.bounds[0]), p.area * 0.5])
+            # lower.extend([p.width * 0.5, p.loc - 0.1 * (p.loc - p.bounds[0]), p.area * 0.5])
+            lower.extend([p.width * 0.01, p.loc - 0.1 * (p.loc - p.bounds[0]), p.area * 0.01])
             upper.extend([p.width * 1.5, p.loc - 0.1 * (p.loc - p.bounds[1]), p.area * 1.5])
 
         return lower, upper

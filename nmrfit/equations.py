@@ -4,6 +4,8 @@ import scipy.integrate
 import multiprocessing as mp
 from functools import partial
 
+from . import proc_autophase
+
 
 def kk_equation(x, r, yoff, width, loc, a, w):
     """
@@ -174,19 +176,18 @@ def objective(x, w, u, v, weights, fit_im=False):
     # weights = np.ones_like(weights)
 
     # global parameters
-    theta, r, yoff = x[:3]
+    p0, p1, r, yoff = x[:4]
 
     # transform u and v to get V for the data
-    V_data = u * np.cos(theta) - v * np.sin(theta)
+    V_data, I_data = proc_autophase.ps2(u, v, p0=p0, p1=p1)
     V_fit = np.zeros_like(V_data)
 
     # optionally, also for I
     if fit_im is True:
-        I_data = u * np.sin(theta) + v * np.cos(theta)
         I_fit = np.zeros_like(I_data)
 
     # iteratively add the contribution of each peak to the fits for V
-    for i in range(3, len(x), 3):
+    for i in range(4, len(x), 3):
         # current approximations
         width = x[i]
         loc = x[i + 1]
