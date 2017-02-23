@@ -98,8 +98,7 @@ class Data:
         elif method.lower() == 'auto':
             pass
         elif method.lower() == 'brute':
-            self.p0 = self._brute_phase(step=step)
-            self.p1 = 0
+            self.p0, self.p1 = self._brute_phase(step=step)
         else:
             raise ValueError("Method must be 'auto', 'brute', or 'manual'.")
 
@@ -111,16 +110,19 @@ class Data:
             plt.show()
 
     def _brute_phase(self, step=np.pi / 360):
-        bestTheta = 0
+        p0_best = 0
+        p1_best = 0
         bestError = np.inf
-        for theta in np.arange(-np.pi, np.pi, step):
-            self.V, self.I = ps2(self.u, self.v, theta, 0)
+        for p0 in np.arange(-np.pi, np.pi, step):
+            for p1 in np.arange(-np.pi, np.pi, step):
+            self.V, self.I = ps2(self.u, self.v, p0, p1)
             error = (self.V[0] - self.V[-1])**2
             if error < bestError:
                 bestError = error
-                bestTheta = theta
+                p0_best = p0
+                p1_best = p1
 
-        return bestTheta
+        return p0_best, p1_best
 
     def select_bounds(self, low=None, high=None):
         """
