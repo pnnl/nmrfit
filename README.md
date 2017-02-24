@@ -5,7 +5,7 @@ nmrfit
 
 Installation
 ------------
-nmrfit is available through...
+``nmrfit`` is available through...
 
 Getting Started
 ---------------
