@@ -35,10 +35,10 @@ In order to seed the optimization method, approximate initial parameters must be
 
 ```python
 # select peaks automatically
-peaks = data.select_peaks(method='auto', plot=True)
+data.select_peaks(method='auto', plot=True)
 
 # select peaks manually
-peaks = data.select_peaks(method='manual', n=6, plot=True)
+data.select_peaks(method='manual', n=6, plot=True)
 ```
 
 The generate_solution_bounds() method is then used to create upper and lower bounds for the fit by least-squares minimization.  Each set of bounds (lower, upper) contains 3 global parameters (phase shift, Gaussian-Lorentzian ratio, and y-offset) and 3 parameters per peak (width, center, and area).  These values are used to construct area-parameterized Voigt-body approximations for each peak.  
