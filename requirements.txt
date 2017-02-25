@@ -1,0 +1,6 @@
+numpy>=1.12.0
+scipy>=0.18.1
+nmrglue
+peakutils
+matplotlib
+pyswarm>=0.7
