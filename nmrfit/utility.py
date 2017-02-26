@@ -86,7 +86,6 @@ class FitUtility:
         # store the fit parameters and error in the result object
         self.result.params = xopt
         self.result.error = fopt
-        self.result.area_fraction = self._calculate_area_fraction()
 
         if self.summary is True:
             self._print_summary()
@@ -185,7 +184,7 @@ class FitUtility:
         self.result.real_contribs = real_contribs
         self.result.imag_contribs = imag_contribs
 
-    def _calculate_area_fraction(self):
+    def calculate_area_fraction(self):
         """
         Calculates the relative fraction of the satellite peaks to the total peak area from the fit.
 
@@ -219,7 +218,6 @@ class FitUtility:
             print(res[i, :])
 
         print("Error:  ", self.result.error)
-        print("Area fraction:  ", self.result.area_fraction)
 
 
 class Peaks(list):
