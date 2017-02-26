@@ -18,6 +18,8 @@ class Result:
         Arrays of the real and imaginary components of the frequency response.
     V, I : ndarray
         Arrays of the phase corrected real and imaginary components of the frequency response.
+    real_contribs, imag_contribs : list of ndarrays
+        List containing the individual contributions of each peak to the real and imaginary components, respectively.
     params : ndarray
         Solution vector.
     error : float

@@ -3,6 +3,223 @@ import numpy as np
 import scipy as sp
 import scipy.integrate
 import peakutils
+import pyswarm
+import multiprocessing as mp
+
+from . import containers
+from . import equations
+from . import proc_autophase
+
+
+class FitUtility:
+    """
+    Interface used to perform a fit of the data.
+
+    Attributes
+    ----------
+    data : instance of Data class
+        Container for ndarrays relevant to the fitting process (w, u, v, V, I).
+    result : instance of Result class
+        Container for ndarrays (w, u, v, V, I) of the fit result.
+    lower, upper : list of floats
+            Min, max bounds for each parameter in the optimization.
+    expon : float
+        Raise relative weighting to this power.
+    fit_im : bool
+        Specify whether the imaginary part of the spectrum will be fit. Computationally expensive.
+    options : dict, optional
+        Used to pass additional options to the minimizer.
+    weights : ndarray
+        Array giving frequency-dependent weighting of error.
+
+    """
+
+    def __init__(self, data, lower, upper, expon=0.5, fit_im=False, summary=True, options={}):
+        """
+        FitUtility constructor.
+
+        Parameters
+        ----------
+        data : instance of Data class
+            Container for ndarrays relevant to the fitting process (w, u, v, V, I).
+        lower, upper : list of floats
+            Min, max bounds for each parameter in the optimization.
+        expon : float
+            Raise relative weighting to this power.
+        fit_im : bool
+            Specify whether the imaginary part of the spectrum will be fit. Computationally expensive.
+        summary : bool
+            Flag to display a summary of the fit.
+        options : dict, optional
+            Used to pass additional options to the minimizer.
+
+        """
+        self.result = containers.Result()
+
+        # store init attributes
+        self.data = data
+        self.lower = lower
+        self.upper = upper
+        self.fit_im = fit_im
+        self.expon = expon
+        self.summary = summary
+        self.options = options
+
+    def fit(self):
+        """
+        Fit a number of Voigt functions to the input data by objective function minimization.  By default, only the real
+        component of the data is used when performing the fit.  The imaginary data can be used, but at a severe performance
+        penalty (often with little to no gains in goodness of fit).
+
+        """
+        self.weights = self._compute_weights()
+
+        # call to the minimization function
+        xopt, fopt = pyswarm.pso(equations.objective, self.lower, self.upper, args=(self.data.w, self.data.u, self.data.v, self.weights, self.fit_im),
+                                 swarmsize=self.options.get('swarmsize', 204),
+                                 maxiter=self.options.get('maxiter', 2000),
+                                 omega=self.options.get('omega', -0.2134),
+                                 phip=self.options.get('phip', -0.3344),
+                                 phig=self.options.get('phig', 2.3259),
+                                 processes=self.options.get('processes', mp.cpu_count() - 1))
+
+        # store the fit parameters and error in the result object
+        self.result.params = xopt
+        self.result.error = fopt
+        self.result.area_fraction = self._calculate_area_fraction()
+
+        if self.summary is True:
+            self._print_summary()
+
+    def _compute_weights(self):
+        """
+        Smoothly weights each peak based on its height relative to the largest peak.
+
+        Returns
+        -------
+        weights : ndarray
+            Array giving frequency-dependent weighting of error.
+
+        """
+        lIdx = np.zeros(len(self.data.peaks), dtype=np.int)
+        rIdx = np.zeros(len(self.data.peaks), dtype=np.int)
+        maxabs = np.zeros(len(self.data.peaks))
+
+        for i, p in enumerate(self.data.peaks):
+            lIdx[i] = np.argmin(np.abs(self.data.w - p.bounds[0]))
+            rIdx[i] = np.argmin(np.abs(self.data.w - p.bounds[1]))
+            if lIdx[i] > rIdx[i]:
+                temp = lIdx[i]
+                lIdx[i] = rIdx[i]
+                rIdx[i] = temp
+
+            maxabs[i] = np.abs(p.height)
+
+        biggest = np.amax(maxabs)
+
+        defaultweight = 0.1
+        weights = np.ones(len(self.data.w)) * defaultweight
+
+        for i in range(len(self.data.peaks)):
+            weights[lIdx[i]:rIdx[i] + 1] = np.power(biggest / maxabs[i], self.expon)
+
+        weights = equations.laplace1d(weights)
+        return weights
+
+    def generate_result(self, scale=10):
+        """
+        Uses the output of the fit method to generate results.
+
+        Parameters
+        ----------
+        scale : float, optional
+            Upsample the resolution by this factor when calculating the fits.
+
+        """
+        if scale == 1.0:
+            # just use w vector as is
+            w = self.data.w
+        else:
+            # upsample the w vector for plotting
+            w = np.linspace(self.data.w.min(), self.data.w.max(), int(scale * self.data.w.shape[0]))
+
+        # initialize arrays for the fit of V and I
+        V_fit = np.zeros_like(w)
+        I_fit = np.zeros_like(w)
+
+        # extract global params from result object
+        p0, p1, r, yoff = self.result.params[:4]
+        res = self.result.params[4:]
+
+        # phase shift data by fit theta
+        self.data.shift_phase(method='manual', p0=p0, p1=p1)
+
+        # iteratively add the contribution of each peak to the fits for V and I
+        real_contribs = []
+        imag_contribs = []
+        for i in range(0, len(res), 3):
+            width = res[i]
+            loc = res[i + 1]
+            a = res[i + 2]
+
+            real = equations.voigt(w, r, yoff, width, loc, a)
+            imag = equations.kk_relation_parallel(w, r, yoff, width, loc, a)
+
+            real_contribs.append(real)
+            imag_contribs.append(imag)
+
+            V_fit = V_fit + real
+            I_fit = I_fit + imag
+
+        # transform the fits for V and I to get fits for u and v
+        u_fit, v_fit = proc_autophase.ps2(V_fit, I_fit, inv=True, p0=p0, p1=p1)
+        # u_fit = V_fit * np.cos(theta) + I_fit * np.sin(theta)
+        # v_fit = -V_fit * np.sin(theta) + I_fit * np.cos(theta)
+
+        # populate the result object
+        self.result.u = u_fit
+        self.result.v = v_fit
+        self.result.V = V_fit
+        self.result.I = I_fit
+        self.result.w = w
+        self.result.real_contribs = real_contribs
+        self.result.imag_contribs = imag_contribs
+
+    def _calculate_area_fraction(self):
+        """
+        Calculates the relative fraction of the satellite peaks to the total peak area from the fit.
+
+        """
+        areas = np.array([self.result.params[i] for i in range(6, len(self.result.params), 3)])
+        m = np.mean(areas)
+        peaks = areas[areas >= m].sum()
+        sats = areas[areas < m].sum()
+
+        area_fraction = (sats / (peaks + sats))
+
+        # calculate area fraction
+        return area_fraction
+
+    def _print_summary(self):
+        """
+        Generates and prints a summary of the fitting process.
+
+        """
+        res = np.array(self.result.params)
+        res_globals = res[:4]
+        res = res[4:].reshape((-1, 3))
+
+        print()
+        print('CONVERGED PARAMETER VALUES:')
+        print('---------------------------')
+        print('Global parameters')
+        print(res_globals)
+        print('Peak parameters')
+        for i in range(res.shape[0]):
+            print(res[i, :])
+
+        print("Error:  ", self.result.error)
+        print("Area fraction:  ", self.result.area_fraction)
 
 
 class Peaks(list):
