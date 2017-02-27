@@ -36,7 +36,7 @@ def individual_contributions(data, fit, component='real'):
     plt.show()
 
 
-def residual(data, fit, component='real'):
+def residual(data, fit, component='real', plot_data=True, plot_fit=True):
     """
     Generates a residual plot between calculated fit and the input data.
 
@@ -48,6 +48,8 @@ def residual(data, fit, component='real'):
         Container for ndarrays (w, u, v, V, I) of the fit result.
     component : string, optional
         Flag to specify the real or imaginary component will be plotted.
+    plot_data, plot_fit : bool, optional
+        Flags to specify whether the data and/or fit will be plotted alongside the residual.
 
     """
     x_data = data.w
@@ -64,7 +66,14 @@ def residual(data, fit, component='real'):
     if len(x_data) != len(x_res):
         raise IndexError("Dimension mismatch.  Regenerate result with scale=1.")
 
-    plt.plot(x_data, np.abs(y_res - y_data))
+    plt.plot(x_data, np.abs(y_res - y_data), color='black')
+
+    if plot_data is True:
+        plt.plot(x_data, y_data, color='b')
+
+    if plot_fit is True:
+        plt.plot(x_res, y_res, color='r')
+
     plt.xlabel('Frequency')
     plt.ylabel('Residual')
     plt.show()
