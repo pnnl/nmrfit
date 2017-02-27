@@ -341,7 +341,7 @@ class PeakSelector:
 
     """
 
-    def __init__(self, w, u, n, piecewise_baseline=False):
+    def __init__(self, w, u, n, piecewise_baseline=False, one_click=False):
         """
         PeakSelector constructor.
 
@@ -355,11 +355,14 @@ class PeakSelector:
             Number of peaks to select.
         piecewise_baseline : bool, optional
             Specify whether baseline correction is performed.
+        one_click : bool, optional
+            Specify whether a single click will be used to select peaks (as opposed to two)
 
         """
         self.u = u
         self.w = w
         self.n = n
+        self.one_click = one_click
 
         # peak container
         self.peaks = containers.Peaks()
@@ -398,15 +401,65 @@ class PeakSelector:
         # add x,y location of click
         self.points.append([event.xdata, event.ydata])
 
-        if (len(self.points) % 2 == 0) and (len(self.peaks) < self.n):
-            # add the peak
-            self.parse_points()
-
-            # clear the list of points
-            self.points = []
-
-            if len(self.peaks) >= self.n:
+        if self.one_click is True:
+            if len(self.points) >= self.n:
                 plt.close()
+                self.parse_points2()
+                self.find_width()
+
+        else:
+            if (len(self.points) % 2 == 0) and (len(self.peaks) < self.n):
+                # add the peak
+                self.parse_points()
+
+                # clear the list of points
+                self.points = []
+
+                if len(self.peaks) >= self.n:
+                    plt.close()
+
+    def parse_points2(self):
+        """
+        Determines approximate peak height and location based on single-click selection method.
+
+        """
+        for x, y in self.points:
+            p = containers.Peak()
+            p.height, p.loc, p.i = find_peak(self.w, self.u, x * 0.975, x * 1.025)
+            p.height = p.height - self.baseline[p.i]
+
+            self.peaks.append(p)
+
+    def find_width(self):
+        """
+        Using peak information, finds FWHM.
+
+        """
+        screened_peaks = containers.Peaks()
+        for p in self.peaks:
+            d = np.sign(p.height / 2. - (self.u[0:-1] - self.baseline[0:-1])) - np.sign(p.height / 2. - (self.u[1:] - self.baseline[1:]))
+            rightIdx = np.where(d < 0)[0]  # right
+            leftIdx = np.where(d > 0)[0]  # left
+
+            x_right = self.w[rightIdx[np.argmin(np.abs(self.w[rightIdx] - p.loc))]]
+            x_left = self.w[leftIdx[np.argmin(np.abs(self.w[leftIdx] - p.loc))]]
+
+            if x_left < x_right:
+                # width equals FWHM
+                p.width = x_right - x_left
+
+                # bounds are +/- 2 widths
+                p.bounds = [p.loc - 2 * p.width, p.loc + 2 * p.width]
+
+                # peak indices
+                p.idx = np.where((self.w >= p.bounds[0]) & (self.w <= p.bounds[1]))
+
+                # area over peak indices
+                p.area = sp.integrate.simps(self.u[p.idx] - self.baseline[p.idx], self.w[p.idx])
+
+                screened_peaks.append(p)
+
+        self.peaks = screened_peaks
 
     def parse_points(self):
         """
