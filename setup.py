@@ -1,5 +1,5 @@
 from setuptools import setup, find_packages
-import subprocess
+import pip
 
 
 with open('README.md') as f:
@@ -16,7 +16,7 @@ pkgs = find_packages(exclude=('examples', 'docs'))
 # absolutely ridiculous manual install of pyswarm-0.7+ from GitHub
 # this should be taken care of via dependency_links below, but it
 # does. not. work.
-subprocess.call(['pip', 'install', '--upgrade', 'git+https://github.com/tisimst/pyswarm'])
+pip.main(['install', '--upgrade', 'git+https://github.com/tisimst/pyswarm'])
 
 setup(
     name='nmrfit',
