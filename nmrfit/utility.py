@@ -425,8 +425,9 @@ class PeakSelector:
         """
         for x, y in self.points:
             p = containers.Peak()
-            p.height, p.loc, p.i = find_peak(self.w, self.u, x * 0.975, x * 1.025)
-            p.height = p.height - self.baseline[p.i]
+            p.loc = x
+            p.i = np.argmin(np.abs(self.w - p.loc))
+            p.height = self.u[p.i] - self.baseline[p.i]
 
             self.peaks.append(p)
 
