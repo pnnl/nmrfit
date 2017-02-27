@@ -1,9 +1,10 @@
 import numpy as np
+import matplotlib.pyplot as plt
+
 from .utility import AutoPeakSelector
 from .utility import PeakSelector
 from .utility import BoundsSelector
 from .proc_autophase import ps2
-import matplotlib.pyplot as plt
 
 
 class Peaks(list):
@@ -166,7 +167,6 @@ class Data:
         self.V, self.I = ps2(self.u, self.v, self.p0, self.p1)
 
         if plot is True:
-            plt.close()
             plt.plot(self.w, self.V)
             plt.show()
 
