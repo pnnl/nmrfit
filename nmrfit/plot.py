@@ -84,12 +84,12 @@ def residual(data, fit, component='real', plot_data=True, plot_fit=True):
     axes[0].set_xlabel('Frequency')
     axes[0].set_ylabel('Residual')
     axes[0].set_ylim((0, resid.max() * 5))
-    axes[1].set_ylim((-1, y_res.max() * 1.05))
+    axes[1].set_ylim((-0.5 * (y_res.max() - y_res.min()), y_res.max() * 1.05))
     axes[1].set_ylabel('Amplitude')
     plt.show()
 
 
-def isotope_ratio(data, fit):
+def isotope_ratio(data, fit, area_fraction=None):
         """
         Generates a summary plot of the calculated fit alongside the input data.
 
@@ -136,7 +136,7 @@ def isotope_ratio(data, fit):
         ax4_re = plt.subplot(236)
 
         # plot everything
-        ax1_re.plot(fit.w, fit.V, linewidth=2, alpha=0.5, color='r', label='Area Fraction: %03f' % fit.area_fraction)
+        ax1_re.plot(fit.w, fit.V, linewidth=2, alpha=0.5, color='r', label='Area Fraction: %03f' % area_fraction)
         ax1_re.plot(data.w, data.V, linewidth=2, alpha=0.5, color='b', label='Error: %03f' % fit.error)
         ax1_re.legend(loc='upper right')
 
