@@ -217,12 +217,11 @@ class FitUtility:
         res_globals = pd.DataFrame(res[:4].reshape((1, -1)), columns=['p0', 'p1', 'g-l ratio', 'y-off'])
         res = pd.DataFrame(res[4:].reshape((-1, 3)), columns=['width', 'location', 'area'])
 
-        print()
-        print('CONVERGED PARAMETER VALUES:')
-        print('---------------------------')
+        print('\nFit Summary:')
+        print('------------')
         print('Global parameters')
         print(res_globals.to_string(index=False))
-        print('Peak parameters')
+        print('\nPeak parameters')
         print(res.to_string(index=False))
         print("Error:\t", self.error)
 
