@@ -169,8 +169,8 @@ def objective(x, w, u, v, weights, fit_im=False):
 
     Returns
     -------
-    residual : float
-        The sum of squared differences between the data and fit.
+    rmse : float
+        Root mean square error between the data and fit.
 
     """
     # weights = np.ones_like(weights)
@@ -200,18 +200,18 @@ def objective(x, w, u, v, weights, fit_im=False):
         if fit_im is True:
             I_fit = kk_relation_vectorized(w, r, yoff, width, loc, a)
 
-    # real component residual
-    residual = np.square(np.multiply(weights, (V_data - V_fit))).sum(axis=None)
+    # real component RMSE
+    rmse = np.sqrt(np.square(np.multiply(weights, (V_data - V_fit))).mean(axis=None))
 
-    # optionally add imaginary residual
+    # optionally add imaginary RMSE
     if fit_im is True:
-        residual += np.square(np.multiply(weights, (I_data - I_fit))).sum(axis=None)
+        rmse += np.sqrt(np.square(np.multiply(weights, (I_data - I_fit))).mean(axis=None))
 
         # divide by two to ensure equal magnitude error
-        residual /= 2.0
+        rmse /= 2.0
 
-    # return the total residual
-    return residual
+    # return the total RMSE
+    return rmse
 
 
 def laplace1d(x, n=10, omega=0.33333333):
