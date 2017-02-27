@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+from matplotlib import gridspec
 import numpy as np
 
 
@@ -18,7 +19,7 @@ def individual_contributions(data, fit, component='real'):
     """
     x_data = data.w
     x_res = fit.w
-    if component.lower() == 'real':
+    if component.lower == 'real':
         y_data = data.V
         y_res = fit.real_contribs
     elif component.lower() == 'imag':
@@ -76,10 +77,10 @@ def residual(data, fit, component='real', plot_data=True, plot_fit=True):
     axes[0].plot(x_data, resid, color='black')
 
     if plot_data is True:
-        axes[1].plot(x_data, y_data, color='b', alpha=0.5)
+        axes[1].plot(x_data, y_data, color='black', alpha=0.5)
 
     if plot_fit is True:
-        axes[1].plot(x_res, y_res, color='r', alpha=0.5)
+        axes[1].plot(x_res, y_res, color='black', alpha=0.5)
 
     axes[0].set_xlabel('Frequency')
     axes[0].set_ylabel('Residual')
@@ -129,31 +130,32 @@ def isotope_ratio(data, fit, area_fraction=None):
         ht = max(satHeights)
 
         # set up figures
-        fig_re = plt.figure(1, figsize=(16, 12))
-        ax1_re = plt.subplot(211)
-        ax2_re = plt.subplot(234)
-        ax3_re = plt.subplot(235)
-        ax4_re = plt.subplot(236)
+        fig_re = plt.figure(1, figsize=(10, 8))
+        gs_re = gridspec.GridSpec(3, 3)
+        ax1_re = fig_re.add_subplot(gs_re[0:2, :])
+        ax2_re = fig_re.add_subplot(gs_re[2, 0])
+        ax3_re = fig_re.add_subplot(gs_re[2, 1])
+        ax4_re = fig_re.add_subplot(gs_re[2, 2])
 
         # plot everything
-        ax1_re.plot(fit.w, fit.V, linewidth=2, alpha=0.5, color='r', label='Area Fraction: %03f' % area_fraction)
-        ax1_re.plot(data.w, data.V, linewidth=2, alpha=0.5, color='b', label='Error: %03f' % fit.error)
+        ax1_re.plot(fit.w, fit.V, linewidth=3, color='black', label='Fit', zorder=0)
+        ax1_re.scatter(data.w, data.V, linewidth=0, s=40, color='grey', label='Data', zorder=1)
         ax1_re.legend(loc='upper right')
 
         # plot left sats
-        ax2_re.plot(data.w, data.V, linewidth=2, alpha=0.5, color='b')
-        ax2_re.plot(fit.w, fit.V, linewidth=2, alpha=0.5, color='r')
+        ax2_re.plot(fit.w, fit.V, linewidth=3, color='black', zorder=0)
+        ax2_re.scatter(data.w, data.V, linewidth=0, s=40, color='grey', zorder=1)
         ax2_re.set_ylim((0, ht * 1.5))
         ax2_re.set_xlim(set1Range)
 
         # plot main peaks
-        ax3_re.plot(data.w, data.V, linewidth=2, alpha=0.5, color='b')
-        ax3_re.plot(fit.w, fit.V, linewidth=2, alpha=0.5, color='r')
+        ax3_re.plot(fit.w, fit.V, linewidth=3, color='black', zorder=0)
+        ax3_re.scatter(data.w, data.V, linewidth=0, s=40, color='grey', zorder=1)
         ax3_re.set_xlim(peakRange)
 
         # plot right satellites
-        ax4_re.plot(data.w, data.V, linewidth=2, alpha=0.5, color='b')
-        ax4_re.plot(fit.w, fit.V, linewidth=2, alpha=0.5, color='r')
+        ax4_re.plot(fit.w, fit.V, linewidth=3, color='black', zorder=0)
+        ax4_re.scatter(data.w, data.V, linewidth=0, s=40, color='grey', zorder=1)
         ax4_re.set_ylim((0, ht * 1.5))
         ax4_re.set_xlim(set2Range)
 
@@ -165,22 +167,22 @@ def isotope_ratio(data, fit, area_fraction=None):
         # ax4_im = plt.subplot(236)
 
         # # plot everything
-        # ax1_im.plot(data.w, data.I, linewidth=2, alpha=0.5, color='b', label='data')
-        # ax1_im.plot(fit.w, fit.I, linewidth=2, alpha=0.5, color='r', label='Fit')
+        # ax1_im.plot(data.w, data.I, linewidth=2, alpha=0.5, color='black', label='data')
+        # ax1_im.plot(fit.w, fit.I, linewidth=4, color='black', label='Fit')
 
         # # plot left sats
-        # ax2_im.plot(data.w, data.I, linewidth=2, alpha=0.5, color='b')
-        # ax2_im.plot(fit.w, fit.I, linewidth=2, alpha=0.5, color='r')
+        # ax2_im.plot(data.w, data.I, linewidth=2, alpha=0.5, color='black')
+        # ax2_im.plot(fit.w, fit.I, linewidth=4, color='black')
         # ax2_im.set_xlim(set1Range)
 
         # # plot main peaks
-        # ax3_im.plot(data.w, data.I, linewidth=2, alpha=0.5, color='b')
-        # ax3_im.plot(fit.w, fit.I, linewidth=2, alpha=0.5, color='r')
+        # ax3_im.plot(data.w, data.I, linewidth=2, alpha=0.5, color='black')
+        # ax3_im.plot(fit.w, fit.I, linewidth=4, color='black')
         # ax3_im.set_xlim(peakRange)
 
         # # plot right satellites
-        # ax4_im.plot(data.w, data.I, linewidth=2, alpha=0.5, color='b')
-        # ax4_im.plot(fit.w, fit.I, linewidth=2, alpha=0.5, color='r')
+        # ax4_im.plot(data.w, data.I, linewidth=2, alpha=0.5, color='black')
+        # ax4_im.plot(fit.w, fit.I, linewidth=4, color='black')
         # ax4_im.set_xlim(set2Range)
 
         # display
