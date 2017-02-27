@@ -6,28 +6,86 @@ from .proc_autophase import ps2
 import matplotlib.pyplot as plt
 
 
-class Result:
+class Peaks(list):
     """
-    Used to store results of the fit.  Similar to the Data class, but without the methods.
+    Extension of list object that stores a number of Peak instances.
+
+    """
+
+    def average_height(self):
+        """
+        Calculate average height of all peaks stored.
+
+        Returns
+        -------
+        average : float
+            Average height of peaks.
+
+        """
+        h = 0.
+        for p in self:
+            h += abs(p.height)
+        return h / len(self)
+
+    def split(self):
+        """
+        Split peaks into two sublists (peaks, satellites) based on relative heights.
+
+        Returns
+        -------
+        peaks, sats : Peak instances
+            Peak lists containing peaks and satellites, respectively.
+
+        """
+        h = self.average_height()
+        sats = Peaks()
+        peaks = Peaks()
+
+        for p in self:
+            if abs(p.height) >= h:
+                peaks.append(p)
+            else:
+                sats.append(p)
+
+        return peaks, sats
+
+
+class Peak:
+    """
+    Contains metadata for 'peaks' observed in NMR spectroscopy.
 
     Attributes
     ----------
-    w : ndarray
-        Array of frequency data.
-    u, v : ndarray
-        Arrays of the real and imaginary components of the frequency response.
-    V, I : ndarray
-        Arrays of the phase corrected real and imaginary components of the frequency response.
-    real_contribs, imag_contribs : list of ndarrays
-        List containing the individual contributions of each peak to the real and imaginary components, respectively.
-    params : ndarray
-        Solution vector.
-    error : float
-        Weighted sum of squared error between the data and fit.
-    area_fraction : float
-        Area fraction of satellite peaks.
+    loc : float
+        Location of the peak.
+    height : float
+        Height of the peak in terms of signal intensity at its center.
+    bounds : list of floats.
+        Upper and lower bounds of the peak.  Captures 4 FWHMs.
+    width : float
+        The width of the peak in terms of FWHM.
+    area : float
+        Approximation of area of the peak.
 
     """
+
+    def __repr__(self):
+        """
+        Overrides __repr__ to print peak-relevant information.
+
+        Returns
+        -------
+        repr : string
+            Formatted string to display peak information.
+
+        """
+        return """\
+               Location: %s
+               Height: %s
+               Bounds: [%s, %s]
+               Width: %s
+               Area: %s\
+               """ % (self.loc, self.height, self.bounds[0], self.bounds[1], self.width, self.area)
 
 
 class Data:

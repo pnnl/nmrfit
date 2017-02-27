@@ -19,8 +19,6 @@ class FitUtility:
     ----------
     data : instance of Data class
         Container for ndarrays relevant to the fitting process (w, u, v, V, I).
-    result : instance of Result class
-        Container for ndarrays (w, u, v, V, I) of the fit result.
     lower, upper : list of floats
             Min, max bounds for each parameter in the optimization.
     expon : float
@@ -31,6 +29,18 @@ class FitUtility:
         Used to pass additional options to the minimizer.
     weights : ndarray
         Array giving frequency-dependent weighting of error.
+    w : ndarray
+        Array of frequency data.
+    u, v : ndarray
+        Arrays of the real and imaginary components of the frequency response.
+    V, I : ndarray
+        Arrays of the phase corrected real and imaginary components of the frequency response.
+    real_contribs, imag_contribs : list of ndarrays
+        List containing the individual contributions of each peak to the real and imaginary components, respectively.
+    params : ndarray
+        Solution vector.
+    error : float
+        Weighted sum of squared error between the data and fit.
 
     """
 
@@ -54,8 +64,6 @@ class FitUtility:
             Used to pass additional options to the minimizer.
 
         """
-        self.result = containers.Result()
-
         # store init attributes
         self.data = data
         self.lower = lower
@@ -84,8 +92,8 @@ class FitUtility:
                                  processes=self.options.get('processes', mp.cpu_count() - 1))
 
         # store the fit parameters and error in the result object
-        self.result.params = xopt
-        self.result.error = fopt
+        self.params = xopt
+        self.error = fopt
 
         if self.summary is True:
             self._print_summary()
@@ -147,8 +155,8 @@ class FitUtility:
         I_fit = np.zeros_like(w)
 
         # extract global params from result object
-        p0, p1, r, yoff = self.result.params[:4]
-        res = self.result.params[4:]
+        p0, p1, r, yoff = self.params[:4]
+        res = self.params[4:]
 
         # phase shift data by fit theta
         self.data.shift_phase(method='manual', p0=p0, p1=p1)
@@ -175,21 +183,21 @@ class FitUtility:
         # u_fit = V_fit * np.cos(theta) + I_fit * np.sin(theta)
         # v_fit = -V_fit * np.sin(theta) + I_fit * np.cos(theta)
 
-        # populate the result object
-        self.result.u = u_fit
-        self.result.v = v_fit
-        self.result.V = V_fit
-        self.result.I = I_fit
-        self.result.w = w
-        self.result.real_contribs = real_contribs
-        self.result.imag_contribs = imag_contribs
+        # populate result attributes
+        self.u = u_fit
+        self.v = v_fit
+        self.V = V_fit
+        self.I = I_fit
+        self.w = w
+        self.real_contribs = real_contribs
+        self.imag_contribs = imag_contribs
 
     def calculate_area_fraction(self):
         """
         Calculates the relative fraction of the satellite peaks to the total peak area from the fit.
 
         """
-        areas = np.array([self.result.params[i] for i in range(6, len(self.result.params), 3)])
+        areas = np.array([self.params[i] for i in range(6, len(self.params), 3)])
         m = np.mean(areas)
         peaks = areas[areas >= m].sum()
         sats = areas[areas < m].sum()
@@ -204,7 +212,7 @@ class FitUtility:
         Generates and prints a summary of the fitting process.
 
         """
-        res = np.array(self.result.params)
+        res = np.array(self.params)
         res_globals = res[:4]
         res = res[4:].reshape((-1, 3))
 
@@ -217,89 +225,7 @@ class FitUtility:
         for i in range(res.shape[0]):
             print(res[i, :])
 
-        print("Error:  ", self.result.error)
-
-
-class Peaks(list):
-    """
-    Extension of list object that stores a number of Peak instances.
-
-    """
-
-    def average_height(self):
-        """
-        Calculate average height of all peaks stored.
-
-        Returns
-        -------
-        average : float
-            Average height of peaks.
-
-        """
-        h = 0.
-        for p in self:
-            h += abs(p.height)
-        return h / len(self)
-
-    def split(self):
-        """
-        Split peaks into two sublists (peaks, satellites) based on relative heights.
-
-        Returns
-        -------
-        peaks, sats : Peak instances
-            Peak lists containing peaks and satellites, respectively.
-
-        """
-        h = self.average_height()
-        sats = Peaks()
-        peaks = Peaks()
-
-        for p in self:
-            if abs(p.height) >= h:
-                peaks.append(p)
-            else:
-                sats.append(p)
-
-        return peaks, sats
-
-
-class Peak:
-    """
-    Contains metadata for 'peaks' observed in NMR spectroscopy.
-
-    Attributes
-    ----------
-    loc : float
-        Location of the peak.
-    height : float
-        Height of the peak in terms of signal intensity at its center.
-    bounds : list of floats.
-        Upper and lower bounds of the peak.  Captures 4 FWHMs.
-    width : float
-        The width of the peak in terms of FWHM.
-    area : float
-        Approximation of area of the peak.
-
-    """
-
-    def __repr__(self):
-        """
-        Overrides __repr__ to print peak-relevant information.
-
-        Returns
-        -------
-        repr : string
-            Formatted string to display peak information.
-
-        """
-        return """\
-               Location: %s
-               Height: %s
-               Bounds: [%s, %s]
-               Width: %s
-               Area: %s\
-               """ % (self.loc, self.height, self.bounds[0], self.bounds[1], self.width, self.area)
+        print("Error:  ", self.error)
 
 
 class BoundsSelector:
@@ -436,7 +362,7 @@ class PeakSelector:
         self.n = n
 
         # peak container
-        self.peaks = Peaks()
+        self.peaks = containers.Peaks()
 
         # empty list to store point information from clicks
         self.points = []
@@ -488,7 +414,7 @@ class PeakSelector:
         low, middle, and high.  Subsequently determines approximate peak height, width, and area.
 
         """
-        peak = Peak()
+        peak = containers.Peak()
 
         # sort points in frequency
         self.points.sort()
@@ -592,7 +518,7 @@ class AutoPeakSelector:
         else:
             self.baseline = peakutils.baseline(self.u_smoothed, 0)
 
-        self.peaks = Peaks()
+        self.peaks = containers.Peaks()
 
     def find_maxima(self):
         """
@@ -605,7 +531,7 @@ class AutoPeakSelector:
         idx = sp.signal.argrelmax(self.u_smoothed, order=window)[0]
 
         for i in idx:
-            p = Peak()
+            p = containers.Peak()
             p.loc = self.w[i]
             p.i = i
             p.height = self.u[i] - self.baseline[i]
@@ -617,7 +543,7 @@ class AutoPeakSelector:
         Using peak information, finds FWHM.
 
         """
-        screened_peaks = Peaks()
+        screened_peaks = containers.Peaks()
         for p in self.peaks:
             d = np.sign(p.height / 2. - (self.u[0:-1] - self.baseline[0:-1])) - np.sign(p.height / 2. - (self.u[1:] - self.baseline[1:]))
             rightIdx = np.where(d < 0)[0]  # right
