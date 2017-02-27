@@ -5,7 +5,7 @@ nmrfit
 
 Installation
 ------------
-``nmrfit`` is available through...
+``nmrfit`` is available through the Python Package Index ([PyPI](https://pypi.python.org/pypi)).  Simply run ``pip install nmrfit`` to install ``nmrfit`` and all required dependencies.
 
 Getting Started
 ---------------
@@ -50,17 +50,14 @@ lb, ub = data.generate_solution_bounds()
 
 A ``FitUtility`` object is initialized with the Data object and solution bounds to perform a fit via minimization.  Each time the optimizer calls the objective function, the target data is phase-shifted by theta, Voigt-body approximations are generated for each peak and summed to create a fit of the entire signal, and a residual is calculated between the fit and the data.
 
-Once the optimizer converges, the ``FitUtility`` method ``generate_result()`` generates the final fit from the solution vector and is returned as a ``Result`` object, which contains attributes that store residual error, the fit parameter vector, and real and imaginary components of the phase-corrected and out-of-phase fits.  The scale flag may be adjusted to upsample the resulting fit by a constant factor.  This is useful when high-resolution output is desired.  Finally, fit summary statistics and plots of the fit can be viewed using the ``summary()`` method of the ``FitUtility`` object.
+Once the optimizer converges, the ``FitUtility`` method ``generate_result()`` generates the final fit from the solution vector. Residual error, the fit parameter vector, and real and imaginary components of the phase-corrected and out-of-phase fits are stored in the ``FitUtility`` object.  The ``scale`` flag may be adjusted to upsample the resulting fit by a constant factor.  This is useful when high-resolution output is desired.
 
 ```python
 # perform the fit
 fit = nmrft.FitUtility(data, lb, ub)
 
 # generate results
-res = fit.generate_result(scale=1)
-
-# summary
-fit.summary()
+fit.generate_result(scale=1)
 ```
 
 Documentation

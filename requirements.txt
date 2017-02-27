@@ -3,4 +3,5 @@ scipy>=0.18.1
 nmrglue
 peakutils
 matplotlib
+pandas
 pyswarm>=0.7
