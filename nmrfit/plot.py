@@ -66,16 +66,26 @@ def residual(data, fit, component='real', plot_data=True, plot_fit=True):
     if len(x_data) != len(x_res):
         raise IndexError("Dimension mismatch.  Regenerate result with scale=1.")
 
-    plt.plot(x_data, np.abs(y_res - y_data), color='black')
+    resid = np.abs(y_res - y_data)
+
+    fig, ax = plt.subplots()
+
+    # Twin the x-axis twice to make independent y-axes.
+    axes = [ax, ax.twinx()]
+
+    axes[0].plot(x_data, resid, color='black')
 
     if plot_data is True:
-        plt.plot(x_data, y_data, color='b')
+        axes[1].plot(x_data, y_data, color='b', alpha=0.5)
 
     if plot_fit is True:
-        plt.plot(x_res, y_res, color='r')
+        axes[1].plot(x_res, y_res, color='r', alpha=0.5)
 
-    plt.xlabel('Frequency')
-    plt.ylabel('Residual')
+    axes[0].set_xlabel('Frequency')
+    axes[0].set_ylabel('Residual')
+    axes[0].set_ylim((0, resid.max() * 5))
+    axes[1].set_ylim((-1, y_res.max() * 1.05))
+    axes[1].set_ylabel('Amplitude')
     plt.show()
 
 
