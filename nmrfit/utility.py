@@ -221,9 +221,9 @@ class FitUtility:
         print('CONVERGED PARAMETER VALUES:')
         print('---------------------------')
         print('Global parameters')
-        print(res_globals.tostring(index=False))
+        print(res_globals.to_string(index=False))
         print('Peak parameters')
-        print(res.tostring(index=False))
+        print(res.to_string(index=False))
         print("Error:\t", self.error)
 
 
