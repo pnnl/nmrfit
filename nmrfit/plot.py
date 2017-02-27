@@ -1,9 +1,10 @@
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 def individual_contributions(data, fit, component='real'):
     """
-    Generates a summary plot of the calculated fit alongside the input data.
+    Generates a plot of the individual fit peaks alongside the input data.
 
     Parameters
     ----------
@@ -24,7 +25,7 @@ def individual_contributions(data, fit, component='real'):
         y_data = data.I
         y_res = fit.imag_contribs
     else:
-        raise ValueError("Valid options are 'real' and 'imag'.")
+        raise ValueError("Valid options for the component parameter are 'real' and 'imag'.")
 
     plt.plot(x_data, y_data, color='black')
     for peak in y_res:
@@ -32,6 +33,40 @@ def individual_contributions(data, fit, component='real'):
 
     plt.xlabel('Frequency')
     plt.ylabel('Amplitude')
+    plt.show()
+
+
+def residual(data, fit, component='real'):
+    """
+    Generates a residual plot between calculated fit and the input data.
+
+    Parameters
+    ----------
+    data : instance of Data class
+        Container for ndarrays relevant to the fitting process (w, u, v, V, I).
+    fit : instance of FitUtility class
+        Container for ndarrays (w, u, v, V, I) of the fit result.
+    component : string, optional
+        Flag to specify the real or imaginary component will be plotted.
+
+    """
+    x_data = data.w
+    x_res = fit.w
+    if component.lower() == 'real':
+        y_data = data.V
+        y_res = fit.V
+    elif component.lower() == 'imag':
+        y_data = data.I
+        y_res = fit.I
+    else:
+        raise ValueError("Valid options for the component parameter are 'real' and 'imag'.")
+
+    if len(x_data) != len(x_res):
+        raise IndexError("Dimension mismatch.  Regenerate result with scale=1.")
+
+    plt.plot(x_data, np.abs(y_res - y_data))
+    plt.xlabel('Frequency')
+    plt.ylabel('Residual')
     plt.show()
 
 

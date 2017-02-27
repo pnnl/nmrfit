@@ -1,7 +1,9 @@
-from __future__ import print_function
-
 import numpy as np
 import scipy.optimize
+import warnings
+
+# silence nmrglue warnings
+warnings.filterwarnings("ignore")
 
 
 def ps2(u, v, p0=0.0, p1=0.0, inv=False):
