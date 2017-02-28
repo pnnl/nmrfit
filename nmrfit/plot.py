@@ -44,6 +44,7 @@ def individual_contributions(data, fit, component='real'):
     ax.set_yticklabels([])
     ax.tick_params(top='off', left='off', right='off')
     ax.set_xlabel('ppm', fontsize=16, fontweight='bold')
+    ax.set_xlim((x_data.max(), x_data.min()))
     ax.legend(loc='upper right', fontsize=14)
     fig.tight_layout()
     plt.show()
@@ -88,13 +89,11 @@ def residual(data, fit, component='real'):
     axes.append(plt.subplot(gs[3, :]))
 
     for a, label in zip(axes, ['A', 'B']):
-        a.invert_xaxis()
         a.spines['top'].set_color('none')
         a.spines['right'].set_color('none')
         if label == 'A':
             a.set_yticklabels([])
             a.spines['left'].set_color('none')
-            # a.spines['bottom'].set_color('none')
             a.tick_params(top='off', left='off', right='off')
             a.set_xticklabels([])
         else:
@@ -105,7 +104,11 @@ def residual(data, fit, component='real'):
                transform=a.transAxes, va='top', ha='left')
 
     axes[1].plot(x_data, resid, color='grey', label='Residual')
+    axes[1].set_xlim((x_data.max(), x_data.min()))
+
     axes[0].plot(x_data, y_data, color='black', label='Data', zorder=0)
+    axes[0].set_xlim((x_data.max(), x_data.min()))
+
     axes[0].plot(xs, ys, color='grey', label='Fit', alpha=0.7, zorder=1)
     axes[0].legend(loc='upper right', fontsize=14)
 
@@ -157,15 +160,6 @@ def isotope_ratio(data, fit):
         fig = plt.figure(1, figsize=(10, 8), dpi=150)
         gs = gridspec.GridSpec(3, 3)
 
-        # ax = plt.subplot(gs[:, :])
-        # # Turn off axis lines and ticks of the big subplot
-        # ax.spines['top'].set_color('none')
-        # ax.spines['bottom'].set_color('none')
-        # ax.spines['left'].set_color('none')
-        # ax.spines['right'].set_color('none')
-        # ax.tick_params(top='off', bottom='off', left='off', right='off')
-        
-
         axes = []
         axes.append(plt.subplot(gs[0:2, :]))
         axes.append(plt.subplot(gs[2, 0]))
@@ -174,7 +168,6 @@ def isotope_ratio(data, fit):
 
         for a, label in zip(axes, ['A', 'B', 'C', 'D']):
             a.set_yticklabels([])
-            a.invert_xaxis()
             a.spines['top'].set_color('none')
             a.spines['left'].set_color('none')
             a.spines['right'].set_color('none')
@@ -188,25 +181,26 @@ def isotope_ratio(data, fit):
         # plot everything
         axes[0].plot(fit.w, fit.V, linewidth=lw, color='black', label='Fit', zorder=0)
         axes[0].plot(data.w, data.V, linewidth=lw, color='grey', alpha=alpha, label='Data', zorder=1)
+        axes[0].set_xlim((data.w.max(), data.w.min()))
         axes[0].legend(loc='upper right', fontsize=14)
 
         # plot left sats
         axes[1].plot(fit.w, fit.V, linewidth=lw, color='black', zorder=0)
         axes[1].plot(data.w, data.V, linewidth=lw, color='grey', alpha=alpha, zorder=1)
         axes[1].set_ylim((0, ht * 1.5))
-        axes[1].set_xlim(set1Range)
+        axes[1].set_xlim(set2Range[::-1])
 
         # plot main peaks
         axes[2].plot(fit.w, fit.V, linewidth=lw, color='black', zorder=0)
         axes[2].plot(data.w, data.V, linewidth=lw, color='grey', alpha=alpha, zorder=1)
-        axes[2].set_xlim(peakRange)
+        axes[2].set_xlim(peakRange[::-1])
         axes[2].set_xlabel('ppm', fontsize=16, fontweight='bold')
 
         # plot right satellites
         axes[3].plot(fit.w, fit.V, linewidth=lw, color='black', zorder=0)
         axes[3].plot(data.w, data.V, linewidth=lw, color='grey', alpha=alpha, zorder=1)
         axes[3].set_ylim((0, ht * 1.5))
-        axes[3].set_xlim(set2Range)
+        axes[3].set_xlim(set1Range[::-1])
 
         # display
         fig.tight_layout()
