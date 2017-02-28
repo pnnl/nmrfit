@@ -1,10 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from .utility import AutoPeakSelector
-from .utility import PeakSelector
-from .utility import BoundsSelector
-from .proc_autophase import ps2
+from . import _utility
+from . import _proc_autophase
 
 
 class Peaks(list):
@@ -164,7 +162,7 @@ class Data:
         else:
             raise ValueError("Method must be 'auto', 'brute', or 'manual'.")
 
-        self.V, self.I = ps2(self.u, self.v, self.p0, self.p1)
+        self.V, self.I = _proc_autophase.ps2(self.u, self.v, self.p0, self.p1)
 
         if plot is True:
             plt.plot(self.w, self.V)
@@ -174,7 +172,7 @@ class Data:
         p0_best = 0
         bestError = np.inf
         for p0 in np.arange(-np.pi, np.pi, step):
-            self.V, self.I = ps2(self.u, self.v, p0, 0.0)
+            self.V, self.I = _proc_autophase.ps2(self.u, self.v, p0, 0.0)
             error = (self.V[0] - self.V[-1])**2
             if error < bestError and np.max(self.V) > abs(np.min(self.V)):
                 bestError = error
@@ -196,10 +194,10 @@ class Data:
 
         """
         if low is not None and high is not None:
-            bs = BoundsSelector(self.w, self.u, self.v, supress=True)
+            bs = _utility.BoundsSelector(self.w, self.u, self.v, supress=True)
             self.w, self.u, self.v = bs.apply_bounds(low=low, high=high)
         else:
-            bs = BoundsSelector(self.w, self.u, self.v)
+            bs = _utility.BoundsSelector(self.w, self.u, self.v)
             self.w, self.u, self.v = bs.apply_bounds()
 
     def select_peaks(self, method='auto', n=None, one_click=False, thresh=0.0, window=0.02, piecewise_baseline=False, plot=False):
@@ -227,12 +225,12 @@ class Data:
         """
         if method.lower() == 'manual':
             if isinstance(n, int) and n > 0:
-                ps = PeakSelector(self.w, self.V, n, piecewise_baseline=piecewise_baseline, one_click=one_click)
+                ps = _utility.PeakSelector(self.w, self.V, n, piecewise_baseline=piecewise_baseline, one_click=one_click)
             else:
                 raise ValueError("Number of peaks must be specified when using 'manual' flag")
 
         elif method.lower() == 'auto':
-            ps = AutoPeakSelector(self.w, self.V, thresh=thresh, window=window, piecewise_baseline=piecewise_baseline)
+            ps = _utility.AutoPeakSelector(self.w, self.V, thresh=thresh, window=window, piecewise_baseline=piecewise_baseline)
             ps.find_peaks()
 
         else:

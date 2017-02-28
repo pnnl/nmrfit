@@ -7,9 +7,9 @@ import pyswarm
 import multiprocessing as mp
 import pandas as pd
 
-from . import containers
-from . import equations
-from . import proc_autophase
+from . import _containers
+from . import _equations
+from . import _proc_autophase
 
 
 class FitUtility:
@@ -84,7 +84,7 @@ class FitUtility:
         self.weights = self._compute_weights()
 
         # call to the minimization function
-        xopt, fopt = pyswarm.pso(equations.objective, self.lower, self.upper, args=(self.data.w, self.data.u, self.data.v, self.weights, self.fit_im),
+        xopt, fopt = pyswarm.pso(_equations.objective, self.lower, self.upper, args=(self.data.w, self.data.u, self.data.v, self.weights, self.fit_im),
                                  swarmsize=self.options.get('swarmsize', 204),
                                  maxiter=self.options.get('maxiter', 2000),
                                  omega=self.options.get('omega', -0.2134),
@@ -131,7 +131,7 @@ class FitUtility:
         for i in range(len(self.data.peaks)):
             weights[lIdx[i]:rIdx[i] + 1] = np.power(biggest / maxabs[i], self.expon)
 
-        weights = equations.laplace1d(weights)
+        weights = _equations.laplace1d(weights)
         return weights
 
     def generate_result(self, scale=10):
@@ -170,8 +170,8 @@ class FitUtility:
             loc = res[i + 1]
             a = res[i + 2]
 
-            real = equations.voigt(w, r, yoff, width, loc, a)
-            imag = equations.kk_relation_parallel(w, r, yoff, width, loc, a)
+            real = _equations.voigt(w, r, yoff, width, loc, a)
+            imag = _equations.kk_relation_parallel(w, r, yoff, width, loc, a)
 
             real_contribs.append(real)
             imag_contribs.append(imag)
@@ -180,7 +180,7 @@ class FitUtility:
             I_fit = I_fit + imag
 
         # transform the fits for V and I to get fits for u and v
-        u_fit, v_fit = proc_autophase.ps2(V_fit, I_fit, inv=True, p0=p0, p1=p1)
+        u_fit, v_fit = _proc_autophase.ps2(V_fit, I_fit, inv=True, p0=p0, p1=p1)
         # u_fit = V_fit * np.cos(theta) + I_fit * np.sin(theta)
         # v_fit = -V_fit * np.sin(theta) + I_fit * np.cos(theta)
 
@@ -363,7 +363,7 @@ class PeakSelector:
         self.one_click = one_click
 
         # peak container
-        self.peaks = containers.Peaks()
+        self.peaks = _containers.Peaks()
 
         # empty list to store point information from clicks
         self.points = []
@@ -422,7 +422,7 @@ class PeakSelector:
 
         """
         for x, y in self.points:
-            p = containers.Peak()
+            p = _containers.Peak()
             p.loc = x
             p.i = np.argmin(np.abs(self.w - p.loc))
             p.height = self.u[p.i] - self.baseline[p.i]
@@ -434,7 +434,7 @@ class PeakSelector:
         Using peak information, finds FWHM.
 
         """
-        screened_peaks = containers.Peaks()
+        screened_peaks = _containers.Peaks()
         for p in self.peaks:
             d = np.sign(p.height / 2. - (self.u[0:-1] - self.baseline[0:-1])) - np.sign(p.height / 2. - (self.u[1:] - self.baseline[1:]))
             rightIdx = np.where(d < 0)[0]  # right
@@ -466,7 +466,7 @@ class PeakSelector:
         low, middle, and high.  Subsequently determines approximate peak height, width, and area.
 
         """
-        peak = containers.Peak()
+        peak = _containers.Peak()
 
         # sort points in frequency
         self.points.sort()
@@ -570,7 +570,7 @@ class AutoPeakSelector:
         else:
             self.baseline = peakutils.baseline(self.u_smoothed, 0)
 
-        self.peaks = containers.Peaks()
+        self.peaks = _containers.Peaks()
 
     def find_maxima(self):
         """
@@ -583,7 +583,7 @@ class AutoPeakSelector:
         idx = sp.signal.argrelmax(self.u_smoothed, order=window)[0]
 
         for i in idx:
-            p = containers.Peak()
+            p = _containers.Peak()
             p.loc = self.w[i]
             p.i = i
             p.height = self.u[i] - self.baseline[i]
@@ -595,7 +595,7 @@ class AutoPeakSelector:
         Using peak information, finds FWHM.
 
         """
-        screened_peaks = containers.Peaks()
+        screened_peaks = _containers.Peaks()
         for p in self.peaks:
             d = np.sign(p.height / 2. - (self.u[0:-1] - self.baseline[0:-1])) - np.sign(p.height / 2. - (self.u[1:] - self.baseline[1:]))
             rightIdx = np.where(d < 0)[0]  # right
