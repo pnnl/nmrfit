@@ -214,7 +214,7 @@ class FitUtility:
 
         """
         res = np.array(self.params)
-        res_globals = pd.DataFrame(res[:4].reshape((1, -1)), columns=['p0', 'p1', 'g-l ratio', 'y-off'])
+        res_globals = pd.DataFrame(res[:4].reshape((1, -1)), columns=['p0', 'p1', 'r', 'y-off'])
         res = pd.DataFrame(res[4:].reshape((-1, 3)), columns=['width', 'location', 'area'])
 
         print('\nFit Summary:')
