@@ -1,6 +1,8 @@
 from setuptools import setup, find_packages
 import pip
 
+import nmrfit
+
 
 with open('README.md') as f:
     readme = f.read()
@@ -20,10 +22,10 @@ pip.main(['install', '--upgrade', 'git+https://github.com/tisimst/pyswarm'])
 
 setup(
     name='nmrfit',
-    version='0.1',
+    version=nmrfit.__version__,
     description='Quantitative NMR package.',
     long_description=readme,
-    author='Sean Colby',
+    author=nmrfit.__author__,
     author_email='sean.colby@pnnl.gov',
     url='https://github.com/smcolby/nmrfit',
     license=license,
