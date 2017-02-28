@@ -37,14 +37,15 @@ def individual_contributions(data, fit, component='real'):
         else:
             plt.plot(xs, peak, linewidth=2, color='grey', alpha=0.7, label=None)
 
-    # Turn off axis lines and ticks of the big subplot
     ax.spines['top'].set_color('none')
     ax.spines['left'].set_color('none')
     ax.spines['right'].set_color('none')
     ax.set_yticklabels([])
     ax.tick_params(top='off', left='off', right='off')
+
     ax.set_xlabel('ppm', fontsize=16, fontweight='bold')
     ax.set_xlim((x_data.max(), x_data.min()))
+
     ax.legend(loc='upper right', fontsize=14)
     fig.tight_layout()
     plt.show()
