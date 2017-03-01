@@ -3,6 +3,10 @@ from matplotlib import gridspec
 import numpy as np
 
 
+fitcolor = 'red'
+plotcolor = 'grey'
+
+
 def individual_contributions(data, fit, component='real'):
     """
     Generates a plot of the individual fit peaks alongside the input data.
@@ -30,12 +34,9 @@ def individual_contributions(data, fit, component='real'):
 
     fig = plt.figure(1, figsize=(10, 8), dpi=150)
     ax = plt.subplot('111')
-    plt.plot(x_data, y_data, linewidth=2, color='black', label='Data')
+    plt.plot(x_data, y_data, linewidth=1, color='black', zorder=1)
     for i, peak in enumerate(ys):
-        if i == 0:
-            plt.plot(xs, peak, linewidth=2, color='grey', alpha=0.7, label='Fit')
-        else:
-            plt.plot(xs, peak, linewidth=2, color='grey', alpha=0.7, label=None)
+        plt.plot(xs, peak, linewidth=2, alpha=1, zorder=0)
 
     ax.spines['top'].set_color('none')
     ax.spines['left'].set_color('none')
@@ -46,7 +47,6 @@ def individual_contributions(data, fit, component='real'):
     ax.set_xlabel('ppm', fontsize=16, fontweight='bold')
     ax.set_xlim((x_data.max(), x_data.min()))
 
-    ax.legend(loc='upper right', fontsize=14)
     fig.tight_layout()
     plt.show()
 
@@ -79,7 +79,7 @@ def residual(data, fit, component='real'):
     if len(x_data) != len(xs):
         raise IndexError("Dimension mismatch.  Regenerate result with scale=1.")
 
-    resid = np.abs(ys - y_data)
+    resid = (ys - y_data) / y_data
 
     # set up figures
     fig = plt.figure(1, figsize=(10, 8), dpi=150)
@@ -104,13 +104,14 @@ def residual(data, fit, component='real'):
         a.text(0.02, 1.0, label, fontsize=16, fontweight='bold',
                transform=a.transAxes, va='top', ha='left')
 
-    axes[1].plot(x_data, resid, color='grey', label='Residual')
+    axes[1].plot(x_data, resid, color='black', label='Residual', zorder=1, linewidth=1)
+    axes[1].axhline(linewidth=1, linestyle='--', color='grey', zorder=0)
     axes[1].set_xlim((x_data.max(), x_data.min()))
 
-    axes[0].plot(x_data, y_data, color='black', label='Data', zorder=0)
+    axes[0].plot(x_data, y_data, color=plotcolor, label='Data', zorder=0, alpha=1.0, linewidth=2, marker='.')
     axes[0].set_xlim((x_data.max(), x_data.min()))
 
-    axes[0].plot(xs, ys, color='grey', label='Fit', alpha=0.7, zorder=1)
+    axes[0].plot(xs, ys, color=fitcolor, label='Fit', zorder=1, linewidth=1)
     axes[0].legend(loc='upper right', fontsize=14)
 
     axes[1].set_xlabel('ppm', fontsize=16, fontweight='bold')
@@ -177,29 +178,29 @@ def isotope_ratio(data, fit):
             a.text(0.0, 1.0, label, fontsize=16, fontweight='bold',
                    transform=a.transAxes, va='top', ha='left', zorder=9)
 
-        alpha = 0.7
+        alpha = 1
         lw = 2
         # plot everything
-        axes[0].plot(fit.w, fit.V, linewidth=lw, color='black', label='Fit', zorder=0)
-        axes[0].plot(data.w, data.V, linewidth=lw, color='grey', alpha=alpha, label='Data', zorder=1)
+        axes[0].plot(fit.w, fit.V, linewidth=1, color=fitcolor, label='Fit', zorder=1)
+        axes[0].plot(data.w, data.V, linewidth=lw, color=plotcolor, alpha=alpha, label='Data', zorder=0, marker='.')
         axes[0].set_xlim((data.w.max(), data.w.min()))
         axes[0].legend(loc='upper right', fontsize=14)
 
         # plot left sats
-        axes[1].plot(fit.w, fit.V, linewidth=lw, color='black', zorder=0)
-        axes[1].plot(data.w, data.V, linewidth=lw, color='grey', alpha=alpha, zorder=1)
+        axes[1].plot(fit.w, fit.V, linewidth=1, color=fitcolor, zorder=1)
+        axes[1].plot(data.w, data.V, linewidth=lw, color=plotcolor, alpha=alpha, zorder=0, marker='.')
         axes[1].set_ylim((0, ht * 1.5))
         axes[1].set_xlim(set2Range[::-1])
 
         # plot main peaks
-        axes[2].plot(fit.w, fit.V, linewidth=lw, color='black', zorder=0)
-        axes[2].plot(data.w, data.V, linewidth=lw, color='grey', alpha=alpha, zorder=1)
+        axes[2].plot(fit.w, fit.V, linewidth=1, color=fitcolor, zorder=1)
+        axes[2].plot(data.w, data.V, linewidth=lw, color=plotcolor, alpha=alpha, zorder=0, marker='.')
         axes[2].set_xlim(peakRange[::-1])
         axes[2].set_xlabel('ppm', fontsize=16, fontweight='bold')
 
         # plot right satellites
-        axes[3].plot(fit.w, fit.V, linewidth=lw, color='black', zorder=0)
-        axes[3].plot(data.w, data.V, linewidth=lw, color='grey', alpha=alpha, zorder=1)
+        axes[3].plot(fit.w, fit.V, linewidth=1, color=fitcolor, zorder=1)
+        axes[3].plot(data.w, data.V, linewidth=lw, color=plotcolor, alpha=alpha, zorder=0, marker='.')
         axes[3].set_ylim((0, ht * 1.5))
         axes[3].set_xlim(set1Range[::-1])
 
