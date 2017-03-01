@@ -40,9 +40,9 @@ def individual_contributions(data, fit, component='real'):
 
     fig = plt.figure(1, figsize=(10, 8), dpi=150)
     ax = plt.subplot('111')
-    plt.plot(x_data, y_data, linewidth=pdata['lw'], alpha=pdata['alpha'], color=pdata['color'], zorder=1)
+    plt.plot(x_data, y_data, linewidth=pdata['lw'], alpha=pdata['alpha'], color='black', zorder=1)
     for i, peak in enumerate(ys):
-        plt.plot(xs, peak, linewidth=pfit['lw'], alpha=pfit['alpha'], color=pfit['color'], zorder=0)
+        plt.plot(xs, peak, linewidth=pfit['lw'], alpha=0.7, zorder=0)
 
     ax.spines['top'].set_color('none')
     ax.spines['left'].set_color('none')
