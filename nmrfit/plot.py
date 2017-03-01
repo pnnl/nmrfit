@@ -25,6 +25,8 @@ def individual_contributions(data, fit, component='real'):
         Flag to specify the real or imaginary component will be plotted.
 
     """
+    plt.close()
+
     x_data = data.w
     xs = fit.w
     if component.lower() == 'real':
@@ -68,6 +70,8 @@ def residual(data, fit, component='real'):
         Flag to specify the real or imaginary component will be plotted.
 
     """
+    plt.close()
+
     x_data = data.w
     xs = fit.w
     if component.lower() == 'real':
@@ -135,6 +139,8 @@ def isotope_ratio(data, fit):
             Container for ndarrays (w, u, v, V, I) of the fit result.
 
         """
+        plt.close()
+
         peaks, satellites = data.peaks.split()
 
         peakBounds = []
