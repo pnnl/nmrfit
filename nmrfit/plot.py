@@ -107,10 +107,10 @@ def residual(data, fit, component='real'):
         a.text(0.02, 1.0, label, fontsize=16, fontweight='bold',
                transform=a.transAxes, va='top', ha='left')
 
-    axes[1].plot(x_data, resid, color='black', label='Residual', zorder=1, linewidth=1)
+    axes[1].plot(x_data, resid, linewidth=1, color='black', zorder=1)
     axes[1].axhline(linewidth=1, linestyle='--', color='grey', zorder=0)
     axes[1].set_xlim((x_data.max(), x_data.min()))
-    axes[1].set_ylim((max(resid.max(), 1), min(resid.min(), -1)))
+    axes[1].set_ylim((min(resid.min(), -1), max(resid.max(), 1)))
 
     axes[0].plot(x_data, y_data, linewidth=pdata['lw'], alpha=pdata['alpha'], color=pdata['color'], label='Data', zorder=0)
     axes[0].set_xlim((x_data.max(), x_data.min()))
@@ -119,6 +119,7 @@ def residual(data, fit, component='real'):
     axes[0].legend(loc='upper right', fontsize=14)
 
     axes[1].set_xlabel('ppm', fontsize=16, fontweight='bold')
+    axes[1].set_ylabel('Residual', fontweight='bold')
     fig.tight_layout()
 
 
