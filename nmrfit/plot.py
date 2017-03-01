@@ -110,6 +110,7 @@ def residual(data, fit, component='real'):
     axes[1].plot(x_data, resid, color='black', label='Residual', zorder=1, linewidth=1)
     axes[1].axhline(linewidth=1, linestyle='--', color='grey', zorder=0)
     axes[1].set_xlim((x_data.max(), x_data.min()))
+    axes[1].set_ylim((max(resid.max(), 1), min(resid.min(), -1)))
 
     axes[0].plot(x_data, y_data, linewidth=pdata['lw'], alpha=pdata['alpha'], color=pdata['color'], label='Data', zorder=0)
     axes[0].set_xlim((x_data.max(), x_data.min()))
