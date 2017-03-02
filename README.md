@@ -1,5 +1,5 @@
 ======
-nmrfit
+``nmrfit``
 ======
 ``nmrfit`` reads the output from an NMR spectroscopy experiment and, through a number of intuitive API calls, produces a least-squares fit of  Voigt-function approximations via particle swarm optimization ([PySwarm](https://github.com/tisimst/pyswarm)). Fitted peaks can then be used to perform quantitative NMR analysis, including isotope ratio approximation.
 
@@ -58,6 +58,12 @@ fit = nmrft.FitUtility(data, lb, ub)
 
 # generate results
 fit.generate_result(scale=1)
+```
+
+Lastly, use the ``plot`` module to generate publicaton-ready plots of your results, e.g.:
+
+```python
+nmrfit.plot.residual(data, fit)
 ```
 
 Documentation
