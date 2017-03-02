@@ -50,21 +50,23 @@ def load(fidfile, procfile):
     return result
 
 
-def fit(data, lower, upper, expon=0.5, fit_im=False, summary=True, options={}):
+def fit(data, lower, upper, expon=0.5, dynamic_weighting=True, fit_im=False, summary=True, options={}):
     '''
     Perform a fit of NMR spectroscopy data.
 
     Parameters
     ----------
     data : instance of Data class
-        Container for ndarrays relevant to the fitting process (w, u, v, V, I).
+            Container for ndarrays relevant to the fitting process (w, u, v, V, I).
     lower, upper : list of floats
         Min, max bounds for each parameter in the optimization.
-    expon : float
+    expon : float, optional
         Raise relative weighting to this power.
-    fit_im : bool
+    dynamic_weighting : bool, optional
+        Specify whether dynamic weighting is used.
+    fit_im : bool, optional
         Specify whether the imaginary part of the spectrum will be fit. Computationally expensive.
-    summary : bool
+    summary : bool, optional
         Flag to display a summary of the fit.
     options : dict, optional
         Used to pass additional options to the minimizer.
@@ -75,6 +77,6 @@ def fit(data, lower, upper, expon=0.5, fit_im=False, summary=True, options={}):
         Object containing result of the fit.
 
     '''
-    f = _utility.FitUtility(data, lower, upper, expon, fit_im, summary, options)
+    f = _utility.FitUtility(data, lower, upper, expon, dynamic_weighting, fit_im, summary, options)
     f.fit()
     return f

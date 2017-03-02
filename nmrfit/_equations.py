@@ -173,8 +173,6 @@ def objective(x, w, u, v, weights, fit_im=False):
         Root mean square error between the data and fit.
 
     """
-    # weights = np.ones_like(weights)
-
     # global parameters
     p0, p1, r, yoff = x[:4]
 
