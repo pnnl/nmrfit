@@ -40,9 +40,9 @@ def individual_contributions(data, fit, component='real'):
 
     fig = plt.figure(1, figsize=(10, 8), dpi=150)
     ax = plt.subplot('111')
-    plt.plot(x_data, y_data, linewidth=pdata['lw'], alpha=pdata['alpha'], color='black', zorder=1)
+    plt.plot(x_data, y_data, linewidth=pdata['lw'], alpha=pdata['alpha'], color='black', zorder=0)
     for i, peak in enumerate(ys):
-        plt.plot(xs, peak, linewidth=pfit['lw'], alpha=0.7, zorder=0)
+        plt.plot(xs, peak, linewidth=pfit['lw'], alpha=0.5, zorder=1)
 
     ax.spines['top'].set_color('none')
     ax.spines['left'].set_color('none')
@@ -86,7 +86,7 @@ def residual(data, fit, component='real'):
     if len(x_data) != len(xs):
         raise IndexError("Dimension mismatch.  Regenerate result with scale=1.")
 
-    resid = (ys - y_data) / y_data
+    resid = ys - y_data
 
     # set up figures
     fig = plt.figure(1, figsize=(10, 8), dpi=150)
@@ -114,7 +114,7 @@ def residual(data, fit, component='real'):
     axes[1].plot(x_data, resid, linewidth=1, color='black', zorder=1)
     axes[1].axhline(linewidth=1, linestyle='--', color='grey', zorder=0)
     axes[1].set_xlim((x_data.max(), x_data.min()))
-    axes[1].set_ylim((min(resid.min(), -1), max(resid.max(), 1)))
+    # axes[1].set_ylim((min(resid.min(), -1), max(resid.max(), 1)))
 
     axes[0].plot(x_data, y_data, linewidth=pdata['lw'], alpha=pdata['alpha'], color=pdata['color'], label='Data', zorder=0)
     axes[0].set_xlim((x_data.max(), x_data.min()))

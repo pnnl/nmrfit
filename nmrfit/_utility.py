@@ -530,11 +530,16 @@ class PeakSelector:
         fig = plt.figure(1, figsize=(10, 8), dpi=150)
         ax = plt.subplot('111')
 
-        plt.plot(self.w, self.u, linewidth=2, color='silver', zorder=0)
-        for p in self.peaks:
-            plt.scatter(p.loc, p.height + self.baseline[p.i], s=10, color='black', zorder=2)
-            plt.axvline(p.bounds[0], color='black', linestyle='--', zorder=1)
-            plt.axvline(p.bounds[1], color='black', linestyle='--', zorder=1)
+        plt.plot(self.w, self.u, linewidth=2, color='silver', zorder=0, label='Data')
+        for i, p in enumerate(self.peaks):
+            if i == 0:
+                plt.scatter(p.loc, p.height + self.baseline[p.i], s=10, color='black', zorder=2, label='Peak')
+                plt.axvline(p.bounds[0], color='black', linestyle='--', zorder=1, label='Bounds')
+                plt.axvline(p.bounds[1], color='black', linestyle='--', zorder=1, label=None)
+            else:
+                plt.scatter(p.loc, p.height + self.baseline[p.i], s=10, color='black', zorder=2)
+                plt.axvline(p.bounds[0], color='black', linestyle='--', zorder=1)
+                plt.axvline(p.bounds[1], color='black', linestyle='--', zorder=1)
 
         ax.spines['top'].set_color('none')
         ax.spines['left'].set_color('none')
@@ -544,6 +549,8 @@ class PeakSelector:
 
         ax.set_xlabel('ppm', fontsize=16, fontweight='bold')
         ax.set_xlim((self.w.max(), self.w.min()))
+
+        ax.legend(loc='upper right', fontsize=14, framealpha=1)
         fig.tight_layout()
 
         plt.show()
@@ -675,11 +682,16 @@ class AutoPeakSelector:
         fig = plt.figure(1, figsize=(10, 8), dpi=150)
         ax = plt.subplot('111')
 
-        plt.plot(self.w, self.u, linewidth=2, color='silver', zorder=0)
-        for p in self.peaks:
-            plt.scatter(p.loc, p.height + self.baseline[p.i], s=10, color='black', zorder=2)
-            plt.axvline(p.bounds[0], color='black', linestyle='--', zorder=1)
-            plt.axvline(p.bounds[1], color='black', linestyle='--', zorder=1)
+        plt.plot(self.w, self.u, linewidth=2, color='silver', zorder=0, label='Data')
+        for i, p in enumerate(self.peaks):
+            if i == 0:
+                plt.scatter(p.loc, p.height + self.baseline[p.i], s=10, color='black', zorder=2, label='Peak')
+                plt.axvline(p.bounds[0], color='black', linestyle='--', zorder=1, label='Bounds')
+                plt.axvline(p.bounds[1], color='black', linestyle='--', zorder=1, label=None)
+            else:
+                plt.scatter(p.loc, p.height + self.baseline[p.i], s=10, color='black', zorder=2)
+                plt.axvline(p.bounds[0], color='black', linestyle='--', zorder=1)
+                plt.axvline(p.bounds[1], color='black', linestyle='--', zorder=1)
 
         ax.spines['top'].set_color('none')
         ax.spines['left'].set_color('none')
@@ -689,6 +701,8 @@ class AutoPeakSelector:
 
         ax.set_xlabel('ppm', fontsize=16, fontweight='bold')
         ax.set_xlim((self.w.max(), self.w.min()))
+
+        ax.legend(loc='upper right', fontsize=14, framealpha=1)
         fig.tight_layout()
 
         plt.show()
