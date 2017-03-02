@@ -165,7 +165,21 @@ class Data:
         self.V, self.I = _proc_autophase.ps2(self.u, self.v, self.p0, self.p1)
 
         if plot is True:
-            plt.plot(self.w, self.V)
+            fig = plt.figure(1, figsize=(10, 8), dpi=150)
+            ax = plt.subplot('111')
+
+            plt.plot(self.w, self.V, linewidth=2, color='silver')
+
+            ax.spines['top'].set_color('none')
+            ax.spines['left'].set_color('none')
+            ax.spines['right'].set_color('none')
+            ax.set_yticklabels([])
+            ax.tick_params(top='off', left='off', right='off')
+
+            ax.set_xlabel('ppm', fontsize=16, fontweight='bold')
+            ax.set_xlim((self.w.max(), self.w.min()))
+            fig.tight_layout()
+
             plt.show()
 
     def _brute_phase(self, step=np.pi / 360):

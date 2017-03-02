@@ -271,12 +271,24 @@ class BoundsSelector:
         self.supress = supress
 
         if not self.supress:
-            self.fig = plt.figure()  # figsize=(9, 5), dpi=300
-            plt.plot(w, u, linewidth=2)
-            plt.xlabel('Frequency')
-            plt.ylabel('Amplitude')
-            self.cid = self.fig.canvas.mpl_connect('button_press_event', self)
             self.bounds = []
+
+            self.fig = plt.figure(1, figsize=(10, 8), dpi=150)
+            ax = plt.subplot('111')
+
+            plt.plot(w, u, linewidth=1, color='silver')
+
+            ax.spines['top'].set_color('none')
+            ax.spines['left'].set_color('none')
+            ax.spines['right'].set_color('none')
+            ax.set_yticklabels([])
+            ax.tick_params(top='off', left='off', right='off')
+
+            ax.set_xlabel('ppm', fontsize=16, fontweight='bold')
+            ax.set_xlim((self.w.max(), self.w.min()))
+            self.fig.tight_layout()
+
+            self.cid = self.fig.canvas.mpl_connect('button_press_event', self)
             plt.show()
 
     def __call__(self, event):
@@ -374,10 +386,20 @@ class PeakSelector:
         self.points = []
 
         # initialize plot
-        self.fig = plt.figure()
-        plt.plot(w, u, linewidth=2)
-        plt.xlabel('Frequency')
-        plt.ylabel('Amplitude')
+        self.fig = plt.figure(1, figsize=(10, 8), dpi=150)
+        ax = plt.subplot('111')
+
+        plt.plot(w, u, linewidth=1, color='black')
+
+        ax.spines['top'].set_color('none')
+        ax.spines['left'].set_color('none')
+        ax.spines['right'].set_color('none')
+        ax.set_yticklabels([])
+        ax.tick_params(top='off', left='off', right='off')
+
+        ax.set_xlabel('ppm', fontsize=16, fontweight='bold')
+        ax.set_xlim((self.w.max(), self.w.min()))
+        self.fig.tight_layout()
 
         # start event listener
         self.cid = self.fig.canvas.mpl_connect('button_press_event', self)
@@ -505,15 +527,25 @@ class PeakSelector:
         Plots the result of the peak selection process to indicate detected peak locations and bounds.
 
         """
-        plt.figure(figsize=(9, 5))
-        plt.plot(self.w, self.u, color='b', linewidth=2)
-        for p in self.peaks:
-            plt.scatter(p.loc, p.height + self.baseline[p.i], color='r')
-            plt.axvline(p.bounds[0], color='g')
-            plt.axvline(p.bounds[1], color='g')
+        fig = plt.figure(1, figsize=(10, 8), dpi=150)
+        ax = plt.subplot('111')
 
-        plt.xlabel('Frequency', fontsize=16)
-        plt.ylabel('Amplitude', fontsize=16)
+        plt.plot(self.w, self.u, linewidth=2, color='silver', zorder=0)
+        for p in self.peaks:
+            plt.scatter(p.loc, p.height + self.baseline[p.i], s=10, color='black', zorder=2)
+            plt.axvline(p.bounds[0], color='black', linestyle='--', zorder=1)
+            plt.axvline(p.bounds[1], color='black', linestyle='--', zorder=1)
+
+        ax.spines['top'].set_color('none')
+        ax.spines['left'].set_color('none')
+        ax.spines['right'].set_color('none')
+        ax.set_yticklabels([])
+        ax.tick_params(top='off', left='off', right='off')
+
+        ax.set_xlabel('ppm', fontsize=16, fontweight='bold')
+        ax.set_xlim((self.w.max(), self.w.min()))
+        fig.tight_layout()
+
         plt.show()
 
 
@@ -640,15 +672,24 @@ class AutoPeakSelector:
         Plots the result of the peak selection process to indicate detected peak locations and bounds.
 
         """
-        plt.figure(figsize=(9, 5))
-        plt.plot(self.w, self.u, color='b', linewidth=2)
-        for p in self.peaks:
-            plt.scatter(p.loc, p.height + self.baseline[p.i], color='r')
-            plt.axvline(p.bounds[0], color='g')
-            plt.axvline(p.bounds[1], color='g')
+        fig = plt.figure(1, figsize=(10, 8), dpi=150)
+        ax = plt.subplot('111')
 
-        plt.xlabel('Frequency', fontsize=16)
-        plt.ylabel('Amplitude', fontsize=16)
+        plt.plot(self.w, self.u, linewidth=2, color='silver', zorder=0)
+        for p in self.peaks:
+            plt.scatter(p.loc, p.height + self.baseline[p.i], s=10, color='black', zorder=2)
+            plt.axvline(p.bounds[0], color='black', linestyle='--', zorder=1)
+            plt.axvline(p.bounds[1], color='black', linestyle='--', zorder=1)
+
+        ax.spines['top'].set_color('none')
+        ax.spines['left'].set_color('none')
+        ax.spines['right'].set_color('none')
+        ax.set_yticklabels([])
+        ax.tick_params(top='off', left='off', right='off')
+
+        ax.set_xlabel('ppm', fontsize=16, fontweight='bold')
+        ax.set_xlim((self.w.max(), self.w.min()))
+        fig.tight_layout()
 
         plt.show()
 
