@@ -45,7 +45,7 @@ class FitUtility:
 
     """
 
-    def __init__(self, data, lower, upper, expon=0.5, fit_im=False, summary=True, options={}):
+    def __init__(self, data, lower, upper, expon=0.5, dynamic_weighting=True, fit_im=False, summary=True, options={}):
         """
         FitUtility constructor.
 
@@ -55,11 +55,13 @@ class FitUtility:
             Container for ndarrays relevant to the fitting process (w, u, v, V, I).
         lower, upper : list of floats
             Min, max bounds for each parameter in the optimization.
-        expon : float
+        expon : float, optional
             Raise relative weighting to this power.
-        fit_im : bool
+        dynamic_weighting : bool, optional
+            Specify whether dynamic weighting is used.
+        fit_im : bool, optional
             Specify whether the imaginary part of the spectrum will be fit. Computationally expensive.
-        summary : bool
+        summary : bool, optional
             Flag to display a summary of the fit.
         options : dict, optional
             Used to pass additional options to the minimizer.
@@ -69,8 +71,9 @@ class FitUtility:
         self.data = data
         self.lower = lower
         self.upper = upper
-        self.fit_im = fit_im
         self.expon = expon
+        self.dynamic_weighting = dynamic_weighting
+        self.fit_im = fit_im
         self.summary = summary
         self.options = options
 
@@ -82,6 +85,8 @@ class FitUtility:
 
         """
         self.weights = self._compute_weights()
+        if self.dynamic_weighting is False:
+            self.weights = np.ones_like(self.weights)
 
         # call to the minimization function
         xopt, fopt = pyswarm.pso(_equations.objective, self.lower, self.upper, args=(self.data.w, self.data.u, self.data.v, self.weights, self.fit_im),
