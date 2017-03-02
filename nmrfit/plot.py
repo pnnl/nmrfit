@@ -214,7 +214,3 @@ def isotope_ratio(data, fit):
 
         # display
         fig.tight_layout()
-
-
-def show():
-    plt.show()
