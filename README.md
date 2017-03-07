@@ -60,7 +60,7 @@ fit = nmrft.FitUtility(data, lb, ub)
 fit.generate_result(scale=1)
 ```
 
-Lastly, use the ``plot`` module to generate publicaton-ready plots of your results, e.g.:
+Lastly, use the ``plot`` module to generate publication-ready plots of your results, e.g.:
 
 ```python
 nmrfit.plot.residual(data, fit)
