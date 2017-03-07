@@ -111,7 +111,7 @@ class Data:
 
     """
 
-    def __init__(self, w, u, v, p0, p1):
+    def __init__(self, w, u, v):
         """
         Constructor for the Data class.
 
@@ -121,8 +121,6 @@ class Data:
             Array of frequency data.
         u, v : ndarray
             Arrays of the real and imaginary components of the frequency response.
-        p0, p1 : float
-            Estimate of zeroth and first order phase in radians.
 
         """
         self.w = w
@@ -131,9 +129,6 @@ class Data:
 
         self.V = self.u[:]
         self.I = self.v[:]
-
-        self.p0 = p0
-        self.p1 = p1
 
     def shift_phase(self, method='auto', p0=0.0, p1=0.0, step=np.pi / 360, plot=False):
         """
@@ -156,7 +151,7 @@ class Data:
             self.p0 = p0
             self.p1 = p1
         elif method.lower() == 'auto':
-            pass
+            self.p0, self.p1 = _proc_autophase.approximate_phase(self.u + 1j * self.v, 'acme')
         elif method.lower() == 'brute':
             self.p0, self.p1 = self._brute_phase(step=step)
         else:

@@ -40,13 +40,10 @@ def load(fidfile, procfile):
     data = _ng.proc_base.fft(data)
     data = data / _np.max(data)
 
-    # phase correct
-    p0, p1 = _proc_autophase.approximate_phase(data, 'acme')
-
     u = data[0, :].real
     v = data[0, :].imag
 
-    result = _containers.Data(w[::-1], u[::-1], v[::-1], p0, p1)
+    result = _containers.Data(w[::-1], u[::-1], v[::-1])
     return result
 
 
