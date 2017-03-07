@@ -1,7 +1,7 @@
 ======
 ``nmrfit``
 ======
-``nmrfit`` reads the output from an NMR spectroscopy experiment and, through a number of intuitive API calls, produces a least-squares fit of  Voigt-function approximations via particle swarm optimization ([PySwarm](https://github.com/tisimst/pyswarm)). Fitted peaks can then be used to perform quantitative NMR analysis, including isotope ratio approximation.
+``nmrfit`` reads the output from an NMR spectroscopy experiment and, through a number of intuitive API calls, produces a least-squares fit of  Voigt-function approximations via particle swarm optimization ([``PySwarm``](https://github.com/tisimst/pyswarm)). Fitted peaks can then be used to perform quantitative NMR analysis, including isotope ratio approximation.
 
 Installation
 ------------
@@ -9,7 +9,7 @@ Installation
 
 Getting Started
 ---------------
-To read input data, nmrfit relies on the [nmrglue](https://www.nmrglue.com/ "nmrglue homepage") package.  Real and imaginary spectrum components are stored in a custom class, allowing data preprocessing operations to naturally extend from the object as methods.  The data is then processed by Python script using the ``nmrfit`` API.
+To read input data, ``nmrfit`` relies on the [``nmrglue``](https://www.nmrglue.com/ "nmrglue homepage") package.  Real and imaginary spectrum components are stored in a custom class, allowing data preprocessing operations to naturally extend from the object as methods.  The data is then processed by Python script using the ``nmrfit`` API.
 
 ```python
 # import the module
