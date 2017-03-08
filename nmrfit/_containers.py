@@ -180,9 +180,11 @@ class Data:
     def _brute_phase(self, step=np.pi / 360):
         p0_best = 0
         bestError = np.inf
+        n = max(1, int(len(self.V) / 100))
         for p0 in np.arange(-np.pi, np.pi, step):
             self.V, self.I = _proc_autophase.ps2(self.u, self.v, p0, 0.0)
-            error = (self.V[0] - self.V[-1])**2
+
+            error = np.sqrt((self.V[:n].mean() - self.V[-n:].mean())**2)
             if error < bestError and np.max(self.V) > abs(np.min(self.V)):
                 bestError = error
                 p0_best = p0
