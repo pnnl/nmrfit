@@ -139,7 +139,7 @@ class FitUtility:
         weights = _equations.laplace1d(weights)
         return weights
 
-    def generate_result(self, scale=10):
+    def generate_result(self, scale=1):
         """
         Uses the output of the fit method to generate results.
 
