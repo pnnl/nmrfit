@@ -50,5 +50,5 @@ data.shift_phase(method='brute', plot=False)
 x, y = compress(data.w, data.V, ythresh=0.2, xthresh=0.2)
 
 plt.scatter(x, y, s=3, color='r', alpha=1)
-plt.scatter(data.w, data.V, s=3, color='b', alpha=0.5)
+# plt.scatter(data.w, data.V, s=3, color='b', alpha=0.5)
 plt.show()
