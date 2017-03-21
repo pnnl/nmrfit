@@ -60,7 +60,7 @@ class FitUtility:
             Specify whether dynamic weighting is used.
         fit_im : bool, optional
             Specify whether the imaginary part of the spectrum will be fit. Computationally expensive.
-        pool : multiprocessing.Pool
+        pool : multiprocessing.Pool, optional
             An instance of a multiprocessing pool used to evaluate objective function and constraints.
         summary : bool, optional
             Flag to display a summary of the fit.
