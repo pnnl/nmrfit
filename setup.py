@@ -16,7 +16,7 @@ pkgs = find_packages(exclude=('examples', 'docs'))
 # absolutely ridiculous manual install of pyswarm-0.7+ from GitHub
 # this should be taken care of via dependency_links below, but it
 # does. not. work.
-pip.main(['install', '--upgrade', 'git+https://github.com/smcolby/pyswarm@passpool'])
+# pip.main(['install', '--upgrade', 'git+https://github.com/smcolby/pyswarm@passpool'])
 
 setup(
     name='nmrfit',
