@@ -4,7 +4,6 @@ import scipy as sp
 import scipy.integrate
 import peakutils
 import pyswarm
-import multiprocessing as mp
 import pandas as pd
 
 from . import _containers
@@ -45,7 +44,7 @@ class FitUtility:
 
     """
 
-    def __init__(self, data, lower, upper, expon=0.5, dynamic_weighting=True, fit_im=False, summary=True, options={}):
+    def __init__(self, data, lower, upper, expon=0.5, dynamic_weighting=True, fit_im=False, pool=None, summary=True, options={}):
         """
         FitUtility constructor.
 
@@ -61,6 +60,8 @@ class FitUtility:
             Specify whether dynamic weighting is used.
         fit_im : bool, optional
             Specify whether the imaginary part of the spectrum will be fit. Computationally expensive.
+        pool : multiprocessing.Pool
+            An instance of a multiprocessing pool used to evaluate objective function and constraints.
         summary : bool, optional
             Flag to display a summary of the fit.
         options : dict, optional
@@ -75,6 +76,7 @@ class FitUtility:
         self.dynamic_weighting = dynamic_weighting
         self.fit_im = fit_im
         self.summary = summary
+        self.pool = pool
         self.options = options
 
     def fit(self):
@@ -95,7 +97,7 @@ class FitUtility:
                                  omega=self.options.get('omega', -0.2134),
                                  phip=self.options.get('phip', -0.3344),
                                  phig=self.options.get('phig', 2.3259),
-                                 processes=self.options.get('processes', mp.cpu_count() - 1))
+                                 pool=self.pool)
 
         # store the fit parameters and error in the result object
         self.params = xopt
@@ -170,13 +172,15 @@ class FitUtility:
         # iteratively add the contribution of each peak to the fits for V and I
         real_contribs = []
         imag_contribs = []
+
+        # initialize pool
         for i in range(0, len(res), 3):
             width = res[i]
             loc = res[i + 1]
             a = res[i + 2]
 
             real = _equations.voigt(w, r, yoff, width, loc, a)
-            imag = _equations.kk_relation_parallel(w, r, yoff, width, loc, a)
+            imag = _equations.kk_relation_parallel(w, r, yoff, width, loc, a, self.pool)
 
             real_contribs.append(real)
             imag_contribs.append(imag)
