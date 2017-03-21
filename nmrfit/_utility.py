@@ -180,7 +180,10 @@ class FitUtility:
             a = res[i + 2]
 
             real = _equations.voigt(w, r, yoff, width, loc, a)
-            imag = _equations.kk_relation_parallel(w, r, yoff, width, loc, a, self.pool)
+            if self.pool is None:
+                imag = _equations.kk_relation(w, r, yoff, width, loc, a)
+            else:
+                imag = _equations.kk_relation_parallel(w, r, yoff, width, loc, a, self.pool)
 
             real_contribs.append(real)
             imag_contribs.append(imag)
