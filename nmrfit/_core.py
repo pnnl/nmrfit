@@ -76,6 +76,6 @@ def fit(data, lower, upper, expon=0.5, dynamic_weighting=True, fit_im=False, poo
         Object containing result of the fit.
 
     '''
-    f = _utility.FitUtility(data, lower, upper, expon, dynamic_weighting, fit_im, summary, pool, options)
+    f = _utility.FitUtility(data, lower, upper, expon, dynamic_weighting, fit_im, pool, summary, options)
     f.fit()
     return f
