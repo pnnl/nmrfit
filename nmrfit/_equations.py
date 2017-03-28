@@ -1,7 +1,6 @@
 import numpy as np
 import scipy as sp
 import scipy.integrate
-import multiprocessing as mp
 from functools import partial
 
 from . import _proc_autophase
@@ -81,7 +80,7 @@ def kk_relation(w, r, yoff, width, loc, a):
     return res / np.pi
 
 
-def kk_relation_parallel(w, r, yoff, width, loc, a):
+def kk_relation_parallel(w, r, yoff, width, loc, a, pool):
     """
     Performs the integral required of the Kramers-Kronig relation using the kk_equation function
     for an array w in parallel.
@@ -100,6 +99,8 @@ def kk_relation_parallel(w, r, yoff, width, loc, a):
         Center of the Voigt function.
     a : float
         Area of the Voigt function.
+    pool : multiprocessing.Pool
+        Multiprocessing pool for use in parallel implementation.
 
     Returns
     -------
@@ -108,7 +109,6 @@ def kk_relation_parallel(w, r, yoff, width, loc, a):
 
     """
 
-    pool = mp.Pool(mp.cpu_count() - 1)
     return np.array(pool.map(partial(kk_relation, r=r, yoff=yoff, width=width, loc=loc, a=a), w))
 
 
