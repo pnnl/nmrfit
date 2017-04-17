@@ -34,14 +34,14 @@ def load(fidfile, procfile):
     rangeppm = rangeHz / magfreq
     offsetppm = offset / magfreq
 
-    w = _np.linspace(rangeppm - offsetppm, -offsetppm, data.size)
-
     # Fourier transform
     data = _ng.proc_base.fft(data)
     data = data / _np.max(data)
 
-    u = data[0, :].real
-    v = data[0, :].imag
+    u = data.real.sum(axis=0)
+    v = data.imag.sum(axis=0)
+
+    w = _np.linspace(rangeppm - offsetppm, -offsetppm, u.size)
 
     result = _containers.Data(w[::-1], u[::-1], v[::-1])
     return result
