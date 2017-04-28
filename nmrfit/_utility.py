@@ -359,11 +359,11 @@ class PeakSelector:
     fig : PyPlot figure
     cid : figure canvas socket
     baseline : ndarray
-        Array that defines a piecewise polynomial baseline of the data.
+        Array that defines a polynomial baseline of the data.
 
     """
 
-    def __init__(self, w, u, n, piecewise_baseline=False, one_click=False):
+    def __init__(self, w, u, n, one_click=False):
         """
         PeakSelector constructor.
 
@@ -375,8 +375,6 @@ class PeakSelector:
             Arrays of the real and imaginary components of the frequency response.
         n : int
             Number of peaks to select.
-        piecewise_baseline : bool, optional
-            Specify whether baseline correction is performed.
         one_click : bool, optional
             Specify whether a single click will be used to select peaks (as opposed to two)
 
@@ -411,10 +409,7 @@ class PeakSelector:
         # start event listener
         self.cid = self.fig.canvas.mpl_connect('button_press_event', self)
 
-        if piecewise_baseline is True:
-            self.baseline = _piecewise_baseline(self.w, self.u)
-        else:
-            self.baseline = peakutils.baseline(self.u, 0)
+        self.baseline = peakutils.baseline(self.u, 0)[0]
 
         # display the plot
         plt.show()
@@ -436,7 +431,7 @@ class PeakSelector:
         if self.one_click is True:
             if len(self.points) >= self.n:
                 plt.close()
-                self.parse_points2()
+                self.parse_points_one_click()
                 self.find_width()
 
         else:
@@ -450,7 +445,7 @@ class PeakSelector:
                 if len(self.peaks) >= self.n:
                     plt.close()
 
-    def parse_points2(self):
+    def parse_points_one_click(self):
         """
         Determines approximate peak height and location based on single-click selection method.
 
@@ -459,7 +454,7 @@ class PeakSelector:
             p = _containers.Peak()
             p.loc = x
             p.i = np.argmin(np.abs(self.w - p.loc))
-            p.height = self.u[p.i] - self.baseline[p.i]
+            p.height = self.u[p.i] - self.baseline
 
             self.peaks.append(p)
 
@@ -470,7 +465,7 @@ class PeakSelector:
         """
         screened_peaks = _containers.Peaks()
         for p in self.peaks:
-            d = np.sign(p.height / 2. - (self.u[0:-1] - self.baseline[0:-1])) - np.sign(p.height / 2. - (self.u[1:] - self.baseline[1:]))
+            d = np.sign(p.height / 2. - (self.u[0:-1] - self.baseline)) - np.sign(p.height / 2. - (self.u[1:] - self.baseline))
             rightIdx = np.where(d < 0)[0]  # right
             leftIdx = np.where(d > 0)[0]  # left
 
@@ -487,8 +482,12 @@ class PeakSelector:
                 # peak indices
                 p.idx = np.where((self.w >= p.bounds[0]) & (self.w <= p.bounds[1]))
 
+                # local baseline
+                p.baseline = peakutils.baseline(self.u[p.idx], 0)[0]
+                p.height = self.u[p.i] - p.baseline
+
                 # area over peak indices
-                p.area = sp.integrate.simps(self.u[p.idx] - self.baseline[p.idx], self.w[p.idx])
+                p.area = sp.integrate.simps(self.u[p.idx] - p.baseline, self.w[p.idx])
 
                 screened_peaks.append(p)
 
@@ -500,7 +499,7 @@ class PeakSelector:
         low, middle, and high.  Subsequently determines approximate peak height, width, and area.
 
         """
-        peak = _containers.Peak()
+        p = _containers.Peak()
 
         # sort points in frequency
         self.points.sort()
@@ -511,23 +510,27 @@ class PeakSelector:
 
         # determine width from min and max
         # user captures +/- 3 FWHMs with clicks
-        peak.width = (wMax - wMin) / 4
+        p.width = (wMax - wMin) / 4
 
         # determine peak height and location of peak by searching over an interval
-        peak.height, peak.loc, peak.i = find_peak(self.w, self.u, wMin, wMax)
+        p.height, p.loc, p.i = find_peak(self.w, self.u, wMin, wMax)
 
         # bounds are +/- 3 widths
-        peak.bounds = [peak.loc - 2 * peak.width, peak.loc + 2 * peak.width]
+        p.bounds = [p.loc - 2 * p.width, p.loc + 2 * p.width]
 
-        peak.height = peak.height - self.baseline[peak.i]
+        p.height = p.height - self.baseline
 
         # determine indices within the peak width
-        peak.idx = np.where((self.w > peak.bounds[0]) & (self.w < peak.bounds[1]))
+        p.idx = np.where((self.w > p.bounds[0]) & (self.w < p.bounds[1]))
 
-        # calculate AUC over the width of the peak numerically
-        peak.area = sp.integrate.simps(self.u[peak.idx] - self.baseline[peak.idx], self.w[peak.idx])
+        # local baseline
+        p.baseline = peakutils.baseline(self.u[p.idx], 0)[0]
+        p.height = self.u[p.i] - p.baseline
 
-        self.peaks.append(peak)
+        # area over peak indices
+        p.area = sp.integrate.simps(self.u[p.idx] - p.baseline, self.w[p.idx])
+
+        self.peaks.append(p)
 
     def plot(self):
         """
@@ -540,11 +543,11 @@ class PeakSelector:
         plt.plot(self.w, self.u, linewidth=2, color='silver', zorder=0, label='Data')
         for i, p in enumerate(self.peaks):
             if i == 0:
-                plt.scatter(p.loc, p.height + self.baseline[p.i], s=10, color='black', zorder=2, label='Peak')
+                plt.scatter(p.loc, p.height + p.baseline, s=10, color='black', zorder=2, label='Peak')
                 plt.axvline(p.bounds[0], color='black', linestyle='--', zorder=1, label='Bounds')
                 plt.axvline(p.bounds[1], color='black', linestyle='--', zorder=1, label=None)
             else:
-                plt.scatter(p.loc, p.height + self.baseline[p.i], s=10, color='black', zorder=2)
+                plt.scatter(p.loc, p.height + p.baseline, s=10, color='black', zorder=2)
                 plt.axvline(p.bounds[0], color='black', linestyle='--', zorder=1)
                 plt.axvline(p.bounds[1], color='black', linestyle='--', zorder=1)
 
@@ -579,17 +582,15 @@ class AutoPeakSelector:
         Threshold for minimum amplitude cutoff in peak selection.
     window : float
         Window size for local non-maximum supression.
-    piecewise_baseline : bool, optional
-            Specify whether baseline correction is performed.
     peaks : instance of Peaks object
     u_smoothed : ndarray
         Smoothed version of u.
     baseline : ndarray
-        Array that defines a piecewise polynomial baseline of the data.
+        Array that defines a polynomial baseline of the data.
 
     """
 
-    def __init__(self, w, u, thresh, window, piecewise_baseline=False):
+    def __init__(self, w, u, thresh, window):
         """
         AutoPeakSelector constructor.
 
@@ -603,8 +604,6 @@ class AutoPeakSelector:
             Threshold for minimum amplitude cutoff in peak selection.
         window : float
             Window size for local non-maximum supression.
-        piecewise_baseline : bool, optional
-            Specify whether baseline correction is performed.
 
         """
         self.thresh = thresh
@@ -616,10 +615,7 @@ class AutoPeakSelector:
 
         self.u_smoothed = sp.signal.savgol_filter(self.u, 11, 4)
 
-        if piecewise_baseline is True:
-            self.baseline = _piecewise_baseline(self.w, self.u_smoothed)
-        else:
-            self.baseline = peakutils.baseline(self.u_smoothed, 0)
+        self.baseline = peakutils.baseline(self.u_smoothed, 0)[0]
 
         self.peaks = _containers.Peaks()
 
@@ -637,7 +633,7 @@ class AutoPeakSelector:
             p = _containers.Peak()
             p.loc = self.w[i]
             p.i = i
-            p.height = self.u[i] - self.baseline[i]
+            p.height = self.u[i] - self.baseline
             if p.height > self.thresh:
                 self.peaks.append(p)
 
@@ -648,7 +644,7 @@ class AutoPeakSelector:
         """
         screened_peaks = _containers.Peaks()
         for p in self.peaks:
-            d = np.sign(p.height / 2. - (self.u[0:-1] - self.baseline[0:-1])) - np.sign(p.height / 2. - (self.u[1:] - self.baseline[1:]))
+            d = np.sign(p.height / 2. - (self.u[0:-1] - self.baseline)) - np.sign(p.height / 2. - (self.u[1:] - self.baseline))
             rightIdx = np.where(d < 0)[0]  # right
             leftIdx = np.where(d > 0)[0]  # left
 
@@ -665,8 +661,12 @@ class AutoPeakSelector:
                 # peak indices
                 p.idx = np.where((self.w >= p.bounds[0]) & (self.w <= p.bounds[1]))
 
+                # local baseline
+                p.baseline = peakutils.baseline(self.u[p.idx], 0)[0]
+                p.height = self.u[p.i] - p.baseline
+
                 # area over peak indices
-                p.area = sp.integrate.simps(self.u[p.idx] - self.baseline[p.idx], self.w[p.idx])
+                p.area = sp.integrate.simps(self.u[p.idx] - p.baseline, self.w[p.idx])
 
                 screened_peaks.append(p)
 
@@ -692,11 +692,11 @@ class AutoPeakSelector:
         plt.plot(self.w, self.u, linewidth=2, color='silver', zorder=0, label='Data')
         for i, p in enumerate(self.peaks):
             if i == 0:
-                plt.scatter(p.loc, p.height + self.baseline[p.i], s=10, color='black', zorder=2, label='Peak')
+                plt.scatter(p.loc, p.height + p.baseline, s=10, color='black', zorder=2, label='Peak')
                 plt.axvline(p.bounds[0], color='black', linestyle='--', zorder=1, label='Bounds')
                 plt.axvline(p.bounds[1], color='black', linestyle='--', zorder=1, label=None)
             else:
-                plt.scatter(p.loc, p.height + self.baseline[p.i], s=10, color='black', zorder=2)
+                plt.scatter(p.loc, p.height + p.baseline, s=10, color='black', zorder=2)
                 plt.axvline(p.bounds[0], color='black', linestyle='--', zorder=1)
                 plt.axvline(p.bounds[1], color='black', linestyle='--', zorder=1)
 
@@ -799,45 +799,3 @@ def sample_noise(X, Y, xstart, xstop):
     noise = noiseY - baselinefit(noiseX)
 
     return np.std(noise)
-
-
-def _piecewise_baseline(x, y, plot=False):
-    """
-    Calculates a piecewise baseline from the x/y data.  Splits the data into thirds and fits a baseline
-    to each section.  Used to correct for baseline offsest during initial condition selection.
-
-    Parameters
-    ----------
-    x, y : ndarray
-        x and y components of the data.
-
-    Returns
-    -------
-    baseline : ndarray
-        Array of y values representing the baseline.  Same shape as x, y.
-
-    """
-    third = int(x.shape[0] / 3)
-
-    y1 = y[0:third]
-    y2 = y[third:2 * third]
-    y3 = y[2 * third:]
-
-    base1 = peakutils.baseline(y1, 2)
-    # base2 = np.ones(y2.shape) * np.median(y2)
-
-    base3 = peakutils.baseline(y3, 2)
-
-    base2 = np.linspace(base1[-1], base3[0], y2.size)
-
-    baseline = np.concatenate((base1, base2, base3))
-
-    if plot is True:
-        plt.close()
-        plt.plot(x, y)
-        plt.plot(x, baseline)
-        # plt.plot(x, y - baseline)
-        plt.show()
-        plt.close()
-
-    return baseline

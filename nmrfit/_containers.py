@@ -211,7 +211,7 @@ class Data:
             bs = _utility.BoundsSelector(self.w, self.u, self.v)
             self.w, self.u, self.v = bs.apply_bounds()
 
-    def select_peaks(self, method='auto', n=None, one_click=False, thresh=0.0, window=0.02, piecewise_baseline=False, plot=False):
+    def select_peaks(self, method='auto', n=None, one_click=False, thresh=0.0, window=0.02, plot=False):
         """
         Method to interface with the utility class PeakSelector.  Will open an interactive utility used to select
         peaks n times.
@@ -228,20 +228,18 @@ class Data:
             Threshold for peak detection. Only used if 'auto' is selected.
         window : float, optional
             Window for local non-maximum supression. Only used if 'auto' is selected.
-        piecewise_baseline : bool, optional
-            Specify whether baseline correction is performed.
         plot : bool, optional
             Specify whether a plot of the peak selection is shown.
 
         """
         if method.lower() == 'manual':
             if isinstance(n, int) and n > 0:
-                ps = _utility.PeakSelector(self.w, self.V, n, piecewise_baseline=piecewise_baseline, one_click=one_click)
+                ps = _utility.PeakSelector(self.w, self.V, n, one_click=one_click)
             else:
                 raise ValueError("Number of peaks must be specified when using 'manual' flag")
 
         elif method.lower() == 'auto':
-            ps = _utility.AutoPeakSelector(self.w, self.V, thresh=thresh, window=window, piecewise_baseline=piecewise_baseline)
+            ps = _utility.AutoPeakSelector(self.w, self.V, thresh=thresh, window=window)
             ps.find_peaks()
 
         else:
