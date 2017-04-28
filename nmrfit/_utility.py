@@ -210,7 +210,7 @@ class FitUtility:
         Calculates the relative fraction of the satellite peaks to the total peak area from the fit.
 
         """
-        areas = np.array([self.params[i] for i in range(6, len(self.params), 3)])
+        areas = self.get_areas()
         m = np.mean(areas)
         peaks = areas[areas >= m].sum()
         sats = areas[areas < m].sum()
@@ -219,6 +219,18 @@ class FitUtility:
 
         # calculate area fraction
         return area_fraction
+
+    def get_areas(self):
+        """
+        Gets the fit areas and returns as an array.
+
+        Returns
+        -------
+        areas : ndarray
+            Array containing areas of each peak.
+
+        """
+        return np.array([self.params[i] for i in range(6, len(self.params), 3)])
 
     def _print_summary(self):
         """
