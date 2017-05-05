@@ -1,5 +1,7 @@
 # user
 .DS_Store
+*.out
+*.sbatch
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
