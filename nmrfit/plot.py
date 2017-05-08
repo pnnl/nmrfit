@@ -167,6 +167,7 @@ def isotope_ratio(data, fit):
         set1Range = [min(set1Bounds) - 0.02, max(set1Bounds) + 0.02]
         set2Range = [min(set2Bounds) - 0.02, max(set2Bounds) + 0.02]
         ht = max(satHeights)
+        mn = min(min(data.V), min(fit.V))
 
         # set up figures
         fig = plt.figure(1, figsize=(10, 8), dpi=150)
@@ -197,7 +198,7 @@ def isotope_ratio(data, fit):
         # plot left sats
         axes[1].plot(fit.w, fit.V, linewidth=pfit['lw'], alpha=pfit['alpha'], color=pfit['color'], zorder=1)
         axes[1].plot(data.w, data.V, linewidth=pdata['lw'], alpha=pdata['alpha'], color=pdata['color'], zorder=0)
-        axes[1].set_ylim((0, ht * 1.5))
+        axes[1].set_ylim(mn * 0.95, ht * 1.5)
         axes[1].set_xlim(set2Range[::-1])
 
         # plot main peaks
@@ -209,7 +210,7 @@ def isotope_ratio(data, fit):
         # plot right satellites
         axes[3].plot(fit.w, fit.V, linewidth=pfit['lw'], alpha=pfit['alpha'], color=pfit['color'], zorder=1)
         axes[3].plot(data.w, data.V, linewidth=pdata['lw'], alpha=pdata['alpha'], color=pdata['color'], zorder=0)
-        axes[3].set_ylim((0, ht * 1.5))
+        axes[3].set_ylim(mn * 0.95, ht * 1.5)
         axes[3].set_xlim(set1Range[::-1])
 
         # display
