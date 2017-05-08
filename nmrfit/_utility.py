@@ -132,7 +132,7 @@ class FitUtility:
 
         biggest = np.amax(maxabs)
 
-        defaultweight = 0.1
+        defaultweight = 1.0
         weights = np.ones(len(self.data.w)) * defaultweight
 
         for i in range(len(self.data.peaks)):
