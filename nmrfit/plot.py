@@ -171,21 +171,26 @@ def isotope_ratio(data, fit):
 
         # set up figures
         fig = plt.figure(1, figsize=(10, 8), dpi=150)
-        gs = gridspec.GridSpec(3, 3)
+        gs = gridspec.GridSpec(4, 3)
 
         axes = []
         axes.append(plt.subplot(gs[0:2, :]))
         axes.append(plt.subplot(gs[2, 0]))
         axes.append(plt.subplot(gs[2, 1]))
         axes.append(plt.subplot(gs[2, 2]))
+        axes.append(plt.subplot(gs[3, :]))
 
-        for a, label in zip(axes, ['A', 'B', 'C', 'D']):
-            a.set_yticklabels([])
+        for a, label in zip(axes, ['A', 'B', 'C', 'D', 'E']):
+            if label == 'E':
+                a.tick_params(top='off', right='off')
+                a.set_ylabel('Residual', fontweight='bold')
+            else:
+                a.spines['left'].set_color('none')
+                a.tick_params(top='off', left='off', right='off')
+                a.set_yticklabels([])
+
             a.spines['top'].set_color('none')
-            a.spines['left'].set_color('none')
             a.spines['right'].set_color('none')
-            a.tick_params(top='off', left='off', right='off')
-
             a.text(0.0, 1.0, label, fontsize=16, fontweight='bold',
                    transform=a.transAxes, va='top', ha='left', zorder=9)
 
@@ -205,13 +210,19 @@ def isotope_ratio(data, fit):
         axes[2].plot(fit.w, fit.V, linewidth=pfit['lw'], alpha=pfit['alpha'], color=pfit['color'], zorder=1)
         axes[2].plot(data.w, data.V, linewidth=pdata['lw'], alpha=pdata['alpha'], color=pdata['color'], zorder=0)
         axes[2].set_xlim(peakRange[::-1])
-        axes[2].set_xlabel('ppm', fontsize=16, fontweight='bold')
 
         # plot right satellites
         axes[3].plot(fit.w, fit.V, linewidth=pfit['lw'], alpha=pfit['alpha'], color=pfit['color'], zorder=1)
         axes[3].plot(data.w, data.V, linewidth=pdata['lw'], alpha=pdata['alpha'], color=pdata['color'], zorder=0)
         axes[3].set_ylim(mn * 0.95, ht * 1.5)
         axes[3].set_xlim(set1Range[::-1])
+
+        # residual
+        fit.generate_result(scale=1)
+        axes[4].plot(fit.w, fit.V - data.V, linewidth=1, color='black', zorder=1)
+        axes[4].axhline(linewidth=1, linestyle='--', color='grey', zorder=0)
+        axes[4].set_xlim((fit.w.max(), fit.w.min()))
+        axes[4].set_xlabel('ppm', fontsize=16, fontweight='bold')
 
         # display
         fig.tight_layout()
