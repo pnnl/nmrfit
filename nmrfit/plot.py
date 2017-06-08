@@ -191,7 +191,7 @@ def isotope_ratio(data, fit):
 
             a.spines['top'].set_color('none')
             a.spines['right'].set_color('none')
-            a.text(0.0, 1.0, label, fontsize=16, fontweight='bold',
+            a.text(0.02, 1.0, label, fontsize=16, fontweight='bold',
                    transform=a.transAxes, va='top', ha='left', zorder=9)
 
         # plot everything
