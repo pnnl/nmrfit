@@ -6,9 +6,90 @@ import peakutils
 import pyswarm
 import pandas as pd
 
-from . import _containers
 from . import _equations
 from . import _proc_autophase
+
+
+class Peaks(list):
+    """
+    Extension of list object that stores a number of Peak instances.
+
+    """
+
+    def average_height(self):
+        """
+        Calculate average height of all peaks stored.
+
+        Returns
+        -------
+        average : float
+            Average height of peaks.
+
+        """
+        h = 0.
+        for p in self:
+            h += abs(p.height)
+        return h / len(self)
+
+    def split(self):
+        """
+        Split peaks into two sublists (peaks, satellites) based on relative heights.
+
+        Returns
+        -------
+        peaks, sats : Peak instances
+            Peak lists containing peaks and satellites, respectively.
+
+        """
+        h = self.average_height()
+        sats = Peaks()
+        peaks = Peaks()
+
+        for p in self:
+            if abs(p.height) >= h:
+                peaks.append(p)
+            else:
+                sats.append(p)
+
+        return peaks, sats
+
+
+class Peak:
+    """
+    Contains metadata for 'peaks' observed in NMR spectroscopy.
+
+    Attributes
+    ----------
+    loc : float
+        Location of the peak.
+    height : float
+        Height of the peak in terms of signal intensity at its center.
+    bounds : list of floats.
+        Upper and lower bounds of the peak.  Captures 4 FWHMs.
+    width : float
+        The width of the peak in terms of FWHM.
+    area : float
+        Approximation of area of the peak.
+
+    """
+
+    def __repr__(self):
+        """
+        Overrides __repr__ to print peak-relevant information.
+
+        Returns
+        -------
+        repr : string
+            Formatted string to display peak information.
+
+        """
+        return """\
+               Location: %s
+               Height: %s
+               Bounds: [%s, %s]
+               Width: %s
+               Area: %s\
+               """ % (self.loc, self.height, self.bounds[0], self.bounds[1], self.width, self.area)
 
 
 class FitUtility:
@@ -397,7 +478,7 @@ class PeakSelector:
         self.one_click = one_click
 
         # peak container
-        self.peaks = _containers.Peaks()
+        self.peaks = Peaks()
 
         # empty list to store point information from clicks
         self.points = []
@@ -463,7 +544,7 @@ class PeakSelector:
 
         """
         for x, y in self.points:
-            p = _containers.Peak()
+            p = Peak()
             p.loc = x
             p.i = np.argmin(np.abs(self.w - p.loc))
             p.height = self.u[p.i] - self.baseline
@@ -475,7 +556,7 @@ class PeakSelector:
         Using peak information, finds FWHM.
 
         """
-        screened_peaks = _containers.Peaks()
+        screened_peaks = Peaks()
         for p in self.peaks:
             d = np.sign(p.height / 2. - (self.u[0:-1] - self.baseline)) - np.sign(p.height / 2. - (self.u[1:] - self.baseline))
             rightIdx = np.where(d < 0)[0]  # right
@@ -511,7 +592,7 @@ class PeakSelector:
         low, middle, and high.  Subsequently determines approximate peak height, width, and area.
 
         """
-        p = _containers.Peak()
+        p = Peak()
 
         # sort points in frequency
         self.points.sort()
@@ -629,7 +710,7 @@ class AutoPeakSelector:
 
         self.baseline = peakutils.baseline(self.u_smoothed, 0)[0]
 
-        self.peaks = _containers.Peaks()
+        self.peaks = Peaks()
 
     def find_maxima(self):
         """
@@ -642,7 +723,7 @@ class AutoPeakSelector:
         idx = sp.signal.argrelmax(self.u_smoothed, order=window)[0]
 
         for i in idx:
-            p = _containers.Peak()
+            p = Peak()
             p.loc = self.w[i]
             p.i = i
             p.height = self.u[i] - self.baseline
@@ -654,7 +735,7 @@ class AutoPeakSelector:
         Using peak information, finds FWHM.
 
         """
-        screened_peaks = _containers.Peaks()
+        screened_peaks = Peaks()
         for p in self.peaks:
             d = np.sign(p.height / 2. - (self.u[0:-1] - self.baseline)) - np.sign(p.height / 2. - (self.u[1:] - self.baseline))
             rightIdx = np.where(d < 0)[0]  # right
