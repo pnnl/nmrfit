@@ -27,8 +27,5 @@ setup(
     url='https://github.com/smcolby/nmrfit',
     license=license,
     packages=pkgs,
-    install_requires=required,
-    dependency_links=[
-        "git+https://github.com/smcolby/pyswarm@passpool",
-    ]
+    install_requires=required
 )
