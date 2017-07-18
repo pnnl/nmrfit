@@ -1,11 +1,12 @@
-# -*- coding: utf-8 -*-
-
 from setuptools import setup, find_packages
 import pip
 
 
 with open('README.md') as f:
     readme = f.read()
+
+with open('LICENSE') as f:
+    license = f.read()
 
 with open('requirements.txt') as f:
     required = f.read().splitlines()
@@ -27,5 +28,8 @@ setup(
     url='https://github.com/smcolby/nmrfit',
     license=license,
     packages=pkgs,
-    install_requires=required
+    install_requires=required,
+    dependency_links=[
+        "git+https://github.com/smcolby/pyswarm@passpool",
+    ]
 )
