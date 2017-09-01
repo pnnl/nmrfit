@@ -125,7 +125,7 @@ class FitUtility:
 
     """
 
-    def __init__(self, data, lower, upper, expon=0.5, dynamic_weighting=True, fit_im=False, pool=None, summary=True, options={}):
+    def __init__(self, data, lower, upper, expon=0.5, dynamic_weighting=True, fit_im=False, processes=1, summary=True, options={}):
         """
         FitUtility constructor.
 
@@ -141,8 +141,8 @@ class FitUtility:
             Specify whether dynamic weighting is used.
         fit_im : bool, optional
             Specify whether the imaginary part of the spectrum will be fit. Computationally expensive.
-        pool : multiprocessing.Pool, optional
-            An instance of a multiprocessing pool used to evaluate objective function and constraints.
+        processes : int, optional
+            Number of processes used to evaluate objective function and constraints.
         summary : bool, optional
             Flag to display a summary of the fit.
         options : dict, optional
@@ -157,7 +157,7 @@ class FitUtility:
         self.dynamic_weighting = dynamic_weighting
         self.fit_im = fit_im
         self.summary = summary
-        self.pool = pool
+        self.processes = processes
         self.options = options
 
     def fit(self):
@@ -178,7 +178,7 @@ class FitUtility:
                                  omega=self.options.get('omega', -0.2134),
                                  phip=self.options.get('phip', -0.3344),
                                  phig=self.options.get('phig', 2.3259),
-                                 pool=self.pool)
+                                 processes=self.processes)
 
         # store the fit parameters and error in the result object
         self.params = xopt
@@ -261,10 +261,9 @@ class FitUtility:
             a = res[i + 2]
 
             real = _equations.voigt(w, r, yoff, width, loc, a)
-            if self.pool is None:
-                imag = _equations.kk_relation(w, r, yoff, width, loc, a)
-            else:
-                imag = _equations.kk_relation_parallel(w, r, yoff, width, loc, a, self.pool)
+            imag = _equations.kk_relation(w, r, yoff, width, loc, a)
+            # TODO: make parallel
+            # imag = _equations.kk_relation_parallel(w, r, yoff, width, loc, a, self.pool)
 
             real_contribs.append(real)
             imag_contribs.append(imag)

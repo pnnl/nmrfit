@@ -47,7 +47,7 @@ def load(fidfile, procfile):
     return result
 
 
-def fit(data, lower, upper, expon=0.5, dynamic_weighting=True, fit_im=False, pool=None, summary=True, options={}):
+def fit(data, lower, upper, expon=0.5, dynamic_weighting=True, fit_im=False, processes=1, summary=True, options={}):
     '''
     Perform a fit of NMR spectroscopy data.
 
@@ -63,8 +63,8 @@ def fit(data, lower, upper, expon=0.5, dynamic_weighting=True, fit_im=False, poo
         Specify whether dynamic weighting is used.
     fit_im : bool, optional
         Specify whether the imaginary part of the spectrum will be fit. Computationally expensive.
-    pool : multiprocessing.Pool, optional
-        An instance of a multiprocessing pool used to evaluate objective function and constraints.
+    processes : int, optional
+        Number of processes used to evaluate objective function and constraints.
     summary : bool, optional
         Flag to display a summary of the fit.
     options : dict, optional
@@ -76,6 +76,6 @@ def fit(data, lower, upper, expon=0.5, dynamic_weighting=True, fit_im=False, poo
         Object containing result of the fit.
 
     '''
-    f = _utility.FitUtility(data, lower, upper, expon, dynamic_weighting, fit_im, pool, summary, options)
+    f = _utility.FitUtility(data, lower, upper, expon, dynamic_weighting, fit_im, processes, summary, options)
     f.fit()
     return f
