@@ -7,9 +7,9 @@ Installation
 ``nmrfit`` is available through the Python Package Index ([PyPI](https://pypi.python.org/pypi)).  Simply run ``pip install nmrfit`` to install ``nmrfit`` and all required dependencies.
 
 NOTE: the latest version of PySwarm is required, but is not available through PyPI.  Manually install as follows:
-``bash
+```bash
 pip install git+https://github.com/tisimst/pyswarm.git
-`` 
+```
 
 Getting Started
 ---------------
