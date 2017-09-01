@@ -4,7 +4,7 @@
 
 Installation
 ------------
-``nmrfit`` is available through the Python Package Index ([PyPI](https://pypi.python.org/pypi)).  Simply run ``pip install nmrfit`` to install ``nmrfit`` and all required dependencies.
+``nmrfit`` will soon be available through the Python Package Index ([PyPI](https://pypi.python.org/pypi)).  Simply run ``pip install nmrfit`` to install ``nmrfit`` and all required dependencies.  Until then, please install by running ``pip install git+https://github.com/pnnl/nmrfit.git``.
 
 NOTE: the latest version of PySwarm is required, but is not available through PyPI.  Manually install as follows:
 ```bash
@@ -70,13 +70,9 @@ Lastly, use the ``plot`` module to generate publication-ready plots of your resu
 nmrfit.plot.residual(data, fit)
 ```
 
-Documentation
--------------
-More documentation is available at...
-
 Citing nmrfit
 -------------
-Add citation when ready.
+Citation coming soon! We ask that you reference the citation that will be posted here if you use software.
 
 Disclaimer
 ----------
