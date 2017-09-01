@@ -4,4 +4,3 @@ nmrglue
 peakutils
 matplotlib
 pandas
-pyswarm

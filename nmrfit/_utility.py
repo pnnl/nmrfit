@@ -5,6 +5,7 @@ import scipy.integrate
 import peakutils
 import pyswarm
 import pandas as pd
+import multiprocessing as mp
 
 from . import _equations
 from . import _proc_autophase
@@ -261,9 +262,10 @@ class FitUtility:
             a = res[i + 2]
 
             real = _equations.voigt(w, r, yoff, width, loc, a)
-            imag = _equations.kk_relation(w, r, yoff, width, loc, a)
-            # TODO: make parallel
-            # imag = _equations.kk_relation_parallel(w, r, yoff, width, loc, a, self.pool)
+            if self.proccesses > 1:
+                imag = _equations.kk_relation_parallel(w, r, yoff, width, loc, a, mp.Pool(self.processes))
+            else:
+                imag = _equations.kk_relation_vectorized(w, r, yoff, width, loc, a)
 
             real_contribs.append(real)
             imag_contribs.append(imag)

@@ -6,6 +6,11 @@ Installation
 ------------
 ``nmrfit`` is available through the Python Package Index ([PyPI](https://pypi.python.org/pypi)).  Simply run ``pip install nmrfit`` to install ``nmrfit`` and all required dependencies.
 
+NOTE: the latest version of PySwarm is required, but is not available through PyPI.  Manually install as follows:
+``bash
+pip install git+https://github.com/tisimst/pyswarm.git
+`` 
+
 Getting Started
 ---------------
 To read input data, ``nmrfit`` relies on the [``nmrglue``](https://www.nmrglue.com/ "nmrglue homepage") package.  Real and imaginary spectrum components are stored in a custom class, allowing data preprocessing operations to naturally extend from the object as methods.  The data is then processed by Python script using the ``nmrfit`` API.
