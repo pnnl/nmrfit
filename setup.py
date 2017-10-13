@@ -13,11 +13,6 @@ with open('requirements.txt') as f:
 
 pkgs = find_packages(exclude=('examples', 'docs'))
 
-# absolutely ridiculous manual install of pyswarm-0.7+ from GitHub
-# this should be taken care of via dependency_links below, but it
-# does. not. work.
-# pip.main(['install', '--upgrade', 'git+https://github.com/smcolby/pyswarm@passpool'])
-
 setup(
     name='nmrfit',
     version='0.1',
@@ -25,11 +20,8 @@ setup(
     long_description=readme,
     author='Sean M. Colby',
     author_email='sean.colby@pnnl.gov',
-    url='https://github.com/smcolby/nmrfit',
+    url='https://github.com/pnnl/nmrfit',
     license=license,
     packages=pkgs,
     install_requires=required,
-    dependency_links=[
-        "git+https://github.com/smcolby/pyswarm@passpool",
-    ]
 )
