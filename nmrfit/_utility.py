@@ -262,7 +262,7 @@ class FitUtility:
             a = res[i + 2]
 
             real = _equations.voigt(w, r, yoff, width, loc, a)
-            if self.proccesses > 1:
+            if self.processes > 1:
                 imag = _equations.kk_relation_parallel(w, r, yoff, width, loc, a, mp.Pool(self.processes))
             else:
                 imag = _equations.kk_relation_vectorized(w, r, yoff, width, loc, a)
