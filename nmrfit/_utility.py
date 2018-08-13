@@ -256,6 +256,9 @@ class FitUtility:
         imag_contribs = []
 
         # initialize pool
+        if self.processes > 1:
+            p = mp.Pool(self.processes)
+
         for i in range(0, len(res), 3):
             width = res[i]
             loc = res[i + 1]
@@ -263,7 +266,7 @@ class FitUtility:
 
             real = _equations.voigt(w, r, yoff, width, loc, a)
             if self.processes > 1:
-                imag = _equations.kk_relation_parallel(w, r, yoff, width, loc, a, mp.Pool(self.processes))
+                imag = _equations.kk_relation_parallel(w, r, yoff, width, loc, a, p)
             else:
                 imag = _equations.kk_relation_vectorized(w, r, yoff, width, loc, a)
 
@@ -272,6 +275,10 @@ class FitUtility:
 
             V_fit = V_fit + real
             I_fit = I_fit + imag
+
+        if self.processes > 1:
+            p.close()
+            p.join()
 
         # transform the fits for V and I to get fits for u and v
         u_fit, v_fit = _proc_autophase.ps2(V_fit, I_fit, inv=True, p0=p0, p1=p1)
