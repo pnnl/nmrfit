@@ -1,4 +1,5 @@
 # user
+examples/
 .DS_Store
 *.out
 *.sbatch
