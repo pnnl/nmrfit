@@ -9,7 +9,7 @@ warnings.filterwarnings("ignore")
 def ps2(u, v, p0=0.0, p1=0.0, inv=False):
     """
     Linear phase correction.
-    
+
     Parameters
     ----------
     data : ndarray

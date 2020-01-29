@@ -1,23 +1,21 @@
-import numpy as _np
-import nmrglue as _ng
+import numpy as np
+import nmrglue as ng
 import os
 
-from . import _proc_autophase
-from . import _containers
-from . import _utility
-from . import plot
+from . import containers
+from . import utils
 
 
-def load(datafolder,vendor='varian'):
+def load(path, vendor='varian'):
     """
     Loads NMR spectra data from relevant input files.
 
     Parameters
     ----------
-	datafolder: string
-        path for the data directory
-	vendor: string
-	    varian or bruker, based on spectrometer.
+    path : string
+        path to the data directory.
+    vendor : string
+        varian or bruker, based on spectrometer.
 
     Returns
     -------
@@ -25,39 +23,41 @@ def load(datafolder,vendor='varian'):
         Container for ndarrays relevant to the fitting process (w, u, v, V, I).
 
     """
-    if vendor=='varian':
-        dic, data = _ng.varian.read_fid(os.path.join(datafolder,'fid'))
-        procs = _ng.varian.read_procpar(os.path.join(datafolder,'procpar'))
-        
+    if vendor == 'varian':
+        dic, data = ng.varian.read_fid(os.path.join(path, 'fid'))
+        procs = ng.varian.read_procpar(os.path.join(path, 'procpar'))
+
         offset = [float(i) for i in procs['tof']['values']][0]
         magfreq = [float(i) for i in procs['sfrq']['values']][0]
         rangeHz = [float(i) for i in procs['sw']['values']][0]
-    elif vendor=='bruker':
+
+    elif vendor == 'bruker':
         # read in the bruker formatted data
-        dic, data = _ng.bruker.read(datafolder)
+        dic, data = ng.bruker.read(path)
         # remove the digital filter
-        data = _ng.bruker.remove_digital_filter(dic, data)
+        data = ng.bruker.remove_digital_filter(dic, data)
         # reshape to be common with the varian data
-        data = _np.reshape(data,(1,len(data))) 
+        data = np.reshape(data, (1, len(data)))
         offset = float(dic['acqus']['O1'])
         magfreq = float(dic['acqus']['SFO1'])
         rangeHz = float(dic['acqus']['SW_h'])
+
     else:
-        print('Format not defined or recognised')
+        raise ValueError('Format not defined or recognised')
 
     rangeppm = rangeHz / magfreq
     offsetppm = offset / magfreq
 
     # Fourier transform
-    data = _ng.proc_base.fft(data)
-    data = data / _np.max(data)
+    data = ng.proc_base.fft(data)
+    data = data / np.max(data)
 
     u = data.real.sum(axis=0)
     v = data.imag.sum(axis=0)
 
-    w = _np.linspace(rangeppm - offsetppm, -offsetppm, u.size)
+    w = np.linspace(rangeppm - offsetppm, -offsetppm, u.size)
 
-    result = _containers.Data(w[::-1], u[::-1], v[::-1])
+    result = containers.Data(w[::-1], u[::-1], v[::-1])
     return result
 
 
@@ -90,6 +90,6 @@ def fit(data, lower, upper, expon=0.5, dynamic_weighting=True, fit_im=False, pro
         Object containing result of the fit.
 
     '''
-    f = _utility.FitUtility(data, lower, upper, expon, dynamic_weighting, fit_im, processes, summary, options)
+    f = utils.FitUtility(data, lower, upper, expon, dynamic_weighting, fit_im, processes, summary, options)
     f.fit()
     return f

@@ -3,7 +3,7 @@ import scipy as sp
 import scipy.integrate
 from functools import partial
 
-from . import _proc_autophase
+from . import proc_autophase
 
 
 def kk_equation(x, r, yoff, width, loc, a, w):
@@ -16,7 +16,7 @@ def kk_equation(x, r, yoff, width, loc, a, w):
     x : float
         Variable the integral will be evaluated over.
     r : float
-        Ratio between the Guassian and Lorentzian functions
+        Ratio between the Guassian and Lorentzian functions.
     yoff : float
         Y-offset of the Voigt function.
     width : float
@@ -58,9 +58,9 @@ def kk_relation(w, r, yoff, width, loc, a):
     Parameters
     ----------
     w : float
-        Frequncy value for which the integral is calculated
+        Frequncy value for which the integral is calculated.
     r : float
-        Ratio between the Guassian and Lorentzian functions
+        Ratio between the Guassian and Lorentzian functions.
     yoff : float
         Y-offset of the Voigt function.
     width : float
@@ -88,9 +88,9 @@ def kk_relation_parallel(w, r, yoff, width, loc, a, pool):
     Parameters
     ----------
     w : ndarray
-        Frequncy values for which the integral is calculated
+        Frequncy values for which the integral is calculated.
     r : float
-        Ratio between the Guassian and Lorentzian functions
+        Ratio between the Guassian and Lorentzian functions.
     yoff : float
         Y-offset of the Voigt function.
     width : float
@@ -121,7 +121,7 @@ def voigt(w, r, yoff, width, loc, a):
     w : ndarray
         Array over which the Voigt function will be evaluated.
     r : float
-        Ratio between the Guassian and Lorentzian functions
+        Ratio between the Guassian and Lorentzian functions.
     yoff : float
         Y-offset of the Voigt function.
     width : float
@@ -177,7 +177,7 @@ def objective(x, w, u, v, weights, fit_im=False):
     p0, p1, r, yoff = x[:4]
 
     # transform u and v to get V for the data
-    V_data, I_data = _proc_autophase.ps2(u, v, p0=p0, p1=p1)
+    V_data, I_data = proc_autophase.ps2(u, v, p0=p0, p1=p1)
     V_fit = np.zeros_like(V_data)
 
     # optionally, also for I
