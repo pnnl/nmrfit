@@ -1,8 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from . import _utility
-from . import _proc_autophase
+from . import utils
+from . import proc_autophase
 
 
 class Data:
@@ -69,13 +69,13 @@ class Data:
             self.p0 = p0
             self.p1 = p1
         elif method.lower() == 'auto':
-            self.p0, self.p1 = _proc_autophase.approximate_phase(self.u + 1j * self.v, 'acme')
+            self.p0, self.p1 = proc_autophase.approximate_phase(self.u + 1j * self.v, 'acme')
         elif method.lower() == 'brute':
             self.p0, self.p1 = self._brute_phase(step=step)
         else:
             raise ValueError("Method must be 'auto', 'brute', or 'manual'.")
 
-        self.V, self.I = _proc_autophase.ps2(self.u, self.v, self.p0, self.p1)
+        self.V, self.I = proc_autophase.ps2(self.u, self.v, self.p0, self.p1)
 
         if plot is True:
             fig = plt.figure(1, figsize=(10, 8), dpi=150)
@@ -100,7 +100,7 @@ class Data:
         bestError = np.inf
         n = max(1, int(len(self.V) / 5000))
         for p0 in np.arange(-np.pi, np.pi, step):
-            self.V, self.I = _proc_autophase.ps2(self.u, self.v, p0, 0.0)
+            self.V, self.I = proc_autophase.ps2(self.u, self.v, p0, 0.0)
 
             error = np.sqrt((self.V[:n].mean() - self.V[-n:].mean())**2)
             if error < bestError and np.max(self.V) > abs(np.min(self.V)):
@@ -123,10 +123,10 @@ class Data:
 
         """
         if low is not None and high is not None:
-            bs = _utility.BoundsSelector(self.w, self.u, self.v, supress=True)
+            bs = utils.BoundsSelector(self.w, self.u, self.v, supress=True)
             self.w, self.u, self.v = bs.apply_bounds(low=low, high=high)
         else:
-            bs = _utility.BoundsSelector(self.w, self.u, self.v)
+            bs = utils.BoundsSelector(self.w, self.u, self.v)
             self.w, self.u, self.v = bs.apply_bounds()
 
     def select_peaks(self, method='auto', n=None, one_click=False, thresh=0.0, window=0.02, plot=False):
@@ -152,12 +152,12 @@ class Data:
         """
         if method.lower() == 'manual':
             if isinstance(n, int) and n > 0:
-                ps = _utility.PeakSelector(self.w, self.V, n, one_click=one_click)
+                ps = utils.PeakSelector(self.w, self.V, n, one_click=one_click)
             else:
                 raise ValueError("Number of peaks must be specified when using 'manual' flag")
 
         elif method.lower() == 'auto':
-            ps = _utility.AutoPeakSelector(self.w, self.V, thresh=thresh, window=window)
+            ps = utils.AutoPeakSelector(self.w, self.V, thresh=thresh, window=window)
             ps.find_peaks()
 
         else:

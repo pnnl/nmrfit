@@ -25,7 +25,7 @@ To read input data, ``nmrfit`` relies on the [``nmrglue``](https://www.nmrglue.c
 import nmrfit
 
 # read in data
-nmrfit.load('fid', 'propcar')
+data = nmrfit.load('fid', 'propcar')
 ```
 In many cases, the signal of interest comprises only a subsection of the captured spectrum.  To restrict the fitting algorithm to only the pertinent part of the signal, the method ``get_bounds()`` is used to bound the data with respect to frequency.  The lower and upper bounds may be passed as arguments, or no arguments may be passed to prompt the user to interactively select the bounds by clicking twice on a displayed plot of the data.  To prepare for subsequent steps, nmrglue package is again used to perform an initial, approximate phase correction (initial phase correction is later refined by the fitting process).
 
@@ -63,7 +63,7 @@ Once the optimizer converges, the ``FitUtility`` method ``generate_result()`` ge
 
 ```python
 # perform the fit
-fit = nmrft.fit(data, lb, ub)
+fit = nmrfit.fit(data, lb, ub)
 
 # generate results
 fit.generate_result(scale=1)

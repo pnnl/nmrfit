@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
-import numpy as np
 
 
 pfit = {'color': 'black',

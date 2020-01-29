@@ -7,8 +7,8 @@ import pyswarm
 import pandas as pd
 import multiprocessing as mp
 
-from . import _equations
-from . import _proc_autophase
+from . import equations
+from . import proc_autophase
 
 
 class Peaks(list):
@@ -173,7 +173,7 @@ class FitUtility:
             self.weights = np.ones_like(self.weights)
 
         # call to the minimization function
-        xopt, fopt = pyswarm.pso(_equations.objective, self.lower, self.upper, args=(self.data.w, self.data.u, self.data.v, self.weights, self.fit_im),
+        xopt, fopt = pyswarm.pso(equations.objective, self.lower, self.upper, args=(self.data.w, self.data.u, self.data.v, self.weights, self.fit_im),
                                  swarmsize=self.options.get('swarmsize', 204),
                                  maxiter=self.options.get('maxiter', 2000),
                                  omega=self.options.get('omega', -0.2134),
@@ -220,7 +220,7 @@ class FitUtility:
         for i in range(len(self.data.peaks)):
             weights[lIdx[i]:rIdx[i] + 1] = np.power(biggest / maxabs[i], self.expon)
 
-        weights = _equations.laplace1d(weights)
+        weights = equations.laplace1d(weights)
         return weights
 
     def generate_result(self, scale=1):
@@ -264,11 +264,11 @@ class FitUtility:
             loc = res[i + 1]
             a = res[i + 2]
 
-            real = _equations.voigt(w, r, yoff, width, loc, a)
+            real = equations.voigt(w, r, yoff, width, loc, a)
             if self.processes > 1:
-                imag = _equations.kk_relation_parallel(w, r, yoff, width, loc, a, p)
+                imag = equations.kk_relation_parallel(w, r, yoff, width, loc, a, p)
             else:
-                imag = _equations.kk_relation_vectorized(w, r, yoff, width, loc, a)
+                imag = equations.kk_relation_vectorized(w, r, yoff, width, loc, a)
 
             real_contribs.append(real)
             imag_contribs.append(imag)
@@ -281,7 +281,7 @@ class FitUtility:
             p.join()
 
         # transform the fits for V and I to get fits for u and v
-        u_fit, v_fit = _proc_autophase.ps2(V_fit, I_fit, inv=True, p0=p0, p1=p1)
+        u_fit, v_fit = proc_autophase.ps2(V_fit, I_fit, inv=True, p0=p0, p1=p1)
         # u_fit = V_fit * np.cos(theta) + I_fit * np.sin(theta)
         # v_fit = -V_fit * np.sin(theta) + I_fit * np.cos(theta)
 

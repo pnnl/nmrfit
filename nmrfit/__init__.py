@@ -4,7 +4,11 @@ fit of Voigt-function approximations via particle swarm optimization.
 Fitted peaks can then be used to perform quantitative NMR analysis,
 including isotope ratio approximation."""
 
-from ._core import *
+from .core import *
+from . import plot
+from . import containers
+from . import equations
+from . import utils
+from . import proc_autophase
 
-__author__ = 'Sean M. Colby'
-__version__ = '0.1'
+__version__ = '0.1.0'
