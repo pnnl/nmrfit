@@ -1,5 +1,4 @@
 from setuptools import setup, find_packages
-from nmrfit import __version__
 
 
 with open('README.md') as f:
@@ -15,7 +14,7 @@ pkgs = find_packages(exclude=('examples', 'docs'))
 
 setup(
     name='nmrfit',
-    version=__version__,
+    version='0.1.0',
     description='Quantitative NMR package.',
     long_description=readme,
     author='Sean M. Colby',
