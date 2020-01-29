@@ -1,5 +1,6 @@
 import numpy as _np
 import nmrglue as _ng
+import os
 
 from . import _proc_autophase
 from . import _containers
@@ -7,16 +8,16 @@ from . import _utility
 from . import plot
 
 
-def load(fidfile, procfile):
+def load(datafolder,vendor='varian'):
     """
     Loads NMR spectra data from relevant input files.
 
     Parameters
     ----------
-    fidfile : string
-        Path to the fid file.
-    procfile : string
-        Path to the procpar file.
+	datafolder: string
+        path for the data directory
+	vendor: string
+	    varian or bruker, based on spectrometer.
 
     Returns
     -------
@@ -24,12 +25,25 @@ def load(fidfile, procfile):
         Container for ndarrays relevant to the fitting process (w, u, v, V, I).
 
     """
-    dic, data = _ng.varian.read_fid(fidfile)
-    procs = _ng.varian.read_procpar(procfile)
-
-    offset = [float(i) for i in procs['tof']['values']][0]
-    magfreq = [float(i) for i in procs['sfrq']['values']][0]
-    rangeHz = [float(i) for i in procs['sw']['values']][0]
+    if vendor=='varian':
+        dic, data = _ng.varian.read_fid(os.path.join(datafolder,'fid'))
+        procs = _ng.varian.read_procpar(os.path.join(datafolder,'procpar'))
+        
+        offset = [float(i) for i in procs['tof']['values']][0]
+        magfreq = [float(i) for i in procs['sfrq']['values']][0]
+        rangeHz = [float(i) for i in procs['sw']['values']][0]
+    elif vendor=='bruker':
+        # read in the bruker formatted data
+        dic, data = _ng.bruker.read(datafolder)
+        # remove the digital filter
+        data = _ng.bruker.remove_digital_filter(dic, data)
+        # reshape to be common with the varian data
+        data = _np.reshape(data,(1,len(data))) 
+        offset = float(dic['acqus']['O1'])
+        magfreq = float(dic['acqus']['SFO1'])
+        rangeHz = float(dic['acqus']['SW_h'])
+    else:
+        print('Format not defined or recognised')
 
     rangeppm = rangeHz / magfreq
     offsetppm = offset / magfreq
